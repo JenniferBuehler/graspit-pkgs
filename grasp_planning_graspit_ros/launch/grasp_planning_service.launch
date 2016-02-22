@@ -1,0 +1,48 @@
+<launch>
+
+
+
+    # the name of the database which will be maintained (see grasp_planning_graspit GraspItDatabaseManager).
+    <arg name="database_name" default="GraspItDatabase"/>
+    
+    # the name of the service topic to be published for  grasp_planning_graspit_msgs::AddToDatabase.srv
+    <arg name="add_to_db_topic" default="graspit_add_to_database"/>
+    
+    # the name of the service topic to be published for grasp_planning_graspit_msgs::LoadDatabaseModel.srv
+    <arg name="load_model_topic" default="graspit_load_model"/>
+    
+    # the name of the service topic to be published for grasp_planning_graspit_msgs::SaveWorld.srv
+    <arg name="save_world_topic" default="graspit_save_world"/>
+    
+    # the name of the service topic to be published for manipulation_msgs::GraspPlanning.srv
+    <arg name="eg_planning_topic" default="graspit_eg_planning"/>
+    
+    # the default maximum planning steps to use for the Eigengrasp planner.
+    <arg name="default_max_planning_steps" default="100000"/>
+    
+    # the default number of times the planning is repeated (complete planner re-starts).
+    <arg name="default_num_repeat_planning" default="1"/>
+ 
+    # specifies whether to save the results as inventor files in the folder specified in "results_output_directory".
+    <arg name="save_result_files_inventor" default="true"/>
+       
+    # specifies whether to save the results as graspit world files in the folder specified in "results_output_directory".
+    <arg name="save_result_files_graspit" default="true"/>
+    
+    # the directory where results should be saved
+    <arg name="results_output_directory"/>
+
+	<node name="graspit_planning_service" pkg="grasp_planning_graspit_ros" type="grasp_planning_service" respawn="false" output="screen">
+		<param name="database_name" value="$(arg database_name)"/> 
+		<param name="add_to_db_topic" value="$(arg add_to_db_topic)"/> 
+		<param name="load_model_topic" value="$(arg load_model_topic)"/> 
+		<param name="save_world_topic" value="$(arg save_world_topic)"/> 
+		<param name="eg_planning_topic" value="$(arg eg_planning_topic)"/> 
+        <param name="default_max_planning_steps" value="$(arg default_max_planning_steps)"/>
+        <param name="default_num_repeat_planning" value="$(arg default_num_repeat_planning)"/>
+        <param name="save_result_files_inventor" value="$(arg save_result_files_inventor)"/>
+        <param name="save_result_files_graspit" value="$(arg save_result_files_graspit)"/>
+        <param name="results_output_directory" value="$(arg results_output_directory)"/>
+		<!-- <param name="graspit_planning_algorithm" value="$(arg graspit_planning_algorithm)"/> -->
+	</node>
+</launch>

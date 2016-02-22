@@ -1,0 +1,13 @@
+# Requests to save the currently loaded Graspit world as file
+
+# the filename where to save the world
+string filename
+
+# true if the file is to be saved as inventor.
+# will be saved as graspit world otherwise.
+bool asInventor 
+
+---
+
+# success flag
+bool success

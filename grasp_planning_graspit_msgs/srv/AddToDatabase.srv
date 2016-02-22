@@ -1,0 +1,65 @@
+# Requests to add a Graspit model to the database
+# This does not load it into the current GraspIt world.
+# Request loading of the databse into the GraspIt world
+# needs to be done with another service.
+
+# the GraspIt! XML file to load. Can only be a robot or
+# object file. Adding whole worlds to databases is not
+# supported.
+string filename
+
+# true if the file is a robot file, false if it is an object file
+bool isRobot
+
+# only used if isRobot=false: Load the object as graspable
+# object. If false, the object is loaded as obstacle. 
+bool asGraspable
+
+# set a unique model name for the database. If a model
+# with this name exists in the database already, the service
+# request will fail, and you have to try another name.
+string modelName
+
+# if this is a robot file, this array contains the URDF joint
+# names in the order they are specified in the graspit
+# file.
+string[] jointNames
+
+---
+
+
+# success flag (see return codes below)
+int32 returnCode
+
+# returns the model ID which was assigned to this loaded
+# model in the database.
+int32 modelID
+
+
+
+
+# adding to database successful.
+int32 SUCCESS = 0
+
+# model with this name exists in database.
+int32 MODEL_EXISTS = 1 
+
+# could nto find the file.
+int32 FILE_NOT_FOUND = 2
+
+# graspit world not ready to take objects.
+int32 NOT_READY = 3
+
+# cannot add a model with empty name
+int32 NO_NAME = 4
+
+# other error occurred. 
+int32 OTHER_ERROR = 5
+
+
+
+
+
+
+
+

@@ -1,0 +1,7 @@
+<launch>
+    <arg name="robot_id" default="1"/>
+    <arg name="object_id" default="2"/>
+
+   	<node name="load_model_client_robot" pkg="grasp_planning_graspit_ros" type="load_model_client" respawn="false" output="screen" args="$(arg robot_id) true"/>
+   	<node name="load_model_client_object" pkg="grasp_planning_graspit_ros" type="load_model_client" respawn="false" output="screen" args="$(arg object_id) false"/>
+</launch>

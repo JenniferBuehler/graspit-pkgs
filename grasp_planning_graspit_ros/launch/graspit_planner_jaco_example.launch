@@ -1,0 +1,47 @@
+
+<launch>
+
+    # set to true if a world file is to be loaded. Alternatively, a robot and object may be loaded separately.
+    <arg name="use_world_file" value="false"/>
+    
+    # the graspit world file. Use EITHER this OR specify a robot and object.
+    <arg if="$(arg use_world_file)" name="graspit_world_file" default="$(find jaco_graspit_sample)worlds/jaco_robot_world.xml"/>
+
+    # the graspit robot file. Use EITHER this OR specify a world.
+    # if you specify a robot, you also have to specify an object.
+    <arg unless="$(arg use_world_file)" name="graspit_robot_file" default="$(find jaco_graspit_sample)/models/robots/jaco_robot/jaco_robot.xml"/>
+    
+    # if you specify an object, you also have to specify a robot.
+    <arg unless="$(arg use_world_file)" name="graspit_object_file" default="$(find jaco_graspit_sample)/models/objects/small_cube.xml"/>
+ 
+    # The planning algorithm to use. At this stage, only simulated annealing ("SimAnn") is supported.
+    <arg name="graspit_planning_algorithm" default="SimAnn"/>
+	
+    # the maximum planning steps to use for the Eigengrasp planner.
+    <arg name="max_planning_steps" default="70000"/>
+    
+    # number of times the planning is repeated
+    <arg name="num_repeat_planning" default="1"/>
+ 
+    # specifies whether to save the results as inventor files in the folder specified in "results_output_directory".
+    <arg name="save_result_files_inventor" default="true"/>
+       
+    # specifies whether to save the results as graspit world files in the folder specified in "results_output_directory".
+    <arg name="save_result_files_graspit" default="true"/>
+    
+    # the directory where results should be saved
+    <arg name="results_output_directory"/>
+
+    <include file="$(find grasp_planning_graspit_ros)/launch/graspit_planner.launch">
+		<arg name="use_world_file" value="$(arg use_world_file)"/>
+		<arg if="$(arg use_world_file)" name="graspit_world_file" value="$(arg graspit_world_file)"/> 
+		<arg unless="$(arg use_world_file)" name="graspit_robot_file" value="$(arg graspit_robot_file)"/>
+		<arg unless="$(arg use_world_file)" name="graspit_object_file" value="$(arg graspit_object_file)"/>
+		<arg name="results_output_directory" value="$(arg results_output_directory)"/>
+        <arg name="max_planning_steps" value="$(arg max_planning_steps)"/>
+        <arg name="num_repeat_planning" value="$(arg num_repeat_planning)"/>
+        <arg name="save_result_files_inventor" value="$(arg save_result_files_inventor)"/>
+        <arg name="save_result_files_graspit" value="$(arg save_result_files_graspit)"/>
+		<!-- <arg name="graspit_planning_algorithm" value="$(arg graspit_planning_algorithm)"/> -->
+	</include>
+</launch>

@@ -1,0 +1,6 @@
+<launch>
+    <arg name="robot_name" default="jaco_robot"/>
+    <arg name="object_id" default="2"/>
+
+   	<node name="eigengrasp_planner_client_node" pkg="grasp_planning_graspit_ros" type="eigengrasp_planner_client" respawn="false" output="screen" args="$(arg robot_name) $(arg object_id)"/>
+</launch>

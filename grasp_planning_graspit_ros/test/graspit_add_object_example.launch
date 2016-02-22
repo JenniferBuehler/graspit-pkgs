@@ -1,0 +1,6 @@
+<launch>
+    <arg name="object_name" default="small_cube"/>
+    <arg name="object_file" default="$(find jaco_graspit_sample)/models/objects/small_cube.xml" />
+
+   	<node name="add_model_client_cube" pkg="grasp_planning_graspit_ros" type="add_model_client" respawn="false" output="screen" args="$(arg object_name) $(arg object_file) false true"/>
+</launch>

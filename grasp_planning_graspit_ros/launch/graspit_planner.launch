@@ -1,0 +1,46 @@
+<launch>
+
+    # set to true if a world file is to be loaded. Alternatively, a robot and object may be loaded separately.
+    <arg name="use_world_file"/>
+	
+    # the graspit world file. Use EITHER this OR specify a robot and object.
+    <arg if="$(arg use_world_file)" name="graspit_world_file"/>
+    
+    # the graspit robot file. Use EITHER this OR specify a world.
+    # if you specify a robot, you also have to specify an object.
+    <arg unless="$(arg use_world_file)" name="graspit_robot_file"/>
+    
+    # if you specify an object, you also have to specify a robot.
+    <arg unless="$(arg use_world_file)" name="graspit_object_file"/>
+ 
+    # The planning algorithm to use. At this stage, only simulated annealing ("SimAnn") is supported.
+    <arg name="graspit_planning_algorithm" default="SimAnn"/>
+	
+    # the maximum planning steps to use for the Eigengrasp planner.
+    <arg name="max_planning_steps" default="70000"/>
+    
+    # number of times the whole planning process is repeated (complete re-start of planner).
+    <arg name="num_repeat_planning" default="1"/>
+ 
+    # specifies whether to save the results as inventor files in the folder specified in "results_output_directory".
+    <arg name="save_result_files_inventor" default="true"/>
+       
+    # specifies whether to save the results as graspit world files in the folder specified in "results_output_directory".
+    <arg name="save_result_files_graspit" default="true"/>
+    
+    # the directory where results should be saved
+    <arg name="results_output_directory"/>
+
+	<node name="grasp_planning" pkg="grasp_planning_graspit_ros" type="grasp_planning_node" respawn="false" output="screen">
+        <param name="use_world_file" value="$(arg use_world_file)"/>
+        <param if="$(arg use_world_file)" name="graspit_world_file" value="$(arg graspit_world_file)"/>
+        <param unless="$(arg use_world_file)" name="graspit_robot_file" value="$(arg graspit_robot_file)"/>
+        <param unless="$(arg use_world_file)" name="graspit_object_file" value="$(arg graspit_object_file)"/>
+        <param name="max_planning_steps" value="$(arg max_planning_steps)"/>
+        <param name="num_repeat_planning" value="$(arg num_repeat_planning)"/>
+        <param name="save_result_files_inventor" value="$(arg save_result_files_inventor)"/>
+        <param name="save_result_files_graspit" value="$(arg save_result_files_graspit)"/>
+        <param name="results_output_directory" value="$(arg results_output_directory)"/>
+		<!-- <param name="graspit_planning_algorithm" value="$(arg graspit_planning_algorithm)"/> -->
+	</node>
+</launch>

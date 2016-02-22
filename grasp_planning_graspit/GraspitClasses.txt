@@ -1,0 +1,13 @@
+Little reminder for the GraspIt main classes inheritance structure and references between objects.
+
+World: Pointer to IVMgr.
+IVMgr: inherits QWidget.
+       Created in GraspItGUI.
+       Pointer to world and all the inventor files, and the viewer.
+WorldElement: inherits QObject.
+       Pointer to world and inventor objects.
+Robot: inherits from WorldElement.
+       Pointer to World (because WorldElement).
+Hand:  inherited from Robot.
+Body:  inherits WorldElement.
+       Pointers to inventor objects.

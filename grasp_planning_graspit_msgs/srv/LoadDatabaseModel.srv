@@ -1,0 +1,19 @@
+# Instructs GraspIt to load a database model and place it at a given location in the world.
+# The current version only allows a single instance of any database object in the graspit world;
+# if the object is already in the world, it will be moved to the new location
+
+# the id of the model to be loaded
+int32 model_id
+
+# the pose of the model in the world
+geometry_msgs/Pose model_pose
+
+# whether any other models in the GraspIt world should be cleared
+# somewhat hack-ish, needed for wuick testing for the robust planner
+bool clear_other_models
+
+---
+
+int32 LOAD_SUCCESS = 0
+int32 LOAD_FAILURE = 1
+int32 result
