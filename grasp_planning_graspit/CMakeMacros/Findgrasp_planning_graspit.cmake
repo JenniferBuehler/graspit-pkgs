@@ -38,7 +38,7 @@ if (GRASP_PLANNING_GRASPIT_PATH)
 else (GRASP_PLANNING_GRASPIT_PATH)
 	message(SEND_ERROR 
 	"Looking for grasp_planning_graspit headers -- not found"
-	"Please install grasp_planning_graspit https://github.com/JenniferBuehler/jb-ros-packs/ or adjust CMAKE_INCLUDE_PATH"
+	"Please install grasp_planning_graspit https://github.com/JenniferBuehler/graspit-pkgs/ or adjust CMAKE_INCLUDE_PATH"
 	"e.g. cmake -DCMAKE_INCLUDE_PATH=/path-to-grasp-planning-graspit/include ...")
 endif (GRASP_PLANNING_GRASPIT_PATH)
 
@@ -61,7 +61,7 @@ if (GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE)
 else (GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE)
  	message(SENDL_ERROR 
 	"Looking for grasp_planning_graspit library -- not found"
-	"Please install grasp_planning_graspit https://github.com/JenniferBuehler/jb-ros-packs/ or adjust CMAKE_INCLUDE_PATH"
+	"Please install grasp_planning_graspit https://github.com/JenniferBuehler/graspit-pkgs/ or adjust CMAKE_INCLUDE_PATH"
 	"e.g. cmake -DCMAKE_LIBRARY_PATH=/path-to-grasp_planning_graspit/lib ...")
 endif (GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE)
 

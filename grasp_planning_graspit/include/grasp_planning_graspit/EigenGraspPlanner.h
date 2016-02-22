@@ -61,7 +61,7 @@ namespace GraspIt
  * passed into the constructor of this class. For an example on how to implement this class
  * without direct Qt dependencies, check out EigenGraspPlannerNoQt.
  *  
- * *Notes*: See also [git issue #18](https://github.com/JenniferBuehler/jb-ros-packs/issues/18) for restrictions of this class.
+ * *Notes*: See also [git issue #1](https://github.com/JenniferBuehler/graspit-pkgs/issues/1) for restrictions of this class.
  *
  * *Important note for developers*: This class should not be derived further in its current implementation.
  * This is because it uses an SoIdleSensor locally which it destroys in the destructor. This needs to be destroyed *before*
