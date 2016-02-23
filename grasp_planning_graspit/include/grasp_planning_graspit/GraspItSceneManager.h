@@ -25,11 +25,12 @@
 
 #include <string>
 #include <map>
-#include <QWidget>
+
+#include <QObject>
 
 #include <grasp_planning_graspit/ThreadImpl.h>
 #include <grasp_planning_graspit/SharedPtr.h>
-#include <grasp_planning_graspit/GraspItHelpers.h>
+#include <grasp_planning_graspit/GraspItTypes.h>
 
 
 class GraspableBody;

@@ -26,9 +26,11 @@
 #include <grasp_planning_graspit/EigenGraspResult.h>
 #include <grasp_planning_graspit/GraspItAccessor.h>
 
-#include <EGPlanner/search.h>
+//#include <EGPlanner/search.h>
 #include <vector>
 #include <string>
+
+#include <QObject>
 
 #define DEFAULT_MAX_PLANNING_STEPS 70000
 
@@ -78,8 +80,15 @@ class EigenGraspPlanner: public QObject, public GraspItAccessor
 
 public:
     // So far, only AxisAngle supported, as others not tested yet.
-    // Later: enum SearchType {Complete, AxisAngle, Ellipsoid, Approach};
-    // enum SearchType  {AxisAngle};
+    // Later will be: enum  GraspItStateType{Complete, AxisAngle, Ellipsoid, Approach};
+    enum GraspItStateType  {AxisAngle};
+    
+    // Will laster be 1:1 mapping from original GraspIt! SearchEnergyType, now only
+    // supports ENERGY_CONTACT. All later types:
+    // ENERGY_CONTACT, ENERGY_POTENTIAL_QUALITY, ENERGY_CONTACT_QUALITY,
+    // ENERGY_AUTOGRASP_QUALITY, ENERGY_GUIDED_AUTOGRASP, ENERGY_STRICT_AUTOGRASP,
+    // ENERGY_COMPLIANT, ENERGY_DYNAMIC
+    enum GraspItSearchEnergyType  {EnergyContact};
 
     // Type of planner ot use. So far, only simulated annealing supported, as
     // others are not tested.
@@ -190,7 +199,7 @@ private:
      * object set to grasp.
      * \see void EigenGraspPlannerDlg::spaceSearchBox_activated( const QString &s )
      */
-    void initSearchType(GraspPlanningState& stateTemplate,  const StateType& st);
+    void initSearchType(GraspPlanningState& stateTemplate,  const GraspItStateType& st);
 
     /**
      * \param stateTemplate tells the planner how the state it is searching on looks like (how many variables, etc).
@@ -316,7 +325,7 @@ private:
     RECURSIVE_MUTEX graspitEgPlannerMtx;
 
     // The state type to use for GraspIt. Default is STATE_AXIS_ANGLE.
-    StateType graspitStateType;
+    GraspItStateType graspitStateType;
 
     // The search energy type to use. Is ENERGY_CONTACT by default.
     // Important: ENERGY_CONTACT_QUALITY doesn't work properly at the moment,
@@ -324,7 +333,7 @@ private:
     // drops to -0. Reason to be found in SearchEnergy::potentialQualityEnergy, variable gq
     // gets 0. So far, only successfully tested method was ENERGY_CONTACT, though I didn't
     // test all others except ENERGY_CONTACT_QUALITY
-    SearchEnergyType graspitSearchEnergyType;
+    GraspItSearchEnergyType graspitSearchEnergyType;
 
     // whether to use contacts information in the planner or not
     bool useContacts;

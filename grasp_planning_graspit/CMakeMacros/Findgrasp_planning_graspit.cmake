@@ -15,6 +15,7 @@
 # GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE - the relase version
 # GRASP_PLANNING_GRASPIT_LIBRARY_DEBUG - the debug version
 # GRASP_PLANNING_GRASPIT_LIBRARY - a default library, with priority debug.
+# GRASP_PLANNING_GRASPIT_LIBRARIES - all depending libraries
 
 # --- First, try to find relevant headers with find_path and find_library,
 # in order to cause a cmake failure if libraries are not there. 
@@ -43,7 +44,7 @@ else (GRASP_PLANNING_GRASPIT_PATH)
 endif (GRASP_PLANNING_GRASPIT_PATH)
 
 find_library(GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE
-	NAMES graspPlanningGraspit
+	NAMES grasp_planning_graspit
 	PATHS
 	${CMAKE_LIBRARY_PATH}
 	${GRASP_PLANNING_GRASPIT_PATH}/lib
@@ -64,6 +65,26 @@ else (GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE)
 	"Please install grasp_planning_graspit https://github.com/JenniferBuehler/graspit-pkgs/ or adjust CMAKE_INCLUDE_PATH"
 	"e.g. cmake -DCMAKE_LIBRARY_PATH=/path-to-grasp_planning_graspit/lib ...")
 endif (GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE)
+
+
+
+# Qt is still required at this stage for using GraspIt!.
+# This find_package is to get the headers/libs of Qt required.
+# While a separate inclusion of the graspit package may
+# already have included the Qt headers, this should be
+# done here again, for the case that the graspit package
+# is not used directly, but from within a library which
+# includes the whole source (in form of a static library).
+find_package(Qt4 COMPONENTS QtCore REQUIRED)
+set(GRASP_PLANNING_GRASPIT_INCLUDE_DIRS 
+    ${GRASP_PLANNING_GRASPIT_INCLUDE_DIRS}
+    ${QT_INCLUDES}
+) 
+set(GRASP_PLANNING_GRASPIT_LIBRARIES 
+    ${GRASP_PLANNING_GRASPIT_INCLUDE_DIRS}
+    ${GRASP_PLANNING_GRASPIT_LIBRARY}
+    ${QT_LIBRARIES}
+)
 
 MARK_AS_ADVANCED(
     GRASP_PLANNING_GRASPIT_LIBRARY_FOUND

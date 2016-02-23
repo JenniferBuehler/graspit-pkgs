@@ -25,7 +25,7 @@
 // #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/SharedPtr.h>
 #include <grasp_planning_graspit/GraspItSceneManager.h>
-#include <grasp_planning_graspit/GraspItHelpers.h>
+#include <grasp_planning_graspit/GraspItTypes.h>
 #include <string>
 
 namespace GraspIt

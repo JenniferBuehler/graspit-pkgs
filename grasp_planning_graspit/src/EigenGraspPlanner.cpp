@@ -22,6 +22,7 @@
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/PrintHelpers.h>
 #include <grasp_planning_graspit/EigenGraspResult.h>
+#include <grasp_planning_graspit/GraspItHelpers.h>
 
 #include <string>
 #include <vector>
@@ -59,8 +60,8 @@ EigenGraspPlanner::EigenGraspPlanner(const std::string& name, const SHARED_PTR<G
     GraspItAccessor(name, intr),
     // mEnergyCalculator(NULL),
     graspitEgPlanner(NULL),
-    graspitStateType(SPACE_AXIS_ANGLE),
-    graspitSearchEnergyType(ENERGY_CONTACT),
+    graspitStateType(AxisAngle),
+    graspitSearchEnergyType(EnergyContact),
     useContacts(true),
 #ifdef USE_SEPARATE_SOSENSOR
     mIdleSensor(NULL),
@@ -592,6 +593,56 @@ void EigenGraspPlanner::getResults(std::vector<EigenGraspResult>& allGrasps) con
 }
 
 
+SearchEnergyType getSearchEnergyType(const EigenGraspPlanner::GraspItSearchEnergyType& st)
+{
+    SearchEnergyType ret;
+    switch (st)
+    {
+    case EigenGraspPlanner::EnergyContact:
+    {
+        ret=ENERGY_CONTACT;
+        break;
+    }
+    // ENERGY_CONTACT, ENERGY_POTENTIAL_QUALITY, ENERGY_CONTACT_QUALITY,
+    // ENERGY_AUTOGRASP_QUALITY, ENERGY_GUIDED_AUTOGRASP, ENERGY_STRICT_AUTOGRASP,
+    // ENERGY_COMPLIANT, ENERGY_DYNAMIC
+    default:
+    {
+        PRINTERROR("Unsupported search type");
+    }
+    }
+    return ret;
+}
+
+
+
+
+StateType getStateType(const EigenGraspPlanner::GraspItStateType& st)
+{
+    StateType ret;
+    switch (st)
+    {
+    case EigenGraspPlanner::AxisAngle:
+    {
+        ret=SPACE_AXIS_ANGLE;
+        break;
+    }
+/*    case SPACE_AXIS_ANGLE:
+    case SPACE_COMPLETE:
+    case SPACE_ELLIPSOID:
+    case SPACE_APPROACH:
+*/
+    default:
+    {
+        PRINTERROR("Unsupported search type");
+    }
+    }
+    return ret;
+}
+
+
+
+
 
 bool EigenGraspPlanner::initPlanner(const int maxPlanningSteps, const PlannerType& plannerType)
 {
@@ -622,11 +673,13 @@ bool EigenGraspPlanner::initPlanner(const int maxPlanningSteps, const PlannerTyp
         PRINTERROR("Consistency: Currently loaded object to grasp should be the same!");
         return false;
     }
+
     // mHand->getGrasp()->setGravity(true);
     mHand->getGrasp()->setGravity(false);
     GraspPlanningState graspPlanningState(mHand);
     graspPlanningState.setObject(mObject);
-    graspPlanningState.setPositionType(graspitStateType);
+    StateType _stateType=getStateType(graspitStateType);
+    graspPlanningState.setPositionType(_stateType);
     graspPlanningState.setRefTran(mObject->getTran());
     graspPlanningState.reset();
 
@@ -666,9 +719,10 @@ bool EigenGraspPlanner::initPlanner(const int maxPlanningSteps, const PlannerTyp
 
 
 
-void EigenGraspPlanner::initSearchType(GraspPlanningState& graspPlanningState, const StateType& st)
+void EigenGraspPlanner::initSearchType(GraspPlanningState& graspPlanningState, const GraspItStateType& st)
 {
-    graspPlanningState.setPositionType(st);
+    StateType _stateType=getStateType(st);
+    graspPlanningState.setPositionType(_stateType);
 
     GraspableBody * mObject = getCurrentGraspableBody();
     if (!mObject)
@@ -679,14 +733,15 @@ void EigenGraspPlanner::initSearchType(GraspPlanningState& graspPlanningState, c
 
     switch (st)
     {
-    case SPACE_AXIS_ANGLE:
+/*    case SPACE_AXIS_ANGLE:
     case SPACE_COMPLETE:
-    case SPACE_ELLIPSOID:
+    case SPACE_ELLIPSOID:*/
+    case AxisAngle:
     {
         graspPlanningState.setRefTran(mObject->getTran());
         break;
     }
-    case SPACE_APPROACH:
+/*    case SPACE_APPROACH:
     {
         Hand * mHand = getCurrentHand();
         if (!mHand)
@@ -696,7 +751,7 @@ void EigenGraspPlanner::initSearchType(GraspPlanningState& graspPlanningState, c
         }
         graspPlanningState.setRefTran(mHand->getTran());
         break;
-    }
+    }*/
     default:
     {
         PRINTERROR("Unsupported search type");
@@ -774,7 +829,8 @@ void EigenGraspPlanner::setPlanningParameters()
         return;
     }
 
-    graspitEgPlanner->setEnergyType(graspitSearchEnergyType);
+    SearchEnergyType _searchEnergyType = getSearchEnergyType(graspitSearchEnergyType);
+    graspitEgPlanner->setEnergyType(_searchEnergyType);
 
     // contact type
     if (useContacts)
@@ -789,7 +845,7 @@ void EigenGraspPlanner::setPlanningParameters()
     }
 
 
-    // if (mEnergyCalculator) mEnergyCalculator->setType(graspitSearchEnergyType);
+    // if (mEnergyCalculator) mEnergyCalculator->setType(_searchEnergyType);
 }
 
 

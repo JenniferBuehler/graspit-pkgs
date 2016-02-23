@@ -38,13 +38,20 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>graspit</build_depend>
+
+  <!-- this is required if not building graspit fork locally -->
+  <!--build_depend>graspit</build_depend-->
+
+
   <!-- depends only on eigen_conversion because it's available as ROS package,
      and searching for it with separate cmake module should not be necessary.
      CMakeLists.txt however also compiles without ROS dependencies if not
      built with catkin. -->
   <build_depend>eigen_conversions</build_depend>
-  <run_depend>graspit</run_depend>
+
+
+  <!-- this is required if not building graspit fork locally -->
+  <!--run_depend>graspit</run_depend-->
   <run_depend>eigen_conversions</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->

@@ -22,6 +22,7 @@
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/PrintHelpers.h>
 #include <grasp_planning_graspit/EigenGraspResult.h>
+#include <grasp_planning_graspit/GraspItHelpers.h>
 
 #include <string>
 #include <vector>

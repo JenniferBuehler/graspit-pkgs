@@ -24,7 +24,6 @@
 #endif
 
 #include <string>
-#include <QWidget>
 #include <grasp_planning_graspit/GraspItSceneManager.h>
 
 class SoIdleSensor;

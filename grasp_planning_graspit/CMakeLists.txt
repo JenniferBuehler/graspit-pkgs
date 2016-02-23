@@ -3,6 +3,18 @@ project(grasp_planning_graspit)
 
 set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
 
+# set this variable to true if you would like that cmake
+# downloads and builds the fork of GraspIt! which
+# is required for this package (https://github.com/JenniferBuehler/graspit).
+# If this is set to false, it will search for the package
+# GraspIt! using CMakeMacros/Findgraspit.cmake, for which you
+# may set the variable GRASPIT_PATH to the directory where
+# you installed the graspit fork.
+# IMPORTANT: If you set this to false and are compiling
+# with catkin, uncomment the <*_depend> tags relating to
+# graspit in package.xml!
+set (BUILD_GRASPIT true)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -18,14 +30,23 @@ find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
 # BUILDING_WITH_CATKIN if something like that exists?
 if (CATKIN_DEVEL_PREFIX)
     message("Building grasp_plannin_graspit with catkin.")
-    find_package(catkin REQUIRED COMPONENTS graspit eigen_conversions) 
+    find_package(catkin REQUIRED COMPONENTS eigen_conversions) 
+    if (NOT BUILD_GRASPIT)
+        find_package(catkin REQUIRED COMPONENTS graspit) 
+    endif (NOT BUILD_GRASPIT)
+    # include QT_USE_FILE is not necessary, because it is included via the catkin dependencies.
 else (CATKIN_DEVEL_PREFIX)
     message("Building grasp_plannin_graspit without catkin.")
 endif (CATKIN_DEVEL_PREFIX) 
 
-# if catkin is not used, we have to get the Qt dependencies separately
-if (NOT catkin_FOUND)
-    find_package (graspit REQUIRED)
+# if catkin is not used (or graspit built locally),
+# we have to get the Qt dependencies separately
+if (NOT catkin_FOUND OR BUILD_GRASPIT)
+
+    if (NOT BUILD_GRASPIT)
+        find_package (graspit REQUIRED)
+    endif (NOT BUILD_GRASPIT)
+
     find_package(Qhull REQUIRED)
     find_package(SoQt4 REQUIRED)
     find_package(LAPACK REQUIRED)
@@ -36,7 +57,17 @@ if (NOT catkin_FOUND)
 
     # include QT_USE_FILE is needed.
     include (${QT_USE_FILE})
-endif (NOT catkin_FOUND)
+
+endif (NOT catkin_FOUND OR BUILD_GRASPIT)
+
+
+set(GRASPIT_SYSTEM_LIBS
+   ${QT_LIBRARIES}
+   ${QT_QT3SUPPORT_LIBRARY}
+   ${QHULL_LIBRARIES}
+   ${SOQT_LIBRARY}
+   ${LAPACK_LIBRARIES}
+)
 
 
 # add a target to generate API documentation with Doxygen
@@ -51,16 +82,43 @@ if(DOXYGEN_FOUND)
     )
 endif(DOXYGEN_FOUND)
 
+# if the graspit fork should be build with this package,
+# do this now.
+if (BUILD_GRASPIT)
+    set (GLOBAL_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/graspit/install)
+    include(CMakeLists-external-graspit.txt)
+endif (BUILD_GRASPIT)
 
 
-# include QT_USE_FILE is not necessary, because it is included via the catkin dependencies.
 # Qt MOC files are needed ONLY because QT slots are used at the moment in EigenGraspPlanner.h
 # Qt include files should be covered by the implicit dependency of graspit libraries
 # if compiled with catkin
 set (MOC_HEADERS include/grasp_planning_graspit/EigenGraspPlanner.h) 
 QT4_WRAP_CPP(MOC_OUTFILES ${MOC_HEADERS})
+
      
 if (catkin_FOUND)
+    # INCLUDE_DIRS for catkin_package() command
+    set(CATKIN_INCLUDE_DIRS
+        include
+        ${QT_INCLUDES}
+    )    
+    
+    # CATKIN_DEPENDS for catkin_package() command
+    set (CATKIN_DEPEND_PKGS eigen_conversions)
+    if (NOT BUILD_GRASPIT)
+        set (CATKIN_DEPEND_PKGS ${CATKIN_DEPEND_PKGS} graspit)
+    endif (NOT BUILD_GRASPIT)
+
+    # DEPENDS for catkin_package() command
+    set(CATKIN_DEPENDS_LIBS ${Boost_LIBRARIES})
+    if (BUILD_GRASPIT)
+        set(CATKIN_DEPENDS_LIBS
+            ${CATKIN_DEPENDS_LIBS}
+            ${GRASPIT_SYSTEM_LIBS} 
+        )
+    endif (BUILD_GRASPIT)
+
     ###################################
     ## catkin specific configuration ##
     ###################################
@@ -71,10 +129,10 @@ if (catkin_FOUND)
     ## CATKIN_DEPENDS: catkin_packages dependent projects also need
     ## DEPENDS: system dependencies of this project that dependent projects also need
     catkin_package(
-      INCLUDE_DIRS include
-      LIBRARIES graspPlanningGraspit
-      CATKIN_DEPENDS graspit eigen_conversions 
-      DEPENDS ${Boost_LIBRARIES}
+      INCLUDE_DIRS ${CATKIN_INCLUDE_DIRS}
+      LIBRARIES grasp_planning_graspit
+      CATKIN_DEPENDS ${CATKIN_DEPEND_PKGS} 
+      DEPENDS ${CATKIN_DEPENDS_LIBS}
     )
 endif (catkin_FOUND)
 
@@ -83,19 +141,7 @@ endif (catkin_FOUND)
 ## Build ##
 ###########
 
-ADD_DEFINITIONS(
-    -std=c++11 
-    -g
-    -DGRASPITDBG 
-)
-
-# message ("++++++++++++++++++++++++++++++++++++++++")
-# message (${catkin_INCLUDE_DIRS})
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
-include_directories(
+set(ALL_INCLUDE_DIRECTORIES
   include
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
@@ -103,9 +149,12 @@ include_directories(
 )
 
 if (catkin_FOUND)
-    include_directories(${catkin_INCLUDE_DIRS})
-else (catkin_FOUND)
-    include_directories(
+    set(ALL_INCLUDE_DIRECTORIES ${ALL_INCLUDE_DIRECTORIES} ${catkin_INCLUDE_DIRS})
+endif (catkin_FOUND)
+
+if (NOT catkin_FOUND OR BUILD_GRASPIT)
+    set(ALL_INCLUDE_DIRECTORIES
+         ${ALL_INCLUDE_DIRECTORIES}
          ${GRASPIT_INCLUDE_DIRS}
          ${SOQT_INCLUDE_DIRS}
          ${QT_INCLUDES}
@@ -113,10 +162,22 @@ else (catkin_FOUND)
          ${QT_QT3SUPPORT_INCLUDE_DIR}
          ${QHULL_INCLUDE_DIRS}
     )
-endif (catkin_FOUND)
+endif (NOT catkin_FOUND OR BUILD_GRASPIT)
+
+ADD_DEFINITIONS(
+    -std=c++11 
+    -g
+    # -DGRASPITDBG
+)
+
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+# include_directories(include)
+include_directories(
+  ${ALL_INCLUDE_DIRECTORIES}
+)
 
 set (INCDIR include/${PROJECT_NAME})
-
 set(MAIN_HEADER_FILES
     ${INCDIR}/GraspItSceneManager.h
     ${INCDIR}/GraspItSceneManagerNoGui.h
@@ -126,7 +187,7 @@ set(MAIN_HEADER_FILES
     ${INCDIR}/EigenGraspPlanner.h
     ${INCDIR}/EigenGraspPlannerNoQt.h
     ${INCDIR}/EigenGraspResult.h
-    ${INCDIR}/GraspItHelpers.h
+    ${INCDIR}/GraspItTypes.h
     ${INCDIR}/SharedPtr.h
     ${INCDIR}/ThreadImpl.h
     ${INCDIR}/PrintHelpers.h
@@ -148,7 +209,7 @@ set(MAIN_SOURCE_FILES
 )
 
 ## Declare a C++ library
-add_library(graspPlanningGraspit SHARED
+add_library(grasp_planning_graspit SHARED
  ${MAIN_SOURCE_FILES} 
 )
 
@@ -156,58 +217,60 @@ add_library(graspPlanningGraspit SHARED
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 if (catkin_FOUND)
-    add_dependencies(graspPlanningGraspit ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+    add_dependencies(grasp_planning_graspit ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 endif (catkin_FOUND)
+
+if (BUILD_GRASPIT)
+    add_dependencies(grasp_planning_graspit graspit_ext graspit_static)
+endif (BUILD_GRASPIT)
 
 ## Declare C++ executables
 add_executable(grasp_planning src/grasp_planning.cpp)
-#add_executable(simple_planning_tutorial tutorial/src/simple_planning_tutorial.cpp)
 add_executable(simple_graspit_database test/simple_graspit_database.cpp)
+#add_executable(simple_planning_tutorial tutorial/src/simple_planning_tutorial.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 if (catkin_FOUND)
     add_dependencies(grasp_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#    add_dependencies(simple_planning_tutorial ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
     add_dependencies(simple_graspit_database ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#    add_dependencies(simple_planning_tutorial ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 endif (catkin_FOUND)
 
 # add depending libraries if they don't come with catkin dependencies already
-if (NOT catkin_FOUND)
+if (NOT catkin_FOUND OR BUILD_GRASPIT)
     set (DEPEND_LIBRARIES
-       ${QT_LIBRARIES}
-       ${QT_QT3SUPPORT_LIBRARY}
-       ${QHULL_LIBRARIES}
-       ${SOQT_LIBRARY}
-       ${LAPACK_LIBRARIES}
+       ${GRASPIT_SYSTEM_LIBS} 
        ${GRASPIT_LIBRARY}
     )
-else (NOT catkin_FOUND)
-    set (DEPEND_LIBRARIES ${catkin_LIBRARIES})
-endif (NOT catkin_FOUND)
+endif (NOT catkin_FOUND OR BUILD_GRASPIT)
+
+if (catkin_FOUND)
+    set (DEPEND_LIBRARIES ${catkin_LIBRARIES} ${DEPEND_LIBRARIES})
+endif (catkin_FOUND)
 
 ## Specify libraries to link a library or executable target against
 
-target_link_libraries(graspPlanningGraspit
+target_link_libraries(grasp_planning_graspit
   ${Boost_LIBRARIES}
   ${DEPEND_LIBRARIES}
 )
 
 target_link_libraries(grasp_planning
-  graspPlanningGraspit
+  grasp_planning_graspit
   ${Boost_LIBRARIES}
   ${DEPEND_LIBRARIES}
 )
 
 
 #target_link_libraries(simple_planning_tutorial
-#  graspPlanningGraspit
+#  grasp_planning_graspit
 #  ${Boost_LIBRARIES}
 #  ${DEPEND_LIBRARIES}
 #)
 
 target_link_libraries(simple_graspit_database
-  graspPlanningGraspit
+  grasp_planning_graspit
   ${Boost_LIBRARIES}
   ${DEPEND_LIBRARIES}
 )

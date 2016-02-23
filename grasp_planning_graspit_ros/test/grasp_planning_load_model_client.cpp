@@ -31,11 +31,13 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 
-#include <grasp_planning_graspit/GraspItHelpers.h>  // only needed for definition of EigenTransform
 #include <grasp_planning_graspit_ros/LogBindingROS.h>
 #include <grasp_planning_graspit_msgs/LoadDatabaseModel.h>
 
+#include <grasp_planning_graspit/GraspItTypes.h>
+
 #include <eigen_conversions/eigen_msg.h>
+
 
 /**
  * Helper method to print the trace in case of a SIG* event

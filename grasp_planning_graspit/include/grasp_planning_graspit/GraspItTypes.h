@@ -1,5 +1,5 @@
-#ifndef GRASP_PLANNING_GRASPIT_GRASPITHELPERS_H
-#define GRASP_PLANNING_GRASPIT_GRASPITHELPERS_H
+#ifndef GRASP_PLANNING_GRASPIT_GRASPITTYPES_H
+#define GRASP_PLANNING_GRASPIT_GRASPITTYPES_H
 /**
    Helper for graspit transforms.
 
@@ -20,26 +20,19 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-
-#include <matvec3D.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <grasp_planning_graspit/GraspItTypes.h>
 
 namespace GraspIt
 {
 
 /**
- * Converst a GraspIt transf object to an EigenTransform
+ * A 4x4 matrix as Eigen::Transform object
  */
-extern EigenTransform getEigenTransform(const transf& trans);
+typedef Eigen::Transform<double, 3, Eigen::Affine> EigenTransform;
 
 
-/**
- * Converst a EigenTransform object to a GraspIt transf object
- */
-extern transf getGraspitTransform(const EigenTransform& transform);
 
 };  // namespace GraspIt
 
-#endif  // GRASP_PLANNING_GRASPIT_GRASPITHELPERS_H
+#endif  // GRASP_PLANNING_GRASPIT_GRASPITTYPES_H

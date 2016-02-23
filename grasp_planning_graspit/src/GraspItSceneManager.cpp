@@ -23,6 +23,7 @@
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/PrintHelpers.h>
 #include <grasp_planning_graspit/GraspItAccessor.h>
+#include <grasp_planning_graspit/GraspItHelpers.h>
 
 #include <string>
 #include <vector>
