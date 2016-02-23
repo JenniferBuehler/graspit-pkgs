@@ -22,13 +22,18 @@ ExternalProject_Add(
 
     # unset CATKIN_DEVEL_PREFIX to enforce
     # undefining the variable and prevent building with catkin 
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GLOBAL_OUTPUT_PATH} -UCATKIN_DEVEL_PREFIX -DBUILD_STATIC_LIB:BOOL=true
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GLOBAL_OUTPUT_PATH} -UCATKIN_DEVEL_PREFIX -DBUILD_STATIC_LIB:BOOL=true -DBUILD_TESTS:BOOL=false
    
     BUILD_COMMAND make
     INSTALL_COMMAND make install 
     TEST_COMMAND ""
 )
 
+ExternalProject_Add_Step(
+  graspit_ext RenameBin
+  COMMAND ${CMAKE_COMMAND} -E rename ${GLOBAL_OUTPUT_PATH}/bin/graspit_simulator ${GLOBAL_OUTPUT_PATH}/bin/graspit_simulator_standalone
+  DEPENDEES install
+)
 
 set(GRASPIT_INCLUDE_DIRS 
     ${CMAKE_CURRENT_BINARY_DIR}/graspit/src/graspit
@@ -41,6 +46,8 @@ set(GRASPIT_INCLUDE_DIRS
 # library to use in target_link_libraries().
 #set(GRASPIT_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/graspit/src/graspit-build/${CMAKE_SHARED_LIBRARY_PREFIX}graspit${CMAKE_SHARED_LIBRARY_SUFFIX}")
 set(GRASPIT_LIBRARY "${GLOBAL_OUTPUT_PATH}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}graspit_static${CMAKE_STATIC_LIBRARY_SUFFIX}")
+
+set(GRASPIT_EXECUTABLE "${GLOBAL_OUTPUT_PATH}/bin/graspit_simulator")
 
 # import the configuration file (has problems with catkin, and is not really required)
 # include(${GLOBAL_OUTPUT_PATH}/lib/graspit-static-lib-targets.cmake)

@@ -13,7 +13,9 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
 # IMPORTANT: If you set this to false and are compiling
 # with catkin, uncomment the <*_depend> tags relating to
 # graspit in package.xml!
-set (BUILD_GRASPIT true)
+if (NOT BUILD_GRASPIT)
+    set (BUILD_GRASPIT true)
+endif (NOT BUILD_GRASPIT)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -322,7 +324,7 @@ endif (catkin_FOUND)
 
 
 ## Mark executables and/or libraries for installation
-install(TARGETS grasp_planning
+install(TARGETS grasp_planning_graspit
    ARCHIVE DESTINATION ${LIB_DESTINATION}
    LIBRARY DESTINATION ${LIB_DESTINATION}
    RUNTIME DESTINATION ${LIB_DESTINATION}
@@ -333,6 +335,14 @@ install(TARGETS grasp_planning
    LIBRARY DESTINATION ${BIN_DESTINATION}
    RUNTIME DESTINATION ${BIN_DESTINATION}
 )
+
+if (BUILD_GRASPIT)
+    install(FILES ${GRASPIT_EXECUTABLE} 
+       DESTINATION ${BIN_DESTINATION}
+    )
+endif (BUILD_GRASPIT)
+
+
 
 install(FILES
     ${MAIN_HEADER_FILES}
