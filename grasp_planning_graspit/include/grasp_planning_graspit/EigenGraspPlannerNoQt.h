@@ -49,9 +49,9 @@ namespace GraspIt
  * in the original graspit source on the world. It is an example implementation of how
  * access to the original graspit eigengrasp planner source without requiring direct
  * Qt dependencies from within this class, as is the case with class EigenGraspPlanner.
- * 
+ *
  * *Notes*:
- * - At this stage, only support for simmulated annealing planning types is offered. 
+ * - At this stage, only support for simmulated annealing planning types is offered.
  *      "Loop" and "multi-threaded" can probably be integrated fairly easy. So far, no
  *       support for "on-line" has been considered.
  * -  Moreover, only the state description type STATE_AXIS_ANGLE (GraspIt datatype StateType) has been tested, and only
@@ -66,7 +66,6 @@ namespace GraspIt
  */
 class EigenGraspPlannerNoQt: public GraspItAccessor
 {
-
 public:
     // So far, only AxisAngle supported, as others not tested yet.
     // Later: enum SearchType {Complete, AxisAngle, Ellipsoid, Approach};
@@ -136,7 +135,6 @@ protected:
     virtual void onSceneManagerShutdown();
 
 private:
-
     /**
      * initializes the planner to use the specified planning type. This method needs to be called before
      * the GraspIt planner is started.

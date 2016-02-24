@@ -202,7 +202,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const Joint_P
                                const Eigen::Vector3d& parentX, const Eigen::Vector3d& parentZ,
                                const Eigen::Vector3d parentPos, bool asRootJoint)
 {
-    ROS_INFO_STREAM("Transforming joint "<<joint->name<<" to DH parameters");
+    ROS_INFO_STREAM("Transforming joint " << joint->name << " to DH parameters");
 
     Link_Ptr childLink;
     this->robot.getLink(joint->child_link_name, childLink);

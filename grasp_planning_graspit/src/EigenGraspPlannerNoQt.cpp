@@ -39,7 +39,7 @@
 #include <EGPlanner/egPlanner.h>
 #include <EGPlanner/simAnn.h>
 #include <EGPlanner/simAnnPlanner.h>
-//#include <timeTest.h>
+// #include <timeTest.h>
 // #include <guidedPlanner.h>
 // #include <loopPlanner.h>
 #include <ivmgr_nogui.h>
@@ -72,7 +72,7 @@ EigenGraspPlannerNoQt::EigenGraspPlannerNoQt(const std::string& name, const SHAR
 EigenGraspPlannerNoQt::~EigenGraspPlannerNoQt()
 {
     PRINTMSG("EigenGrasp planner destructor");
-    
+
     removeFromIdleListeners();
 
     if (statusThread)
@@ -94,14 +94,15 @@ EigenGraspPlannerNoQt::~EigenGraspPlannerNoQt()
 }
 
 
-void EigenGraspPlannerNoQt::onSceneManagerShutdown(){
+void EigenGraspPlannerNoQt::onSceneManagerShutdown()
+{
     if (statusThread)
     {
         statusThread->detach();
         delete statusThread;
         statusThread = NULL;
     }
-    
+
     graspitEgPlannerMtx.lock();
     if (graspitEgPlanner)
     {
@@ -146,10 +147,11 @@ void EigenGraspPlannerNoQt::statusThreadLoop(EigenGraspPlannerNoQt * _this)
 
 
 bool EigenGraspPlannerNoQt::plan(const std::string& handName, const std::string& objectName,
-                             const EigenTransform * objectPose,
-                             const int maxPlanningSteps, const PlannerType& planType)
+                                 const EigenTransform * objectPose,
+                                 const int maxPlanningSteps, const PlannerType& planType)
 {
-    if (!getGraspItSceneManager()->isInitialized()) {
+    if (!getGraspItSceneManager()->isInitialized())
+    {
         PRINTERROR("Graspit scene manager not initialized. Cannot do planning.");
         return false;
     }
@@ -182,7 +184,8 @@ bool EigenGraspPlannerNoQt::plan(const std::string& handName, const std::string&
 
 bool EigenGraspPlannerNoQt::plan(const int maxPlanningSteps, const PlannerType& planType)
 {
-    if (!getGraspItSceneManager()->isInitialized()) {
+    if (!getGraspItSceneManager()->isInitialized())
+    {
         PRINTERROR("Graspit scene manager not initialized. Cannot do planning.");
         return false;
     }
@@ -383,7 +386,8 @@ bool EigenGraspPlannerNoQt::saveResultsAsWorldFiles(const std::string& inDirecto
         return false;
     }
 
-    if (!getGraspItSceneManager()->isInitialized()) {
+    if (!getGraspItSceneManager()->isInitialized())
+    {
         PRINTERROR("Graspit scene manager not initialized.");
         return false;
     }
@@ -464,7 +468,7 @@ void EigenGraspPlannerNoQt::getResults(std::vector<EigenGraspResult>& allGrasps)
                   ++k;
               }*/
         allGrasps.push_back(EigenGraspResult(relTransform, dofs, egVals,
-                s->isLegal(), s->getEpsilonQuality(), s->getVolume(), s->getEnergy()));
+                                             s->isLegal(), s->getEpsilonQuality(), s->getVolume(), s->getEnergy()));
     }
 }
 

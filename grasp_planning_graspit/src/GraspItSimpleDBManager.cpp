@@ -101,7 +101,7 @@ int GraspItSimpleDBManager::loadRobotToDatabase(const std::string& filename, con
 
 
 int GraspItSimpleDBManager::loadObjectToDatabase(const std::string& filename,
-    const std::string& objectName, const bool asGraspable)
+        const std::string& objectName, const bool asGraspable)
 {
     if (objectName.empty())
     {

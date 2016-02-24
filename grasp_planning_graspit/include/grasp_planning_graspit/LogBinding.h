@@ -64,21 +64,24 @@ public:
 
     static void printLn(const std::stringstream& str)
     {
-        if (sglOK(str.str().c_str())) {
+        if (sglOK(str.str().c_str()))
+        {
             Singleton->implPrint(str);
             Singleton->printNewLine(false);
         }
     }
     static void printErrorLn(const std::stringstream& str)
     {
-        if (sglOK(str.str().c_str())) {
+        if (sglOK(str.str().c_str()))
+        {
             Singleton->implPrintError(str);
             Singleton->printNewLine(false);
         }
     }
     static void printWarnLn(const std::stringstream& str)
     {
-        if (sglOK(str.str().c_str())) {
+        if (sglOK(str.str().c_str()))
+        {
             Singleton->implPrintWarn(str);
             Singleton->printNewLine(false);
         }
@@ -86,21 +89,24 @@ public:
 
     static void printLn(const char * str)
     {
-        if (sglOK(str)) {
+        if (sglOK(str))
+        {
             Singleton->implPrint(str);
             Singleton->printNewLine(false);
         }
     }
     static void printErrorLn(const char * str)
     {
-        if (sglOK(str)) {
+        if (sglOK(str))
+        {
             Singleton->implPrintError(str);
             Singleton->printNewLine(false);
         }
     }
     static void printWarnLn(const char * str)
     {
-        if (sglOK(str)) {
+        if (sglOK(str))
+        {
             Singleton->implPrintWarn(str);
             Singleton->printNewLine(false);
         }
@@ -124,18 +130,19 @@ protected:
     virtual void printNewLine(bool errorStream) = 0;
 
 private:
-
     /**
-     * If singleton is NULL, prints the message on std::cout and 
+     * If singleton is NULL, prints the message on std::cout and
      * only once prints a warning that Singleton is not inisialized.
      * If singleton is not NULL, this method just returns true.
      */
-    static bool sglOK(const char * msg){ 
+    static bool sglOK(const char * msg)
+    {
         if (Singleton.get()) return true;
 
-        if (!initSglWarningPrinted) {
+        if (!initSglWarningPrinted)
+        {
             std::cerr << "WARNING: Initialise Log Singleton to use the proper Logger. Now printing to std out." << std::endl;
-            initSglWarningPrinted=true;
+            initSglWarningPrinted = true;
         }
         std::cout << msg << std::endl;
         return false;
@@ -146,7 +153,7 @@ private:
 };
 
 /**
- * \brief Simple implementation of a log which just prints the logs on std::cout and std::cerr 
+ * \brief Simple implementation of a log which just prints the logs on std::cout and std::cerr
  * \author Jennifer Buehler
  * \date December 2015
  */

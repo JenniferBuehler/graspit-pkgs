@@ -37,7 +37,7 @@ namespace GraspIt
 /**
  * \brief Stores the values for a grasp.
  *
- * Grasp values consist of 
+ * Grasp values consist of
  * - the relative transform from the object to the hand
  * - the joint's DOF values (joint angles)
  * - the Eigengrasp value(s) for the grasp.

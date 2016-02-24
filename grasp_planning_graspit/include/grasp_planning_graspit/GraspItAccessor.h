@@ -36,7 +36,7 @@ class GraspItSceneManager;
 /**
  * \brief Interface which can access the %GraspIt world and run algorithms on it.
  *
- * This interface can be implemented in various ways by algorithms which want to access the GraspIt world. 
+ * This interface can be implemented in various ways by algorithms which want to access the GraspIt world.
  * The graspit world is managed by the GraspItSceneManager instance which objects of this class have a
  * reference to.
  *
@@ -44,35 +44,35 @@ class GraspItSceneManager;
  * - While there should only be one instance of a %GraspItSceneManager, there can be several %GraspItAccessor
  *     instances operating on the same %GraspItSceneManager and accessing the world.
  * - %GraspItAccessor subclasses have access to the %GraspItSceneManager instance via a getGraspItSceneManager().
- *    With this, they can access all its public functions. 
- * - Both classes are abstract base classes which cooperate as friend classes. Selected protected methods of 
- *     %GraspItSceneManager have been made accessible to subclasses of %GraspItAccessor 
+ *    With this, they can access all its public functions.
+ * - Both classes are abstract base classes which cooperate as friend classes. Selected protected methods of
+ *     %GraspItSceneManager have been made accessible to subclasses of %GraspItAccessor
  *     via some of the protected functions in this class.
- * - The reference to %GraspItSceneManager is kept locally as a shared pointer within this class. 
- *     If shared pointers are used properly, this ensures that %GraspItAccessor 
+ * - The reference to %GraspItSceneManager is kept locally as a shared pointer within this class.
+ *     If shared pointers are used properly, this ensures that %GraspItAccessor
  *     is always deleted *before* %GraspItSceneManager. So make sure that you keep another shared pointer of
  *     the %GraspItSceneManager elsewhere to ensure correct delete order.
  * - Subclasses can register themselves for updates by the main scene manager loop which is run in %GraspItSceneManager.
- *      The scene manager loop is run by its own thread. 
- *      To register the callback function idleEventFromSceneManager() to be called from the scene manager thread, 
+ *      The scene manager loop is run by its own thread.
+ *      To register the callback function idleEventFromSceneManager() to be called from the scene manager thread,
  *      the method addAsIdleListener() can be used. Please read more about this in the method documentation.
  *
  * Subclasses which want to make use of QT signals and slots, or any other mechanisms proivded by QObject and the Qt metaobject system,
- * will have to additionally derive from QObject, and the MOC files have to be generated for it. This will only work for 
+ * will have to additionally derive from QObject, and the MOC files have to be generated for it. This will only work for
  * GraspItSceneManager implementations where the event loop is run by the same thread which also runs the SoQt main loop.
- * You can check this with eventThreadRunsQt(). 
- * 
+ * You can check this with eventThreadRunsQt().
+ *
  * *Important Note:*
- * 
- * If addAsIdleListener() is ever called, the subclasses *themselves* **must** call the method 
+ *
+ * If addAsIdleListener() is ever called, the subclasses *themselves* **must** call the method
  * removeFromIdleListeners() from within their own destructors in order to ensure any remaining registration is removed.
  * Otherwise, GraspItSceneManager (which is to be destroyed *after* all GraspItAccessor instances) may still try to call
- * idleEventFromSceneManager() of an object which is still registered but has already been destroyed. 
- * 
+ * idleEventFromSceneManager() of an object which is still registered but has already been destroyed.
+ *
  * *Question*: Why can removeFromIdleListeners() not be called from within this base class destructor, and must
- * be called from within the subclasses' destructors? 
+ * be called from within the subclasses' destructors?
  * *Answer*: The GraspItAccessor subclass destructor is called  *before* the GraspItAccessor destructor. So if the
- * GraspItAccessor superclass itself would take care of calling removeFromIdleListeners(), 
+ * GraspItAccessor superclass itself would take care of calling removeFromIdleListeners(),
  * access could still be happening on the already deleted subclass, which can lead to segfaults or calls of pure virtual methods.
  *
  *
@@ -98,17 +98,17 @@ protected:
     /**
      * This method will be called from within the scene manager thread in its next
      * loop, **if** the method addAsIdleListener() was called for this instance **and**
-     * isScheduledForIdleEvent() returns true. 
+     * isScheduledForIdleEvent() returns true.
      *
      * To trigger repeated calls of this function in each loop of the scene manager
      * event loop, call scheduleForIdleEventUpdate() from within this function.
      *
      * IMPORTANT: To not slow down the whole system this method should be kept very efficient!
      * Any more complex operations should be done in other threads.
-     * 
+     *
      * TIPP: While Qt is still used in GraspItSceneManager, this method will be called
-     * from the thread which also runs the Inventor stuff. So it is also possible to use 
-     * this method only once (without re-scheduling with scheduleForIdleEventUpdate()) 
+     * from the thread which also runs the Inventor stuff. So it is also possible to use
+     * this method only once (without re-scheduling with scheduleForIdleEventUpdate())
      * to create a SoIdleSensor object, which will then also be run from within the
      * inventor thread.
      */
@@ -123,25 +123,25 @@ protected:
 
 
     /**
-     * Subscribes this instance to updates from within the scene manager event loop. 
-     * The loop is run by the scene manager thread. 
+     * Subscribes this instance to updates from within the scene manager event loop.
+     * The loop is run by the scene manager thread.
      * The "idle event" happens at regular intervals, so it's happening repeatedly.
-     * This is the event which this method subscribes to. 
+     * This is the event which this method subscribes to.
      *
-     * Once subscribed, the method GraspItAccessor::idleEventFromSceneManager() will be called 
+     * Once subscribed, the method GraspItAccessor::idleEventFromSceneManager() will be called
      * from the scene manager thread *if* the method GraspItAccessor::isScheduledForIdleEvent() returns
      * true. This will be the case each time after GraspItAccessor::scheduleForIdleEventUpdate()
-     * is called. 
+     * is called.
      *
-     * **Hint:** While Qt is being used, it may be important for instances of type GraspItAccessor 
-     * to get access to the scene manager thread, which is also the thread which runs the 
-     * main SoQt loop. This thread must be used to create selected Qt objects, connect 
+     * **Hint:** While Qt is being used, it may be important for instances of type GraspItAccessor
+     * to get access to the scene manager thread, which is also the thread which runs the
+     * main SoQt loop. This thread must be used to create selected Qt objects, connect
      * signals/slots, etc. Registering the GraspItAccessor instance as "idle listener" is
-     * one possiblity to achieve this. Use the method eventThreadRunsQt() to check whether 
+     * one possiblity to achieve this. Use the method eventThreadRunsQt() to check whether
      * the event thread also is running Qt.
      */
     bool addAsIdleListener();
-    
+
     /**
      * Removes this object from the listeners again (undoing addAsIdleListener()).
      */
@@ -156,12 +156,12 @@ protected:
      */
     void scheduleForIdleEventUpdate();
 
-    /** 
+    /**
      * Marks this instance as "not scheduled" for an update through idleEventFromSceneManager().
      */
     void unschedule();
 
-    /** 
+    /**
      * Checks if this instance is "scheduled" for an update through idleEventFromSceneManager().
      */
     bool isScheduledForIdleEvent() const;
@@ -173,7 +173,7 @@ protected:
      * no guarantees are given yet.
      */
     const SHARED_PTR<GraspItSceneManager>& getGraspItSceneManager();
-    
+
     const SHARED_PTR<const GraspItSceneManager> readGraspItSceneManager() const;
 
     /**
@@ -185,12 +185,12 @@ protected:
      * Calls protected GraspItSceneManager::tryLockWorld()
      */
     bool tryLockWorld();
-    
+
     /**
      * Calls protected GraspItSceneManager::lockWorld()
      */
     void lockWorld();
-    
+
     /**
      * Calls protected GraspItSceneManager::unlockWorld()
      */
@@ -206,59 +206,59 @@ protected:
      */
     Hand * getCurrentHand();
 
-    /** 
-     * Calls  protected GraspItSceneManager::readCurrentHand()  
+    /**
+     * Calls  protected GraspItSceneManager::readCurrentHand()
      */
     const Hand * readCurrentHand() const;
-    
+
     /**
-	 * Calls  protected GraspItSceneManager::getCurrentGraspableBody()  
-	 */
+     * Calls  protected GraspItSceneManager::getCurrentGraspableBody()
+     */
     GraspableBody * getCurrentGraspableBody();
 
     /**
-	 * Calls  protected GraspItSceneManager::readCurrentGraspableBody()  
-	 */
+     * Calls  protected GraspItSceneManager::readCurrentGraspableBody()
+     */
     const GraspableBody * readCurrentGraspableBody() const;
 
     /**
-	 * Calls  protected GraspItSceneManager::getRobot(const std::string&)  
-	 */
+     * Calls  protected GraspItSceneManager::getRobot(const std::string&)
+     */
     Robot * getRobot(const std::string& name);
 
     /**
-	 * Calls  protected GraspItSceneManager::getRobot(const unsigned int)  
-	 */
+     * Calls  protected GraspItSceneManager::getRobot(const unsigned int)
+     */
     Robot * getRobot(const unsigned int i);
 
     /**
-	 * Calls  protected GraspItSceneManager::getGraspableBody(const std::string&)  
-	 */
+     * Calls  protected GraspItSceneManager::getGraspableBody(const std::string&)
+     */
     GraspableBody * getGraspableBody(const std::string& name);
 
     /**
-	 * Calls  protected GraspItSceneManager::getGraspableBody(const unsigned int) 
-	 */
+     * Calls  protected GraspItSceneManager::getGraspableBody(const unsigned int)
+     */
     GraspableBody * getGraspableBody(const unsigned int i);
 
     /**
-	 * Calls  protected GraspItSceneManager::getBody(const std::string&)  
-	 */
+     * Calls  protected GraspItSceneManager::getBody(const std::string&)
+     */
     Body * getBody(const std::string& name);
 
     /**
-	 * Calls  protected GraspItSceneManager::getBody(const unsigned int)  
-	 */
+     * Calls  protected GraspItSceneManager::getBody(const unsigned int)
+     */
     Body * getBody(const unsigned int i);
 
     /**
-	 * Calls  protected GraspItSceneManager::isRobotLoaded(const Robot*)  
-	 */
+     * Calls  protected GraspItSceneManager::isRobotLoaded(const Robot*)
+     */
     bool isRobotLoaded(const Robot * robot) const;
 
     /**
-	 * Calls  protected GraspItSceneManager::isObjectLoaded(const Body*)  
-	 */
+     * Calls  protected GraspItSceneManager::isObjectLoaded(const Body*)
+     */
     bool isObjectLoaded(const Body * object) const;
 
     /**
@@ -271,18 +271,18 @@ protected:
     bool removeElement(WorldElement* elem, const bool deleteInstance);
 
     /**
-	 * Calls  protected GraspItSceneManager::addRobot(Robot*, const EigenTransform&)  
-	 */
+     * Calls  protected GraspItSceneManager::addRobot(Robot*, const EigenTransform&)
+     */
     int addRobot(Robot* robot, const EigenTransform& worldTransform);
 
     /**
-	 * Calls  protected GraspItSceneManager::addBody(Body*, const EigenTransform&)  
-	 */
+     * Calls  protected GraspItSceneManager::addBody(Body*, const EigenTransform&)
+     */
     int addBody(Body* body, const EigenTransform& worldTransform);
 
     /**
-	 * Calls  protected GraspItSceneManager::getCameraParameters()  
-	 */
+     * Calls  protected GraspItSceneManager::getCameraParameters()
+     */
     void getCameraParameters(Eigen::Vector3d & camPos, Eigen::Quaterniond& camQuat, double & fd) const;
 
 private:
@@ -290,7 +290,7 @@ private:
      * should never be used to stay safe. Subclasses should declare their copy constructor private.
      */
     GraspItAccessor(const GraspItAccessor& o) {}
-    
+
     /**
      * should never be used to stay safe. Subclasses should declare their default constructor private.
      */

@@ -57,23 +57,23 @@ class GraspItAccessor;
  * This class manages access to the graspit world object and operations which can be performed on it.
  * It also runs an event loop, which may be implemented in various ways in subclasses. In some
  * implementations, this thread may have a special meaning, e.g. when it is also the thread which runs
- * a SoQt main loop. This thread may be required to do operations use elsewhere. 
+ * a SoQt main loop. This thread may be required to do operations use elsewhere.
  * Instances of class GraspItAccessor may get access to the thread which runs this event loop
  * via GraspItAccessor::addAsIdleListener().
  *
  * There should only be once instance of GraspItSceneManager for each GraspIt! world. Access to this world and
- * running of other GraspIt algorithms should be handled by GraspItAccessor instances. 
+ * running of other GraspIt algorithms should be handled by GraspItAccessor instances.
  * There can be several GraspItAccessor objects operating on the same graspit world.
  *
  * GraspItSceneManager and GraspItAccessor work closely together as friends, therefore some of the protected
- * methods in this class have also been made available for GraspItAccessor subclasses. 
+ * methods in this class have also been made available for GraspItAccessor subclasses.
  *
  * GraspItSceneManager can be extended in various ways by subclasses which access individual parts of
  * the original GraspIt! code.
  * However it is recommended to have a look at the class GraspItAccessor to see if access to the GraspIt!
  * world is enough for the implementation. To keep things modular, this class should only be re-implemented in
  * subclasses if access via GraspItAccessor is not sufficient.
- * GraspItSceneManager basically only should handle the main scene manager loop and manage the world, 
+ * GraspItSceneManager basically only should handle the main scene manager loop and manage the world,
  * similar to how IVmgr in the original GraspIt! source does.
  *
  * Before a GraspItSceneManager instance can be used, it has to be initialized by calling initialize().
@@ -86,7 +86,7 @@ class GraspItAccessor;
  * Worlds, robots and objects/obstacles can only be loaded from files. This is because from within the XML files, other
  * XML files are referenced (e.g. contact files, robot/object files, etc.). Moreover, the current graspit source is laid
  * out for loading from files (or specific database access only). The current source only allows bodies (objects/obstacles)
- * to be specified as XML within a world file (without referencing another file). 
+ * to be specified as XML within a world file (without referencing another file).
  * Loading robots and contact files still requires actual files to be present. Threrefore, at the current stage, rather
  * than providing *load-from-xmlstring* methods, it is easier to create a temporary folder with all XML files and then
  * call the load* methods of this class with the filenames.
@@ -111,7 +111,7 @@ public:
      * constructors, instead of from the base class destructor, otherwise it causes
      * calls to pure virutal methods.
      *
-     * It is always safe for the user to call this function in any case as a 
+     * It is always safe for the user to call this function in any case as a
      * precaution. There is no harm in calling it several times.
      * *Info:* This method calls the protected virtual initializeIVmgr().
      */
@@ -128,8 +128,8 @@ public:
      * subclasses destructors. It is necessary to call it from the subclasses
      * destructors, instead of from the base class destructor, otherwise it causes
      * calls to pure virutal methods.
-     * 
-     * It is always safe for the user to call this function in any case as a 
+     *
+     * It is always safe for the user to call this function in any case as a
      * precaution. There is no harm in calling it several times.
      * *Info:* This method calls the protected virtual destroyIVmgr().
      */
@@ -142,15 +142,15 @@ public:
     bool isInitialized() const;
 
     /**
-     * Returns true if interface has finished initialziing (which may happen in 
+     * Returns true if interface has finished initialziing (which may happen in
      * a separate thread initiated in constructor) and the interface is ready to use
      */
-    virtual bool isReady() const=0;
-   
+    virtual bool isReady() const = 0;
+
     /**
      * Waits until isReady() returns true
      */
-    virtual void waitUntilReady() const=0;
+    virtual void waitUntilReady() const = 0;
 
     /**
      * Loads graspitWorld from an XML file.
@@ -306,16 +306,15 @@ public:
     bool isObjectLoaded(const std::string& name) const;
 
 protected:
-    
     /**
-     * This method is supposed to initialize the IVmgr instance (field ivMgr). 
+     * This method is supposed to initialize the IVmgr instance (field ivMgr).
      * If any other threads are started by this function which
      * need to complete initialization routines, this method has to block until all initialization
      * is finished and the IVmgr instance is fully initialized.
      * This method is expected to also create a scene manager event loop thread which regularly
      * should call processIdleEvent() (each time after scheduleIdleEvent() has been called).
      */
-    virtual void initializeIVmgr()=0;
+    virtual void initializeIVmgr() = 0;
 
     /**
      * Stops the scene manager thread, the event loop,
@@ -323,24 +322,24 @@ protected:
      * (basically reverting what was initialized in initializeIVmgr()).
      * Also is expected to destroy the ivMgr object and sets it to NULL.
      */
-    virtual void destroyIVmgr()=0;
+    virtual void destroyIVmgr() = 0;
 
     /**
      * Creates the graspit world object. In case the world needs special initializing, the
      * implementation is left to the subclasses. The IVmgr (field ivMgr) should be used
-     * to create a new world. 
+     * to create a new world.
      * \return pointer to the World object maintained by IVmgr (field ivMgr).
      */
-    virtual World * createGraspitWorld()=0;
+    virtual World * createGraspitWorld() = 0;
 
     /**
      * Subclasses which support Qt and which use the
      * same thread which runs the SoQt loop for the event loop
-     * as well, should return true here. This can be used 
+     * as well, should return true here. This can be used
      * by GraspItAccessor classes to ensure that Qt is supported
      * in the event thread.
      */
-    virtual bool eventThreadRunsQt() const 
+    virtual bool eventThreadRunsQt() const
     {
         return false;
     }
@@ -364,12 +363,12 @@ protected:
     bool isObjectLoaded(const Body * body) const;
 
     /**
-     * Returns the number of graspable bodies loaded. 
+     * Returns the number of graspable bodies loaded.
      */
     unsigned int getNumGraspableBodies() const;
 
     /**
-     * Returns the number of robots loaded. 
+     * Returns the number of robots loaded.
      */
     unsigned int getNumRobots() const;
 
@@ -629,12 +628,12 @@ protected:
      * Schedules a new "Idle Event" which will be called in the next iteration of the scene manager thread.
      *
      * This method is protected so that only subclasses and friend classes (specifically GraspItAccessor) have access to it.
-     * GraspItAccessor::scheduleUpdateFromEventLoop() provides the main method for subclasses 
+     * GraspItAccessor::scheduleUpdateFromEventLoop() provides the main method for subclasses
      * to use for calling this function.
      *
      * \retval false scene manager thread is not initialized yet.
      */
-    virtual bool scheduleIdleEvent()=0;
+    virtual bool scheduleIdleEvent() = 0;
 
 
 private:
@@ -719,16 +718,16 @@ private:
 
 
     /**
-     * Registers a GraspItAccessor class to subscribe to updates from within the scene manager event loop. 
+     * Registers a GraspItAccessor class to subscribe to updates from within the scene manager event loop.
      * The "idle event" happens at each iteration of the scene manager event loop.
-     * This loop is run by the scene manager thread. 
+     * This loop is run by the scene manager thread.
      *
      * While Qt is being used, the scene manager thread is also the one which runs the Inventor/Qt stuff.
      * It may be important for instances of type GraspItAccessor to get access
      * to this thread, so that selected Qt objects can be created, signals/slots connected, etc.
      *
      * The method GraspItAccessor::idleEventFromSceneManager() will be called from the scene manager thread
-     * IF the method GraspItAccessor::isScheduledForUpdate() returns true. This happens every time after 
+     * IF the method GraspItAccessor::isScheduledForUpdate() returns true. This happens every time after
      * scheduleIdleUpdate() has been called.
      *
      * It would be nice to use shared pointers here to avoid the object being notified after it has been
@@ -742,11 +741,11 @@ private:
     bool addIdleListener(GraspItAccessor* s);
 
     /**
-     * Goes through the list of GraspItAccessors which were added with addIdleListener(GraspItAccessor*) 
+     * Goes through the list of GraspItAccessors which were added with addIdleListener(GraspItAccessor*)
      * and removes the one with the same name.
      *
      * This method is private so that only friend classes (specifically GraspItAccessor) have access to it.
-     * GraspItAccessor::removeFromIdleListeners() provides the main method for subclasses to use for 
+     * GraspItAccessor::removeFromIdleListeners() provides the main method for subclasses to use for
      * calling this function.
      *
      * \return false if the GraspItAccessor object was not registered, otherwise true.
@@ -754,7 +753,7 @@ private:
     bool removeIdleListener(GraspItAccessor* s);
 
 
-protected: 
+protected:
     // internally needed object for the inventor stuff.
     IVmgrAbstract * ivMgr;
 
@@ -764,7 +763,6 @@ protected:
     mutable RECURSIVE_MUTEX graspitWorldMtx;
 
 private:
-
     std::map<std::string, GraspItAccessor*> registeredAccessors;
     MUTEX registeredAccessorsMtx;
 
@@ -798,8 +796,6 @@ private:
      * is destroyed.
      */
     QObject *fakeQObjectParent;
-
 };
-
 }  // namespace GraspIt
 #endif  //  GRASP_PLANNING_GRASPIT_GRASPITSCENEMANAGER_H

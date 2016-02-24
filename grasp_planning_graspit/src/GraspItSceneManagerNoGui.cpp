@@ -79,7 +79,8 @@ void GraspItSceneManagerNoGui::destroyIVmgr()
     if (ivMgr)
     {
         IVmgrNoGui * _ivMgr = dynamic_cast<IVmgrNoGui*>(ivMgr);
-        if (!_ivMgr){
+        if (!_ivMgr)
+        {
             throw std::string("Inconsistency:: ivMgr should be of class IVmgrNoGui!");
         }
         _ivMgr->exitMainLoop();
@@ -105,12 +106,14 @@ void GraspItSceneManagerNoGui::destroyIVmgr()
 
 World * GraspItSceneManagerNoGui::createGraspitWorld()
 {
-    if (!ivMgr) {
+    if (!ivMgr)
+    {
         throw std::string("Cannot initialize world without ivMgr begin intialized");
     }
 
     IVmgrNoGui * _ivMgr = dynamic_cast<IVmgrNoGui*>(ivMgr);
-    if (!_ivMgr){
+    if (!_ivMgr)
+    {
         throw std::string("Inconsistency:: ivMgr should be of class IVmgrNoGui!");
     }
 
@@ -136,9 +139,9 @@ void GraspItSceneManagerNoGui::ivThreadLoop(GraspItSceneManagerNoGui * _this)
 
     // begin the main loop of inventor
     ivMgrNoGui->beginMainLoop();
-    
+
     _this->deleteIdleSensor();
-    
+
     _this->setInventorReady(false);
 
     PRINTMSG("Exit INVENTOR thread loop");
@@ -199,16 +202,17 @@ void GraspItSceneManagerNoGui::createIdleSensor()
 void GraspItSceneManagerNoGui::sensorCB(void *data, SoSensor *)
 {
     // PRINTMSG(" ### sensorCB ###");
-    GraspItSceneManagerNoGui* _this = dynamic_cast<GraspItSceneManagerNoGui*>((GraspItSceneManagerNoGui*)data);
+    GraspItSceneManagerNoGui* _this = dynamic_cast<GraspItSceneManagerNoGui*>(static_cast<GraspItSceneManagerNoGui*>(data));
     if (!_this)
     {
         PRINTERROR("Could not cast GraspItSceneManagerNoGui");
         return;
     }
-   
+
     // Inventor obviously is ready, because otherwise this callback would not have been called.
-    // use this here to trigger first initialization of the ivReady variable. 
-    if (!_this->isInventorReady() ) {
+    // use this here to trigger first initialization of the ivReady variable.
+    if (!_this->isInventorReady())
+    {
         _this->setInventorReady(true);
     }
 

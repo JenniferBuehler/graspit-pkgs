@@ -23,19 +23,22 @@
 #include <grasp_planning_graspit/GraspItSceneManagerNoGui.h>
 #include <grasp_planning_graspit/EigenGraspPlanner.h>
 #include <grasp_planning_graspit/EigenGraspResult.h>
+#include <string>
+#include <vector>
 
 /**
  * \brief Tutorial on how to load a world and run the Eigengrasp planner.
  */
 int main(int argc, char **argv)
 {
-    if (argc < 3) {
-        std::cerr<<"Usage: "<<argv[0]<<" <world-filename> <output-directory>"<<std::endl;
+    if (argc < 3)
+    {
+        std::cerr << "Usage: " << argv[0] << " <world-filename> <output-directory>" << std::endl;
         return 1;
     }
 
-    std::string worldFilename=argv[1];
-    std::string outputDirectory=argv[2];
+    std::string worldFilename = argv[1];
+    std::string outputDirectory = argv[2];
 
     if (worldFilename.empty())
     {
@@ -49,7 +52,7 @@ int main(int argc, char **argv)
 
     // Load the graspit world
     graspitMgr->loadWorld(worldFilename);
-    
+
     // if the output directory does not exist yet, create it?
     bool createDir = true;
 
@@ -58,18 +61,18 @@ int main(int argc, char **argv)
     graspitMgr->saveInventorWorld(outputDirectory + "/worlds/startWorld.iv", createDir);
 
     // Create the planner which accesses the graspit world.
-    std::string name = "EigenGraspPlanner1";  
+    std::string name = "EigenGraspPlanner1";
     SHARED_PTR<GraspIt::EigenGraspPlanner> planner(new GraspIt::EigenGraspPlanner(name, graspitMgr));
 
     // Number of iterations for the planning algorithm
     int maxPlanningSteps = 70000;
-    // Number of times to repeat the planning process    
+    // Number of times to repeat the planning process
     int repeatPlanning = 1;
- 
+
     // By default, the last robot loaded and the last object loaded are to be used as the hand and the
     // object to grasp for the planning process. You can use the other EigenGraspPlanner::plan()
     // method with more parameters to change this.
-    if (!planner->plan(maxPlanningSteps,repeatPlanning))
+    if (!planner->plan(maxPlanningSteps, repeatPlanning))
     {
         std::cerr << "Error doing the planning." << std::endl;
         return 1;
@@ -85,7 +88,7 @@ int main(int argc, char **argv)
     bool saveInventor = true;
     // specify to save as graspit world files:
     bool saveGraspit = true;
-    
+
 
     // Now, save the results.
     planner->saveResultsAsWorldFiles(resultsWorldDirectory, filenamePrefix, saveGraspit, saveInventor, createDir);
@@ -101,6 +104,6 @@ int main(int argc, char **argv)
     {
         std::cout << *it << std::endl;;
     }
-    
+
     return 0;
 }

@@ -47,7 +47,7 @@ using GraspIt::EigenGraspPlanner;
 #define DEFAULT_SAVE_WORLD_TOPIC "graspit_save_world"
 #define DEFAULT_EGPLANNING_TOPIC "graspit_eg_planning"
 #define DEFAULT_MAX_EGPLANNING_STEPS 70000
-#define DEFAULT_NUM_REPEAT_PLANNING 1 
+#define DEFAULT_NUM_REPEAT_PLANNING 1
 #define DEFAULT_OUTPUT_DIRECTORY ""
 #define DEFAULT_SAVE_RESULT_FILES false
 #define DEFAULT_NEGATE_JOINT_DOFS true
@@ -378,7 +378,7 @@ bool GraspItServices::acceptEGPlanning(manipulation_msgs::GraspPlanning::Request
         std::stringstream filenamePrefix;
         filenamePrefix << robotName << "_" << objectName;
         egPlanner->saveResultsAsWorldFiles(resultsOutputDirectory, filenamePrefix.str(),
-                                       saveResultFilesGraspit, saveResultFilesInventor);
+                                           saveResultFilesGraspit, saveResultFilesInventor);
     }
 
     std::vector<GraspIt::EigenGraspResult> allGrasps;

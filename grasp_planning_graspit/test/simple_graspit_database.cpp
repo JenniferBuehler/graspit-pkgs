@@ -123,10 +123,10 @@ int run(int argc, char **argv)
     PRINTMSG("Saving world files");
 
     // test to see if it worked: save as world
-    bool createDir=true;  // if true, the directory will be created, if it doesn't exist.
+    bool createDir = true;  // if true, the directory will be created, if it doesn't exist.
     graspitMgr->saveGraspItWorld(outputDirectory + "/dbtest/world.xml", createDir);
     graspitMgr->saveInventorWorld(outputDirectory + "/dbtest/world.iv", createDir);
-    
+
     PRINTMSG("Quitting program.");
     return 0;
 }

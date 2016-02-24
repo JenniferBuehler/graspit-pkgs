@@ -26,7 +26,6 @@
 #include <grasp_planning_graspit/EigenGraspResult.h>
 #include <grasp_planning_graspit/GraspItAccessor.h>
 
-//#include <EGPlanner/search.h>
 #include <vector>
 #include <string>
 
@@ -39,7 +38,7 @@
 // If this is defined, the implementation uses its own local
 // SoIdleSensor to repeatedly call ivIdleCallback(). If
 // this is not defined, the GraspItSceneManager event loop
-// callback is used to call ivIdleCallback(). 
+// callback is used to call ivIdleCallback().
 // #define USE_SEPARATE_SOSENSOR
 
 class GraspPlanningState;
@@ -57,18 +56,18 @@ namespace GraspIt
  *
  * This class extends the GraspItAccessor class to run the Eigengrasp planning algorithms
  * in the original graspit source on the world.
- * 
+ *
  * In the current implementation, Qt is required for running the Eigengrasp planner.
  * GraspItSceneManager::eventThreadRunsQt() needs to return true for the GraspItSceneManager
  * passed into the constructor of this class. For an example on how to implement this class
  * without direct Qt dependencies, check out EigenGraspPlannerNoQt.
- *  
+ *
  * *Notes*: See also [git issue #1](https://github.com/JenniferBuehler/graspit-pkgs/issues/1) for restrictions of this class.
  *
  * *Important note for developers*: This class should not be derived further in its current implementation.
  * This is because it uses an SoIdleSensor locally which it destroys in the destructor. This needs to be destroyed *before*
  * the mandatory call of removeFromIdleListeners() in all subclasses destructors.
- * Support for further extension is easy to achieve (by not using the local SoIdleSensor or adding a new method 
+ * Support for further extension is easy to achieve (by not using the local SoIdleSensor or adding a new method
  * shutdownEigenGraspPlanner() or similar), but it has not been considered at this stage yet.
  *
  * \author Jennifer Buehler
@@ -82,7 +81,7 @@ public:
     // So far, only AxisAngle supported, as others not tested yet.
     // Later will be: enum  GraspItStateType{Complete, AxisAngle, Ellipsoid, Approach};
     enum GraspItStateType  {AxisAngle};
-    
+
     // Will laster be 1:1 mapping from original GraspIt! SearchEnergyType, now only
     // supports ENERGY_CONTACT. All later types:
     // ENERGY_CONTACT, ENERGY_POTENTIAL_QUALITY, ENERGY_CONTACT_QUALITY,
@@ -98,7 +97,7 @@ public:
 
     /**
      * Creates and initializes the planner. Also registers the class to enable updates
-     * from the scene manager thread by calling addAsSchedulable(). If 
+     * from the scene manager thread by calling addAsSchedulable(). If
      * eventThreadRunsQt() returns false, an exception is thrown, because this implementation
      * requires updates from the main Qt loop.
      */
@@ -115,8 +114,8 @@ public:
      *                       results.
      * \return false if planner could not be initialized or if it failed.
      */
-    bool plan(const int maxPlanningSteps, // = DEFAULT_MAX_PLANNING_STEPS, 
-              const int repeatPlanning,  // = 1
+    bool plan(const int maxPlanningSteps,  // = DEFAULT_MAX_PLANNING_STEPS,
+              const int repeatPlanning,   // = 1
               const PlannerType& planType = SimAnn);
 
     /**
@@ -141,8 +140,8 @@ public:
      */
     bool plan(const std::string& handName, const std::string& objectName,
               const EigenTransform * objectPose,
-              const int maxPlanningSteps, // = DEFAULT_MAX_PLANNING_STEPS, 
-              const int repeatPlanning,  // = 1
+              const int maxPlanningSteps,  // = DEFAULT_MAX_PLANNING_STEPS,
+              const int repeatPlanning,   // = 1
               const PlannerType& planType = SimAnn);
 
     /**
@@ -170,7 +169,6 @@ protected:
     virtual void onSceneManagerShutdown();
 
 private:
-
     /**
      * Method which will be called at regular intervals from the thread which is also
      * running the SoQt loop.

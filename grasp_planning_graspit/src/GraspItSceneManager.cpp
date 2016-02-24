@@ -95,8 +95,9 @@ GraspItSceneManager::GraspItSceneManager():
 GraspItSceneManager::~GraspItSceneManager()
 {
     PRINTMSG("GraspItSceneManager destructor");
-    
-    if (ivMgr) {
+
+    if (ivMgr)
+    {
         PRINTERROR("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
         throw std::string("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
     }
@@ -106,46 +107,47 @@ GraspItSceneManager::~GraspItSceneManager()
         delete fakeQObjectParent;
         fakeQObjectParent = NULL;
     }
-
 }
 
 void GraspItSceneManager::initialize()
 {
-    if (initialized) {
+    if (initialized)
+    {
         PRINTMSG("GraspItSceneManager already initialized.");
         return;
     }
 
     initializeIVmgr();
-    if (!ivMgr) {
+    if (!ivMgr)
+    {
         throw std::string("Cannot initialize world without ivMgr begin intialized");
     }
-    
-    //XXX what to do with this!!! 
+
     fakeQObjectParent = new QObject();
-    
+
     UNIQUE_RECURSIVE_LOCK lock(graspitWorldMtx);
     graspitWorld = createGraspitWorld();
-    if (!graspitWorld) {
+    if (!graspitWorld)
+    {
         PRINTERROR("Graspit world was initialized to NULL");
         throw std::string("Graspit world was initialized to NULL");
     }
 
     waitUntilReady();
- 
+
     PRINTMSG("Initialized GraspItSceneManager.");
-    
-    initialized=true;
+
+    initialized = true;
 }
 
 void GraspItSceneManager::shutdown()
 {
-
-    if (!initialized) {
+    if (!initialized)
+    {
         PRINTMSG("GraspItSceneManager already shut down.");
         return;
     }
-    initialized=false;
+    initialized = false;
 
     // notify all registered accessors that the manager is
     // shutting down.
@@ -158,10 +160,11 @@ void GraspItSceneManager::shutdown()
     }
     registeredAccessorsMtx.unlock();
 
-    // destroy ivMgr 
+    // destroy ivMgr
     destroyIVmgr();
 
-    if (ivMgr) {
+    if (ivMgr)
+    {
         PRINTERROR("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
         throw std::string("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
     }
@@ -373,7 +376,7 @@ int GraspItSceneManager::loadWorld(const std::string& filename)
 
 
 int GraspItSceneManager::loadRobot(const std::string& filename, const std::string& robotName,
-                                const EigenTransform& worldTransform)
+                                   const EigenTransform& worldTransform)
 {
     if (!fileExists(filename))
     {
@@ -408,17 +411,17 @@ int GraspItSceneManager::loadRobot(const std::string& filename, const std::strin
     }
 
     robot->setName(QString(robotName.c_str()));
-    
+
     transf trans = getGraspitTransform(worldTransform);
     robot->setTran(trans);
-    
+
     PRINTMSG("Loaded robot " << filename);
     return 0;
 }
 
 
 int GraspItSceneManager::loadObject(const std::string& filename, const std::string& name,
-                                 const bool asGraspable, const EigenTransform& worldTransform)
+                                    const bool asGraspable, const EigenTransform& worldTransform)
 {
     if (name.empty())
     {
@@ -469,10 +472,10 @@ int GraspItSceneManager::loadObject(const std::string& filename, const std::stri
     }
 
     object->setName(QString(name.c_str()));
-    
+
     transf trans = getGraspitTransform(worldTransform);
     object->setTran(trans);
-    
+
     PRINTMSG("Loaded object from " << filename);
     return 0;
 }

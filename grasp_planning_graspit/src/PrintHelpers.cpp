@@ -43,7 +43,7 @@ std::ostream& operator<<(std::ostream& o, const Eigen::Transform<double, 3, Eige
     //  o<<"T: trans="<<t.translation()<<" rot="<<Eigen::Quaterniond(t.rotation());
     Eigen::AngleAxisd ax(t.rotation());
     o << "T: trans = " << Eigen::Vector3d(t.translation()) <<
-         " rot = " << ax.angle() << " (angle) / " << ax.axis() << " (axis)";
+      " rot = " << ax.angle() << " (angle) / " << ax.axis() << " (axis)";
     return o;
 }
 

@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include <matvec3D.h>
 #include <world.h>
@@ -39,7 +40,7 @@
 #include <EGPlanner/egPlanner.h>
 #include <EGPlanner/simAnn.h>
 #include <EGPlanner/simAnnPlanner.h>
-//#include <timeTest.h>
+// #include <timeTest.h>
 // #include <guidedPlanner.h>
 // #include <loopPlanner.h>
 #include <ivmgr_nogui.h>
@@ -71,7 +72,8 @@ EigenGraspPlanner::EigenGraspPlanner(const std::string& name, const SHARED_PTR<G
     // mEnergyCalculator=new SearchEnergy();
     // mEnergyCalculator->setStatStream(&std::cout);
 
-    if (!eventThreadRunsQt()) {
+    if (!eventThreadRunsQt())
+    {
         PRINTERROR("EigenGraspPlanner supports only GraspItSceneManager instances which run Qt.");
         throw std::string("EigenGraspPlanner supports only GraspItSceneManager instances which run Qt.");
     }
@@ -82,7 +84,7 @@ EigenGraspPlanner::EigenGraspPlanner(const std::string& name, const SHARED_PTR<G
 EigenGraspPlanner::~EigenGraspPlanner()
 {
     PRINTMSG("EigenGrasp planner destructor");
-    
+
     removeFromIdleListeners();
 
 #ifdef USE_SEPARATE_SOSENSOR
@@ -90,7 +92,7 @@ EigenGraspPlanner::~EigenGraspPlanner()
     // is shut down
     if (mIdleSensor)
     {
-        if (mIdleSensor->isScheduled()) 
+        if (mIdleSensor->isScheduled())
         {
             mIdleSensor->unschedule();
         }
@@ -112,14 +114,14 @@ EigenGraspPlanner::~EigenGraspPlanner()
 }
 
 
-void EigenGraspPlanner::onSceneManagerShutdown(){
-
+void EigenGraspPlanner::onSceneManagerShutdown()
+{
 #ifdef USE_SEPARATE_SOSENSOR
     // quit the idle sensor to avoid conflicts when Inventor
     // is shut down
     if (mIdleSensor)
     {
-        if (mIdleSensor->isScheduled()) 
+        if (mIdleSensor->isScheduled())
         {
             mIdleSensor->unschedule();
         }
@@ -127,7 +129,7 @@ void EigenGraspPlanner::onSceneManagerShutdown(){
         mIdleSensor = NULL;
     }
 #endif
-    
+
     graspitEgPlannerMtx.lock();
     if (graspitEgPlanner)
     {
@@ -187,7 +189,7 @@ void EigenGraspPlanner::setPlannerCommand(const PlannerCommand c)
 void EigenGraspPlanner::sensorCB(void *data, SoSensor *)
 {
     // PRINTMSG(" ### sensorCB ###");
-    EigenGraspPlanner* _this = dynamic_cast<EigenGraspPlanner*>((EigenGraspPlanner*)data);
+    EigenGraspPlanner* _this = dynamic_cast<EigenGraspPlanner*>(static_cast<EigenGraspPlanner*>(data));
     if (!_this)
     {
         PRINTERROR("Could not cast EigenGraspPlanner");
@@ -203,7 +205,8 @@ void EigenGraspPlanner::sensorCB(void *data, SoSensor *)
 
 void EigenGraspPlanner::ivIdleCallback()
 {
-    if (!getGraspItSceneManager()->isInitialized()) {
+    if (!getGraspItSceneManager()->isInitialized())
+    {
         PRINTWARN("Graspit scene manager not initialized.");
         return;
     }
@@ -253,11 +256,12 @@ void EigenGraspPlanner::ivIdleCallback()
 
 bool EigenGraspPlanner::plan(const std::string& handName, const std::string& objectName,
                              const EigenTransform * objectPose,
-                             const int maxPlanningSteps, 
+                             const int maxPlanningSteps,
                              const int repeatPlanning,
                              const PlannerType& planType)
 {
-    if (!getGraspItSceneManager()->isInitialized()) {
+    if (!getGraspItSceneManager()->isInitialized())
+    {
         PRINTERROR("Graspit scene manager not initialized. Cannot do planning.");
         return false;
     }
@@ -287,35 +291,34 @@ bool EigenGraspPlanner::plan(const std::string& handName, const std::string& obj
     return plan(maxPlanningSteps, repeatPlanning, planType);
 }
 
-bool compareGraspPlanningStates(const GraspPlanningState* g1, const GraspPlanningState* g2) 
-{ 
+bool compareGraspPlanningStates(const GraspPlanningState* g1, const GraspPlanningState* g2)
+{
     return g1->getEnergy() < g2->getEnergy();
 }
 
-bool EigenGraspPlanner::plan(const int maxPlanningSteps, 
+bool EigenGraspPlanner::plan(const int maxPlanningSteps,
                              const int repeatPlanning,
                              const PlannerType& planType)
 {
-    if (!getGraspItSceneManager()->isInitialized()) {
+    if (!getGraspItSceneManager()->isInitialized())
+    {
         PRINTERROR("Graspit scene manager not initialized. Cannot do planning.");
         return false;
     }
-        
+
     results.clear();
 
     // lock the world so that it won't change while we do the planning
     UNIQUE_RECURSIVE_LOCK lock = getUniqueWorldLock();
 
-    for (int i=0; i<repeatPlanning; ++i) {
-        
+    for (int i = 0; i < repeatPlanning; ++i)
+    {
         PRINTMSG("Initializing planning...");
         if (!initPlanner(maxPlanningSteps, planType))
         {
             PRINTERROR("Could not initialize planner.");
             return false;
         }
-
-
         {
             UNIQUE_RECURSIVE_LOCK(graspitEgPlannerMtx);
             if (!graspitEgPlanner)
@@ -337,7 +340,6 @@ bool EigenGraspPlanner::plan(const int maxPlanningSteps,
             }
         }
 
-    
         PRINTMSG("Now initiating planning.");
 
         scheduleForIdleEventUpdate();
@@ -367,7 +369,7 @@ bool EigenGraspPlanner::plan(const int maxPlanningSteps,
         }
         graspitEgPlannerMtx.unlock();
     }
-    std::sort(results.begin(),results.end(),compareGraspPlanningStates);
+    std::sort(results.begin(), results.end(), compareGraspPlanningStates);
     return true;
 }
 
@@ -507,7 +509,8 @@ bool EigenGraspPlanner::saveResultsAsWorldFiles(const std::string& inDirectory,
         return false;
     }
 
-    if (!getGraspItSceneManager()->isInitialized()) {
+    if (!getGraspItSceneManager()->isInitialized())
+    {
         PRINTERROR("Graspit scene manager not initialized.");
         return false;
     }
@@ -588,7 +591,7 @@ void EigenGraspPlanner::getResults(std::vector<EigenGraspResult>& allGrasps) con
                   ++k;
               }*/
         allGrasps.push_back(EigenGraspResult(relTransform, dofs, egVals,
-                s->isLegal(), s->getEpsilonQuality(), s->getVolume(), s->getEnergy()));
+                                             s->isLegal(), s->getEpsilonQuality(), s->getVolume(), s->getEnergy()));
     }
 }
 
@@ -600,7 +603,7 @@ SearchEnergyType getSearchEnergyType(const EigenGraspPlanner::GraspItSearchEnerg
     {
     case EigenGraspPlanner::EnergyContact:
     {
-        ret=ENERGY_CONTACT;
+        ret = ENERGY_CONTACT;
         break;
     }
     // ENERGY_CONTACT, ENERGY_POTENTIAL_QUALITY, ENERGY_CONTACT_QUALITY,
@@ -624,14 +627,14 @@ StateType getStateType(const EigenGraspPlanner::GraspItStateType& st)
     {
     case EigenGraspPlanner::AxisAngle:
     {
-        ret=SPACE_AXIS_ANGLE;
+        ret = SPACE_AXIS_ANGLE;
         break;
     }
-/*    case SPACE_AXIS_ANGLE:
-    case SPACE_COMPLETE:
-    case SPACE_ELLIPSOID:
-    case SPACE_APPROACH:
-*/
+    /*    case SPACE_AXIS_ANGLE:
+        case SPACE_COMPLETE:
+        case SPACE_ELLIPSOID:
+        case SPACE_APPROACH:
+    */
     default:
     {
         PRINTERROR("Unsupported search type");
@@ -678,7 +681,7 @@ bool EigenGraspPlanner::initPlanner(const int maxPlanningSteps, const PlannerTyp
     mHand->getGrasp()->setGravity(false);
     GraspPlanningState graspPlanningState(mHand);
     graspPlanningState.setObject(mObject);
-    StateType _stateType=getStateType(graspitStateType);
+    StateType _stateType = getStateType(graspitStateType);
     graspPlanningState.setPositionType(_stateType);
     graspPlanningState.setRefTran(mObject->getTran());
     graspPlanningState.reset();
@@ -721,7 +724,7 @@ bool EigenGraspPlanner::initPlanner(const int maxPlanningSteps, const PlannerTyp
 
 void EigenGraspPlanner::initSearchType(GraspPlanningState& graspPlanningState, const GraspItStateType& st)
 {
-    StateType _stateType=getStateType(st);
+    StateType _stateType = getStateType(st);
     graspPlanningState.setPositionType(_stateType);
 
     GraspableBody * mObject = getCurrentGraspableBody();
@@ -733,25 +736,25 @@ void EigenGraspPlanner::initSearchType(GraspPlanningState& graspPlanningState, c
 
     switch (st)
     {
-/*    case SPACE_AXIS_ANGLE:
-    case SPACE_COMPLETE:
-    case SPACE_ELLIPSOID:*/
+        /*    case SPACE_AXIS_ANGLE:
+            case SPACE_COMPLETE:
+            case SPACE_ELLIPSOID:*/
     case AxisAngle:
     {
         graspPlanningState.setRefTran(mObject->getTran());
         break;
     }
-/*    case SPACE_APPROACH:
-    {
-        Hand * mHand = getCurrentHand();
-        if (!mHand)
+    /*    case SPACE_APPROACH:
         {
-            PRINTERROR("Hand is NULL!");
-            return;
-        }
-        graspPlanningState.setRefTran(mHand->getTran());
-        break;
-    }*/
+            Hand * mHand = getCurrentHand();
+            if (!mHand)
+            {
+                PRINTERROR("Hand is NULL!");
+                return;
+            }
+            graspPlanningState.setRefTran(mHand->getTran());
+            break;
+        }*/
     default:
     {
         PRINTERROR("Unsupported search type");

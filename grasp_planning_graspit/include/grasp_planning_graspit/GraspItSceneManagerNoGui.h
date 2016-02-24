@@ -37,7 +37,7 @@ namespace GraspIt
  * In this initial implementation, this interface will be running the **SoQt** loop in a separate thread.
  * This is also the scene manager thread to which GraspItAccessor instances may get access to via GraspItAccessor::addAsIdleListener().
  *
- * Subclasses which want to make use of QT signals and slots, or any other mechanisms proivded by QObject and 
+ * Subclasses which want to make use of QT signals and slots, or any other mechanisms proivded by QObject and
  * the Qt metaobject system, will have to additionally derive from QObject, and the MOC files have to be generated for it.
  *
  * **Important note:** While this implementation is still using Qt, you **may not** touch any Qt stuff before creating an intance
@@ -55,18 +55,17 @@ public:
     virtual ~GraspItSceneManagerNoGui();
 
     virtual bool isReady() const;
-   
+
     virtual void waitUntilReady() const;
 
 protected:
-   
     virtual void initializeIVmgr();
 
     virtual void destroyIVmgr();
 
     virtual World * createGraspitWorld();
 
-    virtual bool eventThreadRunsQt() const 
+    virtual bool eventThreadRunsQt() const
     {
         return true;
     }
@@ -78,7 +77,7 @@ protected:
      * \retval false Inventor is not ready yet.
      */
     virtual bool scheduleIdleEvent();
-    
+
     /**
      * returns ivReady flag
      */
@@ -126,8 +125,6 @@ private:
     mutable MUTEX ivReadyMtx;
 
     SoSensor *mIdleSensor;
-
 };
-
 }  // namespace GraspIt
 #endif  //  GRASP_PLANNING_GRASPIT_GRASPITSCENEMANAGERNOGUI_H

@@ -147,13 +147,13 @@ int run(int argc, char **argv)
         return 1;
     }
 
-    PRINTMSG("Successfully finished grasp planning. Have "<<srv.response.grasps.size()<<" resulting grasps.");
-/*    std::vector<manipulation_msgs::Grasp>::iterator it;
-    for (it = srv.response.grasps.begin(); it != srv.response.grasps.end(); ++it)
-    {
-        PRINTMSG(*it);
-    }
-*/
+    PRINTMSG("Successfully finished grasp planning. Have " << srv.response.grasps.size() << " resulting grasps.");
+    /*    std::vector<manipulation_msgs::Grasp>::iterator it;
+        for (it = srv.response.grasps.begin(); it != srv.response.grasps.end(); ++it)
+        {
+            PRINTMSG(*it);
+        }
+    */
     return 0;
 }
 

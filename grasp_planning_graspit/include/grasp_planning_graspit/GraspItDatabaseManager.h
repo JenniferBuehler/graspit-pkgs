@@ -40,7 +40,7 @@ class GraspItSceneManager;
  * so several robots or objects of same type can be maintained with different names.
  *
  * When an object or robot is added to the database, they also get a uniqe model int ID which can be
- * used to access the model, independent of the fact whether it is a robot or an object. 
+ * used to access the model, independent of the fact whether it is a robot or an object.
  * The int id's are unique among *both* robots and objects.
  *
  * In ROS manipulation_msgs/GraspPlanning.srv, a body (object/obstacle) has an int ID
@@ -274,7 +274,6 @@ protected:
      * to the inventor thread.
      */
     virtual void onSceneManagerShutdown() = 0;
-
 };
 }  // namespace GraspIt
 #endif  //  GRASP_PLANNING_GRASPIT_GRASPITDATABASEMANAGER_H

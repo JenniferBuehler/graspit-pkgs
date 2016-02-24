@@ -96,22 +96,26 @@ bool urdf2graspit::helpers::directoryExists(const char* dPath)
 
 bool urdf2graspit::helpers::makeDirectoryIfNeeded(const char * dPath)
 {
-    try { 
+    try
+    {
         boost::filesystem::path dir(dPath);
         boost::filesystem::path buildPath;
 
-        for (boost::filesystem::path::iterator it(dir.begin()), it_end(dir.end()); it != it_end; ++it){
+        for (boost::filesystem::path::iterator it(dir.begin()), it_end(dir.end()); it != it_end; ++it)
+        {
             buildPath /= *it;
             //std::cout << buildPath << std::endl;
-            
+
             if (!boost::filesystem::exists(buildPath) &&
-                !boost::filesystem::create_directory(buildPath))
+                    !boost::filesystem::create_directory(buildPath))
             {
-                ROS_ERROR_STREAM("Could not create directory "<<buildPath);
+                ROS_ERROR_STREAM("Could not create directory " << buildPath);
                 return false;
             }
         }
-    } catch (const boost::filesystem::filesystem_error& ex) {
+    }
+    catch (const boost::filesystem::filesystem_error& ex)
+    {
         ROS_ERROR_STREAM(ex.what());
         return false;
     }

@@ -32,7 +32,7 @@ find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
 # BUILDING_WITH_CATKIN if something like that exists?
 if (CATKIN_DEVEL_PREFIX)
     message("Building grasp_plannin_graspit with catkin.")
-    find_package(catkin REQUIRED COMPONENTS eigen_conversions) 
+    find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint) 
     if (NOT BUILD_GRASPIT)
         find_package(catkin REQUIRED COMPONENTS graspit) 
     endif (NOT BUILD_GRASPIT)
@@ -277,6 +277,9 @@ target_link_libraries(simple_graspit_database
   ${Boost_LIBRARIES}
   ${DEPEND_LIBRARIES}
 )
+
+# style checking
+roslint_cpp()
 
 #############
 ## Install ##

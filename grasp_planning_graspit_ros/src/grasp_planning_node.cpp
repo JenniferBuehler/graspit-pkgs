@@ -71,14 +71,14 @@ void handler(int sig)
 /**
  * Accepts following ROS parameters within the nodes private namespace:
  *
- * - "use_world_file": set to true if a world file is to be loaded. 
+ * - "use_world_file": set to true if a world file is to be loaded.
  *     Alternatively, a robot and object may be loaded separately.
  * - "graspit_world_file": the graspit world file. Use EITHER this OR specify a robot and object.
  * - "graspit_robot_file": the graspit robot file. Use EITHER this OR specify a world.
  *      if you specify a robot, you also have to specify an object.
- * - "graspit_object_file: the graspit object file. 
+ * - "graspit_object_file: the graspit object file.
  *      if you specify an object, you also have to specify a robot.
- * - "graspit_planning_algorithm": The planning algorithm to use. At this stage, 
+ * - "graspit_planning_algorithm": The planning algorithm to use. At this stage,
  *     only simulated annealing ("SimAnn") is supported.
  * - "max_planning_steps": the maximum planning steps to use for the Eigengrasp planner.
  * - "results_output_directory": the directory where results should be saved
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
     }
 
 
-    ROS_INFO_STREAM("Reading parameters from namespace "<<priv.getNamespace());
+    ROS_INFO_STREAM("Reading parameters from namespace " << priv.getNamespace());
 
     std::string outputDirectory;
     if (!priv.hasParam("results_output_directory"))
@@ -119,19 +119,20 @@ int main(int argc, char **argv)
     priv.param<std::string>("results_output_directory", outputDirectory, outputDirectory);
     PRINTMSG("Results output directory: " << outputDirectory);
 
-    bool useWorld=false;
+    bool useWorld = false;
     if (!priv.hasParam("use_world_file"))
     {
         PRINTERROR("Could not read parameter use_world_file");
         return 1;
     }
     priv.param<bool>("use_world_file", useWorld, useWorld);
-    
+
     std::string worldFilename;
     std::string robotFilename;
     std::string objectFilename;
 
-    if (useWorld) {
+    if (useWorld)
+    {
         PRINTMSG("Using world file");
         if (!priv.hasParam("graspit_world_file"))
         {
@@ -139,8 +140,10 @@ int main(int argc, char **argv)
             return 1;
         }
         priv.param<std::string>("graspit_world_file", worldFilename, worldFilename);
-        PRINTMSG("Using world file "<<worldFilename); 
-    } else {
+        PRINTMSG("Using world file " << worldFilename);
+    }
+    else
+    {
         PRINTMSG("Using robot and object file");
         if (!priv.hasParam("graspit_robot_file"))
         {
@@ -148,8 +151,8 @@ int main(int argc, char **argv)
             return 1;
         }
         priv.param<std::string>("graspit_robot_file", robotFilename, robotFilename);
-        PRINTMSG("Using robot file "<<robotFilename); 
-        
+        PRINTMSG("Using robot file " << robotFilename);
+
         if (!priv.hasParam("graspit_object_file"))
         {
             PRINTERROR("Could not read parameter graspit_object_file");
@@ -161,7 +164,7 @@ int main(int argc, char **argv)
     int maxPlanningSteps;
     priv.param<int>("max_planning_steps", maxPlanningSteps, 50000);
     PRINTMSG("Using max number of planning steps: " << maxPlanningSteps);
-    
+
     int repeatPlanning;
     priv.param<int>("num_repeat_planning", repeatPlanning, 1);
     PRINTMSG("Repeating planning: " << repeatPlanning);
@@ -204,8 +207,8 @@ int main(int argc, char **argv)
         }
 
         // in case one wants to view the initial world before planning, save it:
-        graspitMgr->saveGraspItWorld(outputDirectory + "/worlds/startWorld.xml",true);
-        graspitMgr->saveInventorWorld(outputDirectory + "/worlds/startWorld.iv",true);
+        graspitMgr->saveGraspItWorld(outputDirectory + "/worlds/startWorld.xml", true);
+        graspitMgr->saveInventorWorld(outputDirectory + "/worlds/startWorld.iv", true);
     }
 
     PRINTMSG("Now planning...");

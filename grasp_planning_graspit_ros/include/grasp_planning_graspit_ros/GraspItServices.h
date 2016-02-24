@@ -49,7 +49,7 @@ class EigenGraspResult;
  * - add objects to the database with *grasp_planning_graspit_msgs/AddToDatabase.srv*
  * - to load them to the current %GraspIt world with *grasp_planning_graspit_msgs/LoadDatabaseModel.srv*.
  * - to save the currently loaded %GraspIt world, with the
- *   service type *grasp_planning_graspit_msgs/SaveWorld.srv*. 
+ *   service type *grasp_planning_graspit_msgs/SaveWorld.srv*.
  * - accepts grasp planning requests with the service type *manipulation_msgs/GraspPlanning.srv*.
  *
  * The class GraspIt::EigenGraspPlanner is used for the planning.
@@ -57,7 +57,7 @@ class EigenGraspResult;
  *
  * About the grasp planning request:
  * - The service calls the GraspIt! planner assuming that all object and robot poses are
- *      specified in the **global frame** (the graspit world origin). 
+ *      specified in the **global frame** (the graspit world origin).
  * - The frame id used in the geometry_msgs::PoseStamped objects have to be either "0" (pose not used)
  *   or "1" (pose object used in global frame). No tf transforms are supported yet.
  *
@@ -66,7 +66,7 @@ class EigenGraspResult;
  * - Grasp quality values returned are the energy of the simulated annealing process.
  * - Pre-grasp joint states (see manipulation_msgs::Grasp::pre_grasp_posture)
  *   are not supported yet. It is assumed that the hand is plain open in pre-grasp
- *   stage for now. 
+ *   stage for now.
  * - No joint velocities and efforts in the resulting sensor_msgs::JointState objects are provided.
  *
  *

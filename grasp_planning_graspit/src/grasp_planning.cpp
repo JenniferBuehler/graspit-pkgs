@@ -72,25 +72,26 @@ void handler(int sig)
     exit(1);
 }
 
-    
-boost::program_options::options_description getOptions(){
+
+boost::program_options::options_description getOptions()
+{
     // Declare the supported options.
     boost::program_options::options_description desc("Allowed options");
     desc.add_options()
-        ("help", "produce help message")
-        ("dir", boost::program_options::value<std::string>(), "set output directory for resulting files")
-        ("wld", boost::program_options::value<std::string>(), "filename for the world file")
-        ("rob", boost::program_options::value<std::string>(), "filename for the robot file -- OPTIONAL to parameter wld!")
-        ("obj", boost::program_options::value<std::string>(), "filename for the object file -- OPTIONAL to parameter wld!")
-    ;
+    ("help", "produce help message")
+    ("dir", boost::program_options::value<std::string>(), "set output directory for resulting files")
+    ("wld", boost::program_options::value<std::string>(), "filename for the world file")
+    ("rob", boost::program_options::value<std::string>(), "filename for the robot file -- OPTIONAL to parameter wld!")
+    ("obj", boost::program_options::value<std::string>(), "filename for the object file -- OPTIONAL to parameter wld!");
     return desc;
 }
 
-boost::program_options::variables_map loadParams(int argc, char ** argv) {
-    boost::program_options::options_description optDesc=getOptions();
+boost::program_options::variables_map loadParams(int argc, char ** argv)
+{
+    boost::program_options::options_description optDesc = getOptions();
     boost::program_options::variables_map vm;
     boost::program_options::store(boost::program_options::parse_command_line(argc, argv, optDesc), vm);
-    boost::program_options::notify(vm);    
+    boost::program_options::notify(vm);
     return vm;
 }
 
@@ -101,82 +102,101 @@ bool loadParams(int argc, char ** argv, std::string& worldFilename, std::string&
     robotFilename.clear();
     objectFilename.clear();
     outputDirectory.clear();
-    
-    boost::program_options::variables_map vm;
-    try {
-        vm=loadParams(argc, argv);
-    }
-    catch(std::exception const& e) {
-        PRINTERROR("Exception caught: "<<e.what()); return false;
-    }
-    catch(...) { PRINTERROR("Exception caught"); return false; }
-    
-    boost::program_options::options_description desc=getOptions();
-        //desc=getOptions();
 
-    if (vm.count("help")) {
+    boost::program_options::variables_map vm;
+    try
+    {
+        vm = loadParams(argc, argv);
+    }
+    catch (std::exception const& e)
+    {
+        PRINTERROR("Exception caught: " << e.what());
+        return false;
+    }
+    catch (...)
+    {
+        PRINTERROR("Exception caught");
+        return false;
+    }
+
+    boost::program_options::options_description desc = getOptions();
+    // desc=getOptions();
+
+    if (vm.count("help"))
+    {
         PRINTMSG(desc);
         return false;
     }
 
-    if (vm.count("dir")<1) {
+    if (vm.count("dir") < 1)
+    {
         PRINTERROR("Must specify an output directory");
         PRINTMSG(desc);
         return false;
     }
 
-    if (vm.count("wld") && (vm.count("rob") || vm.count("obj"))) {
+    if (vm.count("wld") && (vm.count("rob") || vm.count("obj")))
+    {
         PRINTERROR("Cannot specify a world and a robot and/or object at the same time.");
         PRINTMSG(desc);
         return false;
     }
 
-    if (!vm.count("wld") && !vm.count("rob")) {
+    if (!vm.count("wld") && !vm.count("rob"))
+    {
         PRINTERROR("Have to specify either a robot or a world.");
         PRINTMSG(desc);
         return false;
     }
 
-    if (vm.count("rob") != vm.count("obj")) {
+    if (vm.count("rob") != vm.count("obj"))
+    {
         PRINTERROR("If you specify a robot, you also have to specify an object, and vice versa.");
         PRINTMSG(desc);
         return false;
     }
 
 
-    if (vm.count("rob")>1) {
+    if (vm.count("rob") > 1)
+    {
         PRINTERROR("You can only specify one robot at this stage.");
         PRINTMSG(desc);
         return false;
     }
 
-    if (vm.count("obj")>1) {
+    if (vm.count("obj") > 1)
+    {
         PRINTERROR("You can only specify one object at this stage.");
         PRINTMSG(desc);
         return false;
     }
 
-    if (vm.count("obj")!=vm.count("rob")) {
+    if (vm.count("obj") != vm.count("rob"))
+    {
         PRINTERROR("If you specify a robot, you should also specify an object.");
         PRINTMSG(desc);
         return false;
     }
 
-    if (vm.count("wld")) {
-        worldFilename=vm["wld"].as<std::string>();
-        PRINTMSG("World file is "<< worldFilename);
-    } 
-    if (vm.count("rob")) {
-        robotFilename=vm["rob"].as<std::string>();
-        PRINTMSG("Robot file is "<< robotFilename);
-    } 
-    if (vm.count("obj")) {
-        objectFilename=vm["obj"].as<std::string>();
-        PRINTMSG("Object file is "<< objectFilename);
-    } 
-    if (vm.count("dir")) {
-        outputDirectory=vm["dir"].as<std::string>();
-        PRINTMSG("Output dir is "<< outputDirectory);
+    if (vm.count("wld"))
+    {
+        worldFilename = vm["wld"].as<std::string>();
+        PRINTMSG("World file is " << worldFilename);
+    }
+    if (vm.count("rob"))
+    {
+        robotFilename = vm["rob"].as<std::string>();
+        PRINTMSG("Robot file is " << robotFilename);
+    }
+    if (vm.count("obj"))
+    {
+        objectFilename = vm["obj"].as<std::string>();
+        PRINTMSG("Object file is " << objectFilename);
+    }
+    if (vm.count("dir"))
+    {
+        outputDirectory = vm["dir"].as<std::string>();
+        PRINTMSG("Output dir is " << outputDirectory);
     }
 
     return true;
@@ -248,14 +268,14 @@ int main(int argc, char **argv)
 
     PRINTMSG("Saving results as world files");
 
-    bool createDir=true;
-    bool saveIV=true;
-    bool saveWorld=true;
+    bool createDir = true;
+    bool saveIV = true;
+    bool saveWorld = true;
 
     std::string resultsWorldDirectory = outputDirectory;
     std::string filenamePrefix = "world";
     p->saveResultsAsWorldFiles(resultsWorldDirectory, filenamePrefix, saveWorld, saveIV, createDir);
-    
+
     std::vector<GraspIt::EigenGraspResult> allGrasps;
     p->getResults(allGrasps);
 
