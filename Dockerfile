@@ -12,7 +12,7 @@
 #  $ xhost +
 #  before running the container.
 
-FROM jenniferbuehler/graspit_autobuild_ros 
+FROM jenniferbuehler/ros-indigo-full-catkin 
 
 MAINTAINER Jennifer Buehler
 
@@ -26,16 +26,25 @@ RUN apt-get update && apt-get install -y \
     ros-indigo-roslint \
     && rm -rf /var/lib/apt/lists/
 
+COPY graspit_tools /catkin_ws/src/graspit_tools
 COPY grasp_planning_graspit_ros /catkin_ws/src/grasp_planning_graspit_ros
 COPY grasp_planning_graspit /catkin_ws/src/grasp_planning_graspit
 COPY grasp_planning_graspit_msgs /catkin_ws/src/grasp_planning_graspit_msgs
 COPY urdf2graspit /catkin_ws/src/urdf2graspit
+COPY ivcon /catkin_ws/src/ivcon
+COPY jaco_graspit_sample /catkin_ws/src/jaco_graspit_sample
 
 # Build
 RUN bin/bash -c "source /.bashrc \
     && cd /catkin_ws \
     && catkin_make \
     && catkin_make install"
+
+# set GRASPIT environment to /graspit_home
+RUN bin/bash -c "mkdir -p /graspit_home/models/robots"
+RUN bin/bash -c "mkdir -p /graspit_home/models/objects"
+RUN bin/bash -c "mkdir -p /graspit_home/worlds"
+ENV GRASPIT /graspit_home
 
 RUN bin/bash -c "source .bashrc"
 

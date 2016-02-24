@@ -5,9 +5,7 @@
   <description>The grasp_planning_graspit_ros package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
-  <!-- Example:  -->
-  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="jenny@todo.todo">jenny</maintainer>
+  <maintainer email="jennifer.e.buehler@gmail.com">Jennifer Buehler</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
@@ -44,14 +42,11 @@
   <build_depend>grasp_planning_graspit_msgs</build_depend>
   <build_depend>manipulation_msgs</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
   <build_depend>roslint</build_depend>
   <run_depend>grasp_planning_graspit</run_depend>
   <run_depend>grasp_planning_graspit_msgs</run_depend>
   <run_depend>manipulation_msgs</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

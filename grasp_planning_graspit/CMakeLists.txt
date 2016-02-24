@@ -231,6 +231,7 @@ add_executable(grasp_planning src/grasp_planning.cpp)
 add_executable(simple_graspit_database test/simple_graspit_database.cpp)
 #add_executable(simple_planning_tutorial tutorial/src/simple_planning_tutorial.cpp)
 
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 if (catkin_FOUND)
@@ -305,8 +306,6 @@ target_link_libraries(simple_graspit_database
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-
-
 if (catkin_FOUND) 
     # all install targets should use catkin DESTINATION variables
     # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
@@ -320,8 +319,6 @@ else (catkin_FOUND)
     set ( BIN_DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/)
     set ( SHARE_DESTINATION ${CMAKE_INSTALL_PREFIX}/share/)
 endif (catkin_FOUND) 
-
-
 
 ## Mark executables and/or libraries for installation
 install(TARGETS grasp_planning_graspit
@@ -337,12 +334,18 @@ install(TARGETS grasp_planning
 )
 
 if (BUILD_GRASPIT)
-    install(FILES ${GRASPIT_EXECUTABLE} 
+    if (catkin_FOUND)
+        # make the GraspIt! simulator available also in the catkin devel space
+        add_custom_target(copy_simulator_exe ALL 
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${GRASPIT_EXECUTABLE} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${PROJECT_NAME}
+            DEPENDS graspit_ext
+        )
+    endif (catkin_FOUND)
+    install(PROGRAMS ${GRASPIT_EXECUTABLE} 
        DESTINATION ${BIN_DESTINATION}
     )
 endif (BUILD_GRASPIT)
-
-
 
 install(FILES
     ${MAIN_HEADER_FILES}
@@ -353,7 +356,6 @@ install(DIRECTORY
     CMakeMacros 
     DESTINATION ${SHARE_DESTINATION}
 )
-
 
 if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/docs/html)
     install(DIRECTORY 

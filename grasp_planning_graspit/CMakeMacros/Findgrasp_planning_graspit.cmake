@@ -66,8 +66,6 @@ else (GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE)
 	"e.g. cmake -DCMAKE_LIBRARY_PATH=/path-to-grasp_planning_graspit/lib ...")
 endif (GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE)
 
-
-
 # Qt is still required at this stage for using GraspIt!.
 # This find_package is to get the headers/libs of Qt required.
 # While a separate inclusion of the graspit package may
@@ -75,15 +73,37 @@ endif (GRASP_PLANNING_GRASPIT_LIBRARY_RELEASE)
 # done here again, for the case that the graspit package
 # is not used directly, but from within a library which
 # includes the whole source (in form of a static library).
+SET( QT_USE_QT3SUPPORT TRUE )
 find_package(Qt4 COMPONENTS QtCore REQUIRED)
+# include QT_USE_FILE is NOT needed here.
+# include (${QT_USE_FILE})
+
+find_package(Eigen3 REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
+#find_package(Qhull REQUIRED)
+#find_package(SoQt4 REQUIRED)
+#find_package(LAPACK REQUIRED)
+#find_package(Threads REQUIRED)
+
 set(GRASP_PLANNING_GRASPIT_INCLUDE_DIRS 
     ${GRASP_PLANNING_GRASPIT_INCLUDE_DIRS}
     ${QT_INCLUDES}
+    ${EIGEN3_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIRS}
+#  ${SOQT_INCLUDE_DIRS}
+#  ${QT_INCLUDES}
+#  ${QT_INCLUDE_DIR}
+#  ${QT_QT3SUPPORT_INCLUDE_DIR}
+#  ${QHULL_INCLUDE_DIRS}
 ) 
 set(GRASP_PLANNING_GRASPIT_LIBRARIES 
-    ${GRASP_PLANNING_GRASPIT_INCLUDE_DIRS}
     ${GRASP_PLANNING_GRASPIT_LIBRARY}
     ${QT_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${QT_QT3SUPPORT_LIBRARY}
+#   ${QHULL_LIBRARIES}
+#   ${SOQT_LIBRARY}
+#   ${LAPACK_LIBRARIES}
 )
 
 MARK_AS_ADVANCED(

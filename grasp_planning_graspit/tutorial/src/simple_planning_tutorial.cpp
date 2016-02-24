@@ -44,25 +44,25 @@ int main(int argc, char **argv)
     }
 
 
-    // if the output directory does not exist yet, create it?
-    bool createDir = true;
-    
     // Create the graspit world manager.
-    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerNoGui(), createDir);
+    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerNoGui());
 
     // Load the graspit world
     graspitMgr->loadWorld(worldFilename);
+    
+    // if the output directory does not exist yet, create it?
+    bool createDir = true;
 
     // in case one wants to view the initial world before planning, save it:
-    // graspitMgr->saveGraspItWorld(outputDirectory + "/worlds/startWorld.xml");
-    // graspitMgr->saveInventorWorld(outputDirectory + "/worlds/startWorld.iv");
+    graspitMgr->saveGraspItWorld(outputDirectory + "/worlds/startWorld.xml", createDir);
+    graspitMgr->saveInventorWorld(outputDirectory + "/worlds/startWorld.iv", createDir);
 
     // Create the planner which accesses the graspit world.
     std::string name = "EigenGraspPlanner1";  
     SHARED_PTR<GraspIt::EigenGraspPlanner> planner(new GraspIt::EigenGraspPlanner(name, graspitMgr));
 
     // Number of iterations for the planning algorithm
-    int maxPlanningSteps = 35000;
+    int maxPlanningSteps = 70000;
     // Number of times to repeat the planning process    
     int repeatPlanning = 1;
  
@@ -85,6 +85,7 @@ int main(int argc, char **argv)
     bool saveInventor = true;
     // specify to save as graspit world files:
     bool saveGraspit = true;
+    
 
     // Now, save the results.
     planner->saveResultsAsWorldFiles(resultsWorldDirectory, filenamePrefix, saveGraspit, saveInventor, createDir);

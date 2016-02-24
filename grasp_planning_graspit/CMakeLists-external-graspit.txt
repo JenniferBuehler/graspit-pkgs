@@ -47,7 +47,7 @@ set(GRASPIT_INCLUDE_DIRS
 #set(GRASPIT_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/graspit/src/graspit-build/${CMAKE_SHARED_LIBRARY_PREFIX}graspit${CMAKE_SHARED_LIBRARY_SUFFIX}")
 set(GRASPIT_LIBRARY "${GLOBAL_OUTPUT_PATH}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}graspit_static${CMAKE_STATIC_LIBRARY_SUFFIX}")
 
-set(GRASPIT_EXECUTABLE "${GLOBAL_OUTPUT_PATH}/bin/graspit_simulator")
+set(GRASPIT_EXECUTABLE "${GLOBAL_OUTPUT_PATH}/bin/graspit_simulator_standalone")
 
 # import the configuration file (has problems with catkin, and is not really required)
 # include(${GLOBAL_OUTPUT_PATH}/lib/graspit-static-lib-targets.cmake)
