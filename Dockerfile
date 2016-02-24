@@ -16,6 +16,24 @@ FROM jenniferbuehler/ros-indigo-full-catkin
 
 MAINTAINER Jennifer Buehler
 
+# Install system essentials
+RUN apt-get update && apt-get install -y \
+    cmake \
+    libsoqt4-dev \
+    libcoin80-dev \
+    libqt4-dev \
+    libblas-dev \
+    liblapack-dev \
+    libqhull-dev \
+    sudo \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# need g++ for compiling with cmake even if gcc
+# is already installed
+RUN apt-get update && apt-get install -y g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install required ROS dependencies
 RUN apt-get update && apt-get install -y \
     ros-indigo-eigen-conversions \
