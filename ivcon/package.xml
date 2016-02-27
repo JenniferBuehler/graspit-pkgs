@@ -20,6 +20,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
+
+  <build_depend>libsoqt4-dev</build_depend>
+  <build_depend>libcoin80-dev</build_depend>
+  <build_depend>libqt4-dev</build_depend>
+
   <run_depend>roscpp</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->

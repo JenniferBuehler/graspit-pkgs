@@ -17,11 +17,6 @@ if (NOT BUILD_GRASPIT)
     set (BUILD_GRASPIT true)
 endif (NOT BUILD_GRASPIT)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(Eigen3 REQUIRED)
-
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
 
@@ -60,6 +55,7 @@ if (NOT catkin_FOUND OR BUILD_GRASPIT)
     # include QT_USE_FILE is needed.
     include (${QT_USE_FILE})
 
+    find_package(Eigen3 REQUIRED)
 endif (NOT catkin_FOUND OR BUILD_GRASPIT)
 
 
