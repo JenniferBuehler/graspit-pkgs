@@ -43,7 +43,7 @@
   <!--build_depend>graspit</build_depend-->
 
   <!-- System dependencies: -->
-  <build_depend>libboost-filesystem-dev</build_depend>
+  <!--build_depend>libboost-filesystem-dev</build_depend>
   <build_depend>libboost-system-dev</build_depend>
   <build_depend>libboost-thread-dev</build_depend>
   <build_depend>libboost-program-options-dev</build_depend>
@@ -52,7 +52,7 @@
   <build_depend>libqt4-dev</build_depend>
   <build_depend>libblas-dev</build_depend>
   <build_depend>liblapack-dev</build_depend>
-  <build_depend>libqhull-dev</build_depend>
+  <build_depend>libqhull-dev</build_depend-->
 
   <!-- depends only on eigen_conversion because it's available as ROS package,
      and searching for it with separate cmake module should not be necessary.
