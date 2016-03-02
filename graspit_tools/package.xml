@@ -39,7 +39,6 @@
   <run_depend>grasp_planning_graspit_ros</run_depend>
   <run_depend>grasp_planning_graspit_msgs</run_depend>
   <run_depend>urdf2graspit</run_depend>
-  <run_depend>ivcon</run_depend>
   <run_depend>jaco_graspit_sample</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
