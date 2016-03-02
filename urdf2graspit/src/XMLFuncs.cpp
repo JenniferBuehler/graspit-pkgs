@@ -262,17 +262,21 @@ std::string urdf2graspit::xmlfuncs::getWorldFileTemplate(
     const std::string& robotFileRelToGraspitRoot,
     bool negateJointValues)
 {
+    bool includeCube = false;
+
     std::stringstream str;
     str << "<?xml version=\"1.0\"?>" << std::endl;
     str << "<world>" << std::endl;
-    // str << "<!--" << std::endl;
+
+    if (!includeCube) str << "<!--" << std::endl;
     str << "<graspableBody>" << std::endl;
-    str << "<filename>models/objects/cube.xml</filename>" << std::endl;
+    str << "<filename>models/objects/small_cube.xml</filename>" << std::endl;
     str << "<transform>" << std::endl;
     str << "<fullTransform>(+1 0 0 0)[+100 +0 +0]</fullTransform>" << std::endl;
     str << "</transform>" << std::endl;
     str << "</graspableBody>" << std::endl;
-    // str << "-->" << std::endl;
+    if (!includeCube) str << "-->" << std::endl;
+
     str << "<robot>" << std::endl;
     str << "<filename>" << robotFileRelToGraspitRoot << "</filename>" << std::endl;
 
