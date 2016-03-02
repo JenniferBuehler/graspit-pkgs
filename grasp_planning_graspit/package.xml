@@ -43,16 +43,21 @@
   <!--build_depend>graspit</build_depend-->
 
   <!-- System dependencies: -->
+
+  <!-- boost works with bloom only if libboost-all-dev is used.
   <run_depend>libboost-filesystem-dev</run_depend>
   <run_depend>libboost-system-dev</run_depend>
   <run_depend>libboost-thread-dev</run_depend>
-  <run_depend>libboost-program-options-dev</run_depend>
+  <run_depend>libboost-program-options-dev</run_depend-->
+  <run_depend>boost</run_depend>
+
   <run_depend>libsoqt4-dev</run_depend>
   <run_depend>libcoin80-dev</run_depend>
   <run_depend>libqt4-dev</run_depend>
   <run_depend>libblas-dev</run_depend>
   <run_depend>liblapack-dev</run_depend>
-  <run_depend>libqhull-dev</run_depend>
+
+  <run_depend>libqhull</run_depend>
 
   <!-- depends only on eigen_conversion because it's available as ROS package,
      and searching for it with separate cmake module should not be necessary.
