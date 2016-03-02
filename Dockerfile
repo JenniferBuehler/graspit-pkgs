@@ -49,7 +49,6 @@ COPY grasp_planning_graspit_ros /catkin_ws/src/grasp_planning_graspit_ros
 COPY grasp_planning_graspit /catkin_ws/src/grasp_planning_graspit
 COPY grasp_planning_graspit_msgs /catkin_ws/src/grasp_planning_graspit_msgs
 COPY urdf2graspit /catkin_ws/src/urdf2graspit
-COPY ivcon /catkin_ws/src/ivcon
 COPY jaco_graspit_sample /catkin_ws/src/jaco_graspit_sample
 
 # Build
