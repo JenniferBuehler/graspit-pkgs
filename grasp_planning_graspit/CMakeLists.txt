@@ -97,7 +97,7 @@ QT4_WRAP_CPP(MOC_OUTFILES ${MOC_HEADERS})
      
 if (catkin_FOUND)
     # INCLUDE_DIRS for catkin_package() command
-    set(CATKIN_INCLUDE_DIRS
+    set(CATKIN_DEPEND_INCLUDE_DIRS
         include
         ${QT_INCLUDES}
     )    
@@ -127,7 +127,7 @@ if (catkin_FOUND)
     ## CATKIN_DEPENDS: catkin_packages dependent projects also need
     ## DEPENDS: system dependencies of this project that dependent projects also need
     catkin_package(
-      INCLUDE_DIRS ${CATKIN_INCLUDE_DIRS}
+      INCLUDE_DIRS ${CATKIN_DEPEND_INCLUDE_DIRS}
       LIBRARIES grasp_planning_graspit
       CATKIN_DEPENDS ${CATKIN_DEPEND_PKGS} 
       DEPENDS ${CATKIN_DEPENDS_LIBS}
@@ -189,6 +189,7 @@ set(MAIN_HEADER_FILES
     ${INCDIR}/SharedPtr.h
     ${INCDIR}/ThreadImpl.h
     ${INCDIR}/PrintHelpers.h
+    ${INCDIR}/LogBinding.h
 )
 
 set(MAIN_SOURCE_FILES 
@@ -275,7 +276,9 @@ target_link_libraries(simple_graspit_database
 )
 
 # style checking
-roslint_cpp()
+if (catkin_FOUND)
+    roslint_cpp()
+endif (catkin_FOUND)
 
 #############
 ## Install ##

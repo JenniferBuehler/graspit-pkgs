@@ -38,7 +38,7 @@ set(IVCON_INCLUDE_DIRS
 # library to use in target_link_libraries().
 set(IVCON_LIBRARY "${GLOBAL_OUTPUT_PATH}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ivcon_static${CMAKE_STATIC_LIBRARY_SUFFIX}")
 
-set(IVCON_SYSTEM_LIBRARIES Qt4 Coin SoQt4)
+set(IVCON_SYSTEM_LIBRARIES libqt4-dev libcoin80-dev libsoqt4-dev)
 
 # import the configuration file (has problems with catkin, and is not really required)
 # include(${GLOBAL_OUTPUT_PATH}/lib/ivcon-static-lib-targets.cmake)

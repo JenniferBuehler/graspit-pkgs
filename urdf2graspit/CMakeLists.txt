@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(urdf2graspit)
 
-
 # set this variable to true if you would like that cmake
 # downloads and builds the ivcon package
 # (https://github.com/JenniferBuehler/ivcon).

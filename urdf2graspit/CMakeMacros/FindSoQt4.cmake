@@ -15,7 +15,7 @@
 # in order to cause a cmake failure if libraries are not there. 
 
 find_path(SOQT_INCLUDE_DIR Inventor/Qt/SoQt.h
-	${CMAKE_INCLUDE_PATH}
+	PATHS ${CMAKE_INCLUDE_PATH}
 	$ENV{COIN3DDIR}/include
 	/usr/local/soqt/include
 	/usr/local/SoQt/include

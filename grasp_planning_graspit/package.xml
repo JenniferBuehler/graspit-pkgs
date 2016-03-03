@@ -38,27 +38,6 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-
-  <!-- this is required if not building graspit fork locally -->
-  <!--build_depend>graspit</build_depend-->
-
-  <!-- System dependencies: -->
-
-  <!-- boost works with bloom only if libboost-all-dev is used.
-  <run_depend>libboost-filesystem-dev</run_depend>
-  <run_depend>libboost-system-dev</run_depend>
-  <run_depend>libboost-thread-dev</run_depend>
-  <run_depend>libboost-program-options-dev</run_depend-->
-  <run_depend>boost</run_depend>
-
-  <run_depend>libsoqt4-dev</run_depend>
-  <run_depend>libcoin80-dev</run_depend>
-  <run_depend>libqt4-dev</run_depend>
-  <run_depend>libblas-dev</run_depend>
-  <run_depend>liblapack-dev</run_depend>
-
-  <run_depend>libqhull</run_depend>
-
   <!-- depends only on eigen_conversion because it's available as ROS package,
      and searching for it with separate cmake module should not be necessary.
      CMakeLists.txt however also compiles without ROS dependencies if not
@@ -66,6 +45,28 @@
   <build_depend>eigen_conversions</build_depend>
   <build_depend>roslint</build_depend>
 
+  <!-- this is required if not building graspit fork locally -->
+  <!--build_depend>graspit</build_depend-->
+
+  <!-- System dependencies: -->
+
+  <!-- boost works with bloom only if libboost-all-dev is used -->
+  <build_depend>boost</build_depend>
+  <build_depend>libsoqt4-dev</build_depend>
+  <build_depend>libcoin80-dev</build_depend>
+  <build_depend>libqt4-dev</build_depend>
+  <build_depend>libblas-dev</build_depend>
+  <build_depend>liblapack-dev</build_depend>
+  <build_depend>libqhull</build_depend>
+  <build_depend>git</build_depend>
+
+  <run_depend>boost</run_depend>
+  <run_depend>libsoqt4-dev</run_depend>
+  <run_depend>libcoin80-dev</run_depend>
+  <run_depend>libqt4-dev</run_depend>
+  <run_depend>libblas-dev</run_depend>
+  <run_depend>liblapack-dev</run_depend>
+  <run_depend>libqhull</run_depend>
 
   <!-- this is required if not building graspit fork locally -->
   <!--run_depend>graspit</run_depend-->
