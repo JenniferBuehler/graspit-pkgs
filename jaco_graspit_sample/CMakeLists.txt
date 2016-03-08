@@ -25,4 +25,13 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
+install(DIRECTORY worlds/ 
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/worlds
+  PATTERN ".git" EXCLUDE
+)
+
+install(DIRECTORY models/ 
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/models
+  PATTERN ".git" EXCLUDE
+)
 

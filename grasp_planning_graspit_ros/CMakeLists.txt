@@ -12,10 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   roslint
 )
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
-
 # add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
@@ -27,8 +23,6 @@ if(DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
 endif(DOXYGEN_FOUND)
-
-
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -119,7 +113,6 @@ target_link_libraries(load_model_client ${catkin_LIBRARIES})
 target_link_libraries(save_world_client ${catkin_LIBRARIES})
 target_link_libraries(eigengrasp_planner_client ${catkin_LIBRARIES})
 
-
 # style checking
 roslint_cpp()
 
@@ -141,20 +134,27 @@ roslint_cpp()
 install(TARGETS grasp_planning_node grasp_planning_service
         add_model_client load_model_client
         save_world_client eigengrasp_planner_client
-#  EXPORT grasp_planning_graspit_ros-target 
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-#install(EXPORT grasp_planning_graspit_ros-target
-#   DESTINATION ${LIB_DESTINATION}
-#)
-
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
+  PATTERN ".git" EXCLUDE
+)
+
+install(DIRECTORY launch/ 
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  FILES_MATCHING PATTERN "*.launch"
+  PATTERN ".git" EXCLUDE
+)
+
+install(DIRECTORY test/ 
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  FILES_MATCHING PATTERN "*.launch"
   PATTERN ".git" EXCLUDE
 )
 
@@ -165,14 +165,12 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-
 if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/docs/html)
     install(DIRECTORY 
         ${CMAKE_CURRENT_BINARY_DIR}/docs/html 
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/doc
 )
 endif (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/docs/html)
-
 
 #############
 ## Testing ##
