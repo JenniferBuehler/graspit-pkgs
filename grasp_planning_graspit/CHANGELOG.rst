@@ -2,8 +2,8 @@
 Changelog for package grasp_planning_graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.3 (2016-03-08)
+------------------
 * changed catkin_package system depends to names in rosdep
 * Adapted cmake file to for jenkins, and removed c++11 flag, which required fixing two little things in sources
 * Contributors: Jennifer Buehler

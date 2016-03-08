@@ -2,8 +2,8 @@
 Changelog for package grasp_planning_graspit_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.3 (2016-03-08)
+------------------
 * added launch directory installs
 * Adapted cmake file to for jenkins, and removed c++11 flag, which required fixing two little things in sources
 * Contributors: Jennifer Buehler

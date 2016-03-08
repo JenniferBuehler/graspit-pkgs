@@ -2,8 +2,8 @@
 Changelog for package jaco_graspit_sample
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.3 (2016-03-08)
+------------------
 * added launch directory installs
 * Contributors: Jennifer Buehler
 
