@@ -138,11 +138,18 @@ roslint_cpp()
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS grasp_planning_node grasp_planning_service add_model_client load_model_client save_world_client eigengrasp_planner_client
+install(TARGETS grasp_planning_node grasp_planning_service
+        add_model_client load_model_client
+        save_world_client eigengrasp_planner_client
+#  EXPORT grasp_planning_graspit_ros-target 
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+#install(EXPORT grasp_planning_graspit_ros-target
+#   DESTINATION ${LIB_DESTINATION}
+#)
 
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/

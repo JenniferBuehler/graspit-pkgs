@@ -1,7 +1,36 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(grasp_planning_graspit)
+    
+# by default, compiling with catkin is
+# enabled. It will only be disabled again
+# if CATKIN_DEVEL_PREFIX is not set.
+# To enforce compiling *without* catkin
+# even if CATKIN_DEVEL_PREFIX is defined,
+# compile with the flag -COMPILE_WITH_CATKIN=false
 
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
+if (NOT DEFINED COMPILE_WITH_CATKIN)
+    message(STATUS "Compiling grasp_planning_graspit: COMPILE_WITH_CATKIN is not defined, setting to TRUE by default and **compiling with catkin**.")
+    set (COMPILE_WITH_CATKIN true)
+    set (COMPILE_WITH_CATKIN_DEFAULT true) # flag that compiling with catkin is due to default setting
+endif (NOT DEFINED COMPILE_WITH_CATKIN)
+
+if (COMPILE_WITH_CATKIN AND NOT DEFINED COMPILE_WITH_CATKIN_DEFAULT)
+    message(STATUS "Compiling grasp_planning_graspit: COMPILE_WITH_CATKIN is true, so **compiling with catkin**.")
+endif (COMPILE_WITH_CATKIN AND NOT DEFINED COMPILE_WITH_CATKIN_DEFAULT)
+
+if (NOT COMPILE_WITH_CATKIN)
+    message(STATUS "Compiling grasp_planning_graspit: COMPILE_WITH_CATKIN is false, so **compiling with cmake.**")
+    set (ENFORCE_CMAKE true)
+endif (NOT COMPILE_WITH_CATKIN)
+
+if (COMPILE_WITH_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
+    set(MSG_STATUS STATUS)
+    if (NOT COMPILE_WITH_CATKIN_DEFAULT)
+        set(MSG_STATUS WARNING)
+    endif (NOT COMPILE_WITH_CATKIN_DEFAULT)
+    message(${MSG_STATUS} "Compiling grasp_planning_graspit: COMPILE_WITH_CATKIN is true, but CATKIN_DEVEL_PREFIX is not defined, so **enforcing compilation with cmake**.")
+    set (COMPILE_WITH_CATKIN false)
+endif (COMPILE_WITH_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
 
 # set this variable to true if you would like that cmake
 # downloads and builds the fork of GraspIt! which
@@ -13,33 +42,26 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
 # IMPORTANT: If you set this to false and are compiling
 # with catkin, uncomment the <*_depend> tags relating to
 # graspit in package.xml!
-if (NOT BUILD_GRASPIT)
+if (NOT DEFINED BUILD_GRASPIT)
     set (BUILD_GRASPIT true)
-endif (NOT BUILD_GRASPIT)
+endif (NOT DEFINED BUILD_GRASPIT)
+
+set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
 
-# catkin is optional, and only to be used when added 
-# as ROS package and compiling with catkin_make. 
-# CATKIN_DEVEL_PREFIX is only defined if building with catkin
-# TODO: Would be nicer to use another variable here like
-# BUILDING_WITH_CATKIN if something like that exists?
-if (CATKIN_DEVEL_PREFIX)
-    message("Building grasp_plannin_graspit with catkin.")
+if (COMPILE_WITH_CATKIN)
     find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint) 
     if (NOT BUILD_GRASPIT)
         find_package(catkin REQUIRED COMPONENTS graspit) 
     endif (NOT BUILD_GRASPIT)
     # include QT_USE_FILE is not necessary, because it is included via the catkin dependencies.
-else (CATKIN_DEVEL_PREFIX)
-    message("Building grasp_plannin_graspit without catkin.")
-endif (CATKIN_DEVEL_PREFIX) 
+endif (COMPILE_WITH_CATKIN) 
 
 # if catkin is not used (or graspit built locally),
 # we have to get the Qt dependencies separately
-if (NOT catkin_FOUND OR BUILD_GRASPIT)
-
+if (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
     if (NOT BUILD_GRASPIT)
         find_package (graspit REQUIRED)
     endif (NOT BUILD_GRASPIT)
@@ -56,7 +78,7 @@ if (NOT catkin_FOUND OR BUILD_GRASPIT)
     include (${QT_USE_FILE})
 
     find_package(Eigen3 REQUIRED)
-endif (NOT catkin_FOUND OR BUILD_GRASPIT)
+endif (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
 
 
 set(GRASPIT_SYSTEM_LIBS
@@ -95,7 +117,7 @@ set (MOC_HEADERS include/grasp_planning_graspit/EigenGraspPlanner.h)
 QT4_WRAP_CPP(MOC_OUTFILES ${MOC_HEADERS})
 
      
-if (catkin_FOUND)
+if (COMPILE_WITH_CATKIN)
     # INCLUDE_DIRS for catkin_package() command
     set(CATKIN_DEPEND_INCLUDE_DIRS
         include
@@ -132,7 +154,7 @@ if (catkin_FOUND)
       CATKIN_DEPENDS ${CATKIN_DEPEND_PKGS} 
       DEPENDS ${CATKIN_DEPENDS_LIBS}
     )
-endif (catkin_FOUND)
+endif (COMPILE_WITH_CATKIN)
 
 
 ###########
@@ -146,11 +168,11 @@ set(ALL_INCLUDE_DIRECTORIES
   ${EIGEN3_INCLUDE_DIR}
 )
 
-if (catkin_FOUND)
+if (COMPILE_WITH_CATKIN)
     set(ALL_INCLUDE_DIRECTORIES ${ALL_INCLUDE_DIRECTORIES} ${catkin_INCLUDE_DIRS})
-endif (catkin_FOUND)
+endif (COMPILE_WITH_CATKIN)
 
-if (NOT catkin_FOUND OR BUILD_GRASPIT)
+if (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
     set(ALL_INCLUDE_DIRECTORIES
          ${ALL_INCLUDE_DIRECTORIES}
          ${GRASPIT_INCLUDE_DIRS}
@@ -160,13 +182,13 @@ if (NOT catkin_FOUND OR BUILD_GRASPIT)
          ${QT_QT3SUPPORT_INCLUDE_DIR}
          ${QHULL_INCLUDE_DIRS}
     )
-endif (NOT catkin_FOUND OR BUILD_GRASPIT)
+endif (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
 
-ADD_DEFINITIONS(
-    -std=c++11 
-    -g
+#ADD_DEFINITIONS(
+    # -std=c++11 
+    # -g
     # -DGRASPITDBG
-)
+#)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -215,9 +237,9 @@ add_library(grasp_planning_graspit SHARED
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-if (catkin_FOUND)
+if (COMPILE_WITH_CATKIN)
     add_dependencies(grasp_planning_graspit ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-endif (catkin_FOUND)
+endif (COMPILE_WITH_CATKIN)
 
 if (BUILD_GRASPIT)
     add_dependencies(grasp_planning_graspit graspit_ext graspit_static)
@@ -228,26 +250,25 @@ add_executable(grasp_planning src/grasp_planning.cpp)
 add_executable(simple_graspit_database test/simple_graspit_database.cpp)
 #add_executable(simple_planning_tutorial tutorial/src/simple_planning_tutorial.cpp)
 
-
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-if (catkin_FOUND)
+if (COMPILE_WITH_CATKIN)
     add_dependencies(grasp_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
     add_dependencies(simple_graspit_database ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 #    add_dependencies(simple_planning_tutorial ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-endif (catkin_FOUND)
+endif (COMPILE_WITH_CATKIN)
 
 # add depending libraries if they don't come with catkin dependencies already
-if (NOT catkin_FOUND OR BUILD_GRASPIT)
+if (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
     set (DEPEND_LIBRARIES
        ${GRASPIT_SYSTEM_LIBS} 
        ${GRASPIT_LIBRARY}
     )
-endif (NOT catkin_FOUND OR BUILD_GRASPIT)
+endif (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
 
-if (catkin_FOUND)
+if (COMPILE_WITH_CATKIN)
     set (DEPEND_LIBRARIES ${catkin_LIBRARIES} ${DEPEND_LIBRARIES})
-endif (catkin_FOUND)
+endif (COMPILE_WITH_CATKIN)
 
 ## Specify libraries to link a library or executable target against
 
@@ -262,7 +283,6 @@ target_link_libraries(grasp_planning
   ${DEPEND_LIBRARIES}
 )
 
-
 #target_link_libraries(simple_planning_tutorial
 #  grasp_planning_graspit
 #  ${Boost_LIBRARIES}
@@ -276,9 +296,9 @@ target_link_libraries(simple_graspit_database
 )
 
 # style checking
-if (catkin_FOUND)
+if (COMPILE_WITH_CATKIN)
     roslint_cpp()
-endif (catkin_FOUND)
+endif (COMPILE_WITH_CATKIN)
 
 #############
 ## Install ##
@@ -308,19 +328,19 @@ endif (catkin_FOUND)
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-if (catkin_FOUND) 
+if (COMPILE_WITH_CATKIN) 
     # all install targets should use catkin DESTINATION variables
     # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
     set ( INCLUDE_DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
     set ( LIB_DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
     set ( BIN_DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
     set ( SHARE_DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-else (catkin_FOUND) 
+else (COMPILE_WITH_CATKIN) 
     set ( INCLUDE_DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/)
     set ( LIB_DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/)
     set ( BIN_DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/)
     set ( SHARE_DESTINATION ${CMAKE_INSTALL_PREFIX}/share/)
-endif (catkin_FOUND) 
+endif (COMPILE_WITH_CATKIN) 
 
 ## Mark executables and/or libraries for installation
 install(TARGETS grasp_planning_graspit
@@ -336,14 +356,14 @@ install(TARGETS grasp_planning
 )
 
 if (BUILD_GRASPIT)
-    if (catkin_FOUND)
+    if (COMPILE_WITH_CATKIN)
         # make the GraspIt! simulator available also in the catkin devel space
         add_custom_target(copy_simulator_exe ALL 
             COMMAND ${CMAKE_COMMAND} -E copy
                 ${GRASPIT_EXECUTABLE} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${PROJECT_NAME}
             DEPENDS graspit_ext
         )
-    endif (catkin_FOUND)
+    endif (COMPILE_WITH_CATKIN)
     install(PROGRAMS ${GRASPIT_EXECUTABLE} 
        DESTINATION ${BIN_DESTINATION}
     )
@@ -359,6 +379,11 @@ install(DIRECTORY
     DESTINATION ${SHARE_DESTINATION}
 )
 
+install(DIRECTORY 
+    tutorial 
+    DESTINATION ${SHARE_DESTINATION}
+)
+
 if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/docs/html)
     install(DIRECTORY 
         ${CMAKE_CURRENT_BINARY_DIR}/docs/html 
@@ -370,7 +395,7 @@ endif (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/docs/html)
 ## Testing ##
 #############
 
-if (catkin_FOUND)
+if (COMPILE_WITH_CATKIN)
     ## Add gtest based cpp test target and link libraries
     # catkin_add_gtest(${PROJECT_NAME}-test test/test_grasp_planning_graspit.cpp)
     # if(TARGET ${PROJECT_NAME}-test)
@@ -379,4 +404,4 @@ if (catkin_FOUND)
 
     ## Add folders to be run by python nosetests
     # catkin_add_nosetests(test)
-endif (catkin_FOUND)
+endif (COMPILE_WITH_CATKIN)

@@ -534,7 +534,9 @@ bool EigenGraspPlanner::saveResultsAsWorldFiles(const std::string& inDirectory,
         // Execute grasp so that the correct world is saved
         s->execute();
 
-        std::string wFilename = inDirectory + "/" + fileNamePrefix + "_" + std::to_string(i + 1);
+        std::stringstream _wFilename;
+        _wFilename << inDirectory << "/" << fileNamePrefix << "_" << (i + 1);
+        std::string wFilename = _wFilename.str();
         if (asGraspIt && !getGraspItSceneManager()->saveGraspItWorld(wFilename + ".xml", createDir))
         {
             PRINTERROR("GraspIt could not save world file " << i);
