@@ -131,13 +131,15 @@ if (COMPILE_WITH_CATKIN)
     endif (NOT BUILD_GRASPIT)
 
     # DEPENDS for catkin_package() command
-    set(CATKIN_DEPENDS_LIBS ${Boost_LIBRARIES})
-    if (BUILD_GRASPIT)
-        set(CATKIN_DEPENDS_LIBS
-            ${CATKIN_DEPENDS_LIBS}
-            ${GRASPIT_SYSTEM_LIBS} 
-        )
-    endif (BUILD_GRASPIT)
+    #set(CATKIN_DEPENDS_LIBS ${Boost_LIBRARIES})
+    #if (BUILD_GRASPIT)
+    #    set(CATKIN_DEPENDS_LIBS
+    #        ${CATKIN_DEPENDS_LIBS}
+    #        ${GRASPIT_SYSTEM_LIBS} 
+    #    )
+    #endif (BUILD_GRASPIT)
+
+    set(CATKIN_DEPENDS_LIBS boost libsoqt4-dev libcoin80-dev libqt4-dev libblas-dev liblapack-dev libqhull)
 
     ###################################
     ## catkin specific configuration ##

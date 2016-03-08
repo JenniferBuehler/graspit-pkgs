@@ -53,14 +53,16 @@ if (NOT BUILD_IVCON)
 endif (NOT BUILD_IVCON)
 
 
-set(CATKIN_DEPENDS_LIBS Qt4 SoQt4)
-if (BUILD_IVCON)
-    set(CATKIN_DEPENDS_LIBS
-        ${CATKIN_DEPENDS_LIBS}
-        ${IVCON_LIBRARIES} 
-    )
-endif (BUILD_IVCON)
+#set(CATKIN_DEPENDS_LIBS Qt4 SoQt4)
+#if (BUILD_IVCON)
+#    set(CATKIN_DEPENDS_LIBS
+#        ${CATKIN_DEPENDS_LIBS}
+#        ${IVCON_LIBRARIES} 
+#        ${IVCON_SYSTEM_LIBRARIES}
+#    )
+#endif (BUILD_IVCON)
 
+set (CATKIN_DEPENDS_LIBS libsoqt4-dev libqt4-dev libcoin80-dev git)
 
 ## The catkin_package macro generates cmake config files for your package
 ## Declare things to be passed to dependent projects
@@ -72,9 +74,8 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES urdf2graspit
   CATKIN_DEPENDS ${CATKIN_DEPEND_PKGS} 
-  DEPENDS ${CATKIN_DEPENDS_LIBS} ${IVCON_SYSTEM_LIBRARIES}
+  DEPENDS ${CATKIN_DEPENDS_LIBS}
 )
-
 
 ###########
 ## Build ##
@@ -135,9 +136,7 @@ if (BUILD_IVCON)
 endif (BUILD_IVCON)
 
 target_link_libraries(urdf2graspit ${DEPEND_LIBRARIES})
-
 target_link_libraries(urdf2graspit_node urdf2graspit ${DEPEND_LIBRARIES})
-
 target_link_libraries(marker_selector_viewer ${DEPEND_LIBRARIES})
 
 
