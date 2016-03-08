@@ -2,6 +2,12 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* changed catkin_package system depends to names in rosdep
+* added launch directory installs
+* Contributors: Jennifer Buehler
+
 0.1.2 (2016-03-04)
 ------------------
 
