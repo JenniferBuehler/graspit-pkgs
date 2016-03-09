@@ -8,6 +8,19 @@ project(grasp_planning_graspit)
 # even if CATKIN_DEVEL_PREFIX is defined,
 # compile with the flag -COMPILE_WITH_CATKIN=false
 
+# To enforce compiling with catkin in ANY case,
+# set ENFORCE_CATKIN to true. This is for example
+# required when compiling with jenkins, when
+# it seems that CATKIN_DEVEL_PREFIX is not set.
+# So set ENFORCE_CATKIN to true only for the commits
+# to jenkins.
+
+set (ENFORCE_CATKIN true)
+if (ENFORCE_CATKIN)
+    message(STATUS "Enforcing compilation with catkin, as ENFORCE_CATKIN was set to true")
+    set (COMPILE_WITH_CATKIN true)
+endif (ENFORCE_CATKIN)
+
 if (NOT DEFINED COMPILE_WITH_CATKIN)
     message(STATUS "Compiling grasp_planning_graspit: COMPILE_WITH_CATKIN is not defined, setting to TRUE by default and **compiling with catkin**.")
     set (COMPILE_WITH_CATKIN true)
@@ -20,17 +33,17 @@ endif (COMPILE_WITH_CATKIN AND NOT DEFINED COMPILE_WITH_CATKIN_DEFAULT)
 
 if (NOT COMPILE_WITH_CATKIN)
     message(STATUS "Compiling grasp_planning_graspit: COMPILE_WITH_CATKIN is false, so **compiling with cmake.**")
-    set (ENFORCE_CMAKE true)
 endif (NOT COMPILE_WITH_CATKIN)
 
-if (COMPILE_WITH_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
+if (NOT ENFORCE_CATKIN AND COMPILE_WITH_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
     set(MSG_STATUS STATUS)
     if (NOT COMPILE_WITH_CATKIN_DEFAULT)
         set(MSG_STATUS WARNING)
     endif (NOT COMPILE_WITH_CATKIN_DEFAULT)
     message(${MSG_STATUS} "Compiling grasp_planning_graspit: COMPILE_WITH_CATKIN is true, but CATKIN_DEVEL_PREFIX is not defined, so **enforcing compilation with cmake**.")
     set (COMPILE_WITH_CATKIN false)
-endif (COMPILE_WITH_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
+endif (NOT ENFORCE_CATKIN AND COMPILE_WITH_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
+
 
 # set this variable to true if you would like that cmake
 # downloads and builds the fork of GraspIt! which
