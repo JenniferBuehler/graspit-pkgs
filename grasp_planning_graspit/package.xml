@@ -11,6 +11,7 @@
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <maintainer email="jennifer.e.buehler@gmail.com">Jennifer Buehler</maintainer>
+  <author email="jennifer.e.buehler@gmail.com">Jennifer Buehler</author>
 
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
@@ -21,10 +22,6 @@
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
   <!-- <url type="website">http://wiki.ros.org/grasp_planning_graspit</url> -->
-
-  <!-- Author tags are optional, mutiple are allowed, one per tag -->
-  <author email="jennifer.e.buehler@gmail.com">Jennifer Buehler</author>
-
 
   <!-- The *_depend tags are used to specify dependencies -->
   <!-- Dependencies can be catkin packages or system dependencies -->
