@@ -32,6 +32,8 @@
 #include <QObject>
 
 #define DEFAULT_MAX_PLANNING_STEPS 70000
+#define DEFAULT_MAX_RESULTS_PER_REPEAT 10
+#define DEFAULT_FINISH_WITH_AUTOGRASP false
 
 // To use  during beta phase, until decided which implementation
 // is better.
@@ -114,8 +116,10 @@ public:
      *                       results.
      * \return false if planner could not be initialized or if it failed.
      */
-    bool plan(const int maxPlanningSteps,  // = DEFAULT_MAX_PLANNING_STEPS,
-              const int repeatPlanning,   // = 1
+    bool plan(const int maxPlanningSteps,// = DEFAULT_MAX_PLANNING_STEPS,
+              const int repeatPlanning,// = 1,
+              const int maxResultsPerRepeat,// = DEFAULT_MAX_RESULTS_PER_REPEAT,
+              const bool finishWithAutograsp,// = DEFAULT_FINISH_WITH_AUTOGRASP,
               const PlannerType& planType = SimAnn);
 
     /**
@@ -136,12 +140,23 @@ public:
      * \param repeatPlanning number of times the planning process should be repeated. This would in effect
      *                       be the same as calling this method <repeatPlanning> times and then pick the best
      *                       results.
+     *
+     * \param maxResultsPerRepeat keep the n best results of each planning run.
+     *      This number multiplied by \e repeatPlanning is the maximum
+     *      number of resulting grasps for a call fo the service.
+     * \param finishWithAutograsp Each result is 'finalized' with an additional Auto-Grasp,
+     *      to ensure fingers are really closed around the object.
+     *      Sometimes, a resulting grasp does not really touch the
+     *      object, so setting this to true can help to ensure there
+     *      are actual contact points.
      * \return false if planner could not be initialized or if it failed.
      */
     bool plan(const std::string& handName, const std::string& objectName,
               const EigenTransform * objectPose,
-              const int maxPlanningSteps,  // = DEFAULT_MAX_PLANNING_STEPS,
-              const int repeatPlanning,   // = 1
+              const int maxPlanningSteps,//  = DEFAULT_MAX_PLANNING_STEPS,
+              const int repeatPlanning,//   = 1
+              const int maxResultsPerRepeat,// = DEFAULT_MAX_RESULTS_PER_REPEAT,
+              const bool finishWithAutograsp,// = DEFAULT_FINISH_WITH_AUTOGRASP,
               const PlannerType& planType = SimAnn);
 
     /**
@@ -169,6 +184,18 @@ protected:
     virtual void onSceneManagerShutdown();
 
 private:
+    /**
+     * Deletes the objects in the temporary result buffer (field \e results)
+     * and clears the array.
+     */
+    void deleteResults();
+
+    /**
+     * Copies relevant fields from \e s to \e result
+     * \return false if state \e s is invalid
+     */
+    bool copyResult(const GraspPlanningState * s, EigenGraspResult& result) const;
+
     /**
      * Method which will be called at regular intervals from the thread which is also
      * running the SoQt loop.

@@ -48,7 +48,9 @@ using GraspIt::EigenGraspPlanner;
 #define DEFAULT_EGPLANNING_TOPIC "graspit_eg_planning"
 #define DEFAULT_MAX_EGPLANNING_STEPS 70000
 #define DEFAULT_NUM_REPEAT_PLANNING 1
-#define DEFAULT_GRASP_MSG_POSITION_FACTOR 1
+#define DEFAULT_GRASP_MSG_POSITION_FACTOR 0.001
+#define DEFAULT_NUM_KEEP_RESULTS 3
+#define DEFAULT_FINISH_WITH_AUTOGRASP false
 #define DEFAULT_OUTPUT_DIRECTORY ""
 #define DEFAULT_SAVE_RESULT_FILES false
 #define DEFAULT_NEGATE_JOINT_DOFS true
@@ -100,6 +102,10 @@ void GraspItServices::readParams()
     PRINTMSG("Using default number of planning repeats: " << defaultNumRepeatPlanning);
     priv.param<float>("grasp_msg_position_factor", graspMsgPositionFactor, DEFAULT_GRASP_MSG_POSITION_FACTOR);
     PRINTMSG("Using default factor for position values: " << graspMsgPositionFactor);
+    priv.param<int>("default_num_keep_results", defaultNumKeepResults, DEFAULT_NUM_KEEP_RESULTS);
+    PRINTMSG("Using default number of results kept: " << defaultNumKeepResults);
+    priv.param<bool>("default_finish_with_autograsp", defaultFinishWithAutograsp, DEFAULT_FINISH_WITH_AUTOGRASP);
+    PRINTMSG("Finish with auto-grasp by default: " << defaultFinishWithAutograsp);
     priv.param<bool>("save_result_files_inventor", saveResultFilesInventor, DEFAULT_SAVE_RESULT_FILES);
     PRINTMSG("Save result files inventor: " << saveResultFilesInventor);
     priv.param<bool>("save_result_files_graspit", saveResultFilesGraspit, DEFAULT_SAVE_RESULT_FILES);
@@ -371,7 +377,8 @@ bool GraspItServices::acceptEGPlanning(manipulation_msgs::GraspPlanning::Request
     int maxPlanningSteps = defaultMaxPlanningSteps;
 
     PRINTMSG("Now starting the planning process...");
-    if (!egPlanner->plan(robotName, objectName, objTransform.get(), maxPlanningSteps, defaultNumRepeatPlanning))
+    if (!egPlanner->plan(robotName, objectName, objTransform.get(), maxPlanningSteps,
+            defaultNumRepeatPlanning, defaultNumKeepResults, defaultFinishWithAutograsp))
     {
         PRINTERROR("Could not plan.");
         res.error_code.value = manipulation_msgs::GraspPlanningErrorCode::OTHER_ERROR;

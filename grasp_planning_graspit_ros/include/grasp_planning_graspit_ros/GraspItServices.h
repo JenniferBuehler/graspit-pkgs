@@ -70,27 +70,9 @@ class EigenGraspResult;
  * - No joint velocities and efforts in the resulting sensor_msgs::JointState objects are provided.
  *
  *
- * All parameters have to be specified within the node's private namespace:
- * - "database_name" is the name of the database which will be maintained
- *   (see GraspIt::GraspItDatabaseManager).
- * - "eg_planner_name" is the name to give the GraspIt::EigenGraspPlanner instance.
- * - "add_to_db_topic" is the name of the service topic to be published for
- *    grasp_planning_graspit_msgs::AddToDatabase.srv
- * - "load_model_topic" is the name of the service topic to be published for
- *    *grasp_planning_graspit_msgs::LoadDatabaseModel.srv*
- * - "save_world_topic" is the name of the service topic to be published for
- *    *grasp_planning_graspit_msgs::SaveWorld.srv*
- * - "eg_planning_topic" is the name of the service topic to be published for
- *    *manipulation_msgs::GraspPlanning.srv*
- * - "default_max_planning_steps" is the default maximum planning steps to
- *    use for the GraspIt::EigenGraspPlanner planning process.
- * - "grasp_msg_position_factor" is a factor by which all position values are multiplied
- *      before a grasp result is being saved in a manipulation_msgs/Grasp message.
- * - "results_output_directory" is the directory where results should be saved
- * - "save_result_files_inventor" is a boolean flag specifying whether to save
- *    the results as inventor files in the folder specified in "results_output_directory".
- * - "save_result_files_graspit" is a boolean flag specifying whether to save
- *    the results as graspit world files in the folder specified in "results_output_directory".
+ * All parameters have to be specified within the node's private namespace. Parmeters are
+ * documented in the .yaml config file:
+ * ``rosed grasp_planning_graspit_ros GraspItServices.yaml`` 
  *
  * \author Jennifer Buehler
  * \date January 2016
@@ -170,6 +152,8 @@ private:
     std::string egPlanningTopic;
     int defaultMaxPlanningSteps;
     int defaultNumRepeatPlanning;
+    int defaultNumKeepResults;
+    bool defaultFinishWithAutograsp;
     float graspMsgPositionFactor;
     std::string resultsOutputDirectory;
     bool saveResultFilesInventor;

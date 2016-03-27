@@ -264,7 +264,9 @@ int main(int argc, char **argv)
 
     int maxPlanningSteps = 50000;
     int repeatPlanning = 1;
-    p->plan(maxPlanningSteps, repeatPlanning);
+    int keepMaxPlanningResults = 3;
+    bool finishWithAutograsp = false;
+    p->plan(maxPlanningSteps, repeatPlanning, keepMaxPlanningResults, finishWithAutograsp);
 
     PRINTMSG("Saving results as world files");
 

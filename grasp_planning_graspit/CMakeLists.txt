@@ -263,14 +263,14 @@ endif (BUILD_GRASPIT)
 ## Declare C++ executables
 add_executable(grasp_planning src/grasp_planning.cpp)
 add_executable(simple_graspit_database test/simple_graspit_database.cpp)
-#add_executable(simple_planning_tutorial tutorial/src/simple_planning_tutorial.cpp)
+add_executable(simple_planning_tutorial tutorial/src/simple_planning_tutorial.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 if (COMPILE_WITH_CATKIN)
     add_dependencies(grasp_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
     add_dependencies(simple_graspit_database ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#    add_dependencies(simple_planning_tutorial ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+    add_dependencies(simple_planning_tutorial ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 endif (COMPILE_WITH_CATKIN)
 
 # add depending libraries if they don't come with catkin dependencies already
@@ -298,11 +298,11 @@ target_link_libraries(grasp_planning
   ${DEPEND_LIBRARIES}
 )
 
-#target_link_libraries(simple_planning_tutorial
-#  grasp_planning_graspit
-#  ${Boost_LIBRARIES}
-#  ${DEPEND_LIBRARIES}
-#)
+target_link_libraries(simple_planning_tutorial
+  grasp_planning_graspit
+  ${Boost_LIBRARIES}
+  ${DEPEND_LIBRARIES}
+)
 
 target_link_libraries(simple_graspit_database
   grasp_planning_graspit

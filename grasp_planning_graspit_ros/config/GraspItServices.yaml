@@ -19,8 +19,22 @@ default_max_planning_steps: 70000
 # the default number of times the planning is repeated (complete planner re-starts).
 default_num_repeat_planning: 1
 
+# Default setting: keep the n best results of a planning run.
+# This number multiplied by default_num_repeat_planning is the maximum
+# number of resulting grasps for a call fo the service.
+default_num_keep_results: 3
+
+# Default setting: Each result is 'finalized' with an additional Auto-Grasp,
+# to ensure fingers are really closed around the object.
+# Sometimes, a resulting grasp does not really touch the
+# object, so setting this to true can help to ensure there
+# are actual contact points.
+default_finish_with_autograsp: true
+
 # factor by which all position values are multiplied
 # before a grasp result is being saved in a manipulation_msgs/Grasp.msg message.
+# The GraspIt! scale is based on mm, while the results may be required in m, in
+# which case this factor should be 0.001.
 grasp_msg_position_factor: 0.001
 
 # specifies whether to save the results as inventor files in the folder specified in "results_output_directory".

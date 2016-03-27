@@ -68,11 +68,18 @@ int main(int argc, char **argv)
     int maxPlanningSteps = 70000;
     // Number of times to repeat the planning process
     int repeatPlanning = 1;
+    
+    // Maximum number of planning results to keep (of each planning repeat)
+    int keepMaxPlanningResults = 3;
+    // Finalize each planning result with an "auto-grasp" to ensure there really are
+    // contacts between fingers and objects (sometimes, the grasp result is just very
+    // close to the object, but not really touching it).
+    bool finishWithAutograsp = false;
 
     // By default, the last robot loaded and the last object loaded are to be used as the hand and the
     // object to grasp for the planning process. You can use the other EigenGraspPlanner::plan()
     // method with more parameters to change this.
-    if (!planner->plan(maxPlanningSteps, repeatPlanning))
+    if (!planner->plan(maxPlanningSteps, repeatPlanning, keepMaxPlanningResults, finishWithAutograsp))
     {
         std::cerr << "Error doing the planning." << std::endl;
         return 1;
