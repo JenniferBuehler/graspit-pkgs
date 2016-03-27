@@ -567,15 +567,17 @@ void EigenGraspPlanner::getResults(std::vector<EigenGraspResult>& allGrasps) con
         }
 
         EigenTransform handTransform = getHandTransform(s);
-        // PRINTMSG("Hand transform: " << handTransform);
+        // PRINTMSG("RESULT "<<i<<" Hand transform: " << handTransform);
 
         EigenTransform objectTransform = getObjectTransform(s);
-        // PRINTMSG("Object transform: " << objectTransform);
+        // PRINTMSG("RESULT "<<i<<" Object transform: " << objectTransform);
 
         // Compute hand transform relative to object
         // objectTransform * relTransform = handTransform
         // relTransform = objectTransform.inverse() * handTransform;
         EigenTransform relTransform = objectTransform.inverse() * handTransform;
+        
+        PRINTMSG("RESULT "<<i<<" rel transform: " << relTransform);
 
         // PRINTMSG("Relative transform: " << relTransform);
         std::vector<double> dofs;

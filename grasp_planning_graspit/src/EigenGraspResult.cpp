@@ -37,7 +37,7 @@ EigenGraspResult::EigenGraspResult(const EigenGraspResult& o):
 }
 
 EigenGraspResult::EigenGraspResult(
-    const EigenTransform _relTransform,
+    const EigenTransform& _relTransform,
     const std::vector<double>& _dofs,
     const std::vector<double>& _egVals,
     const bool _legal,

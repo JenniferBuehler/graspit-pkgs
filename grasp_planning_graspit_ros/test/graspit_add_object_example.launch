@@ -1,6 +1,15 @@
 <launch>
     <arg name="object_name" default="small_cube"/>
     <arg name="object_file" default="$(find jaco_graspit_sample)/models/objects/small_cube.xml" />
+   
+    <arg name="load_table" default="false"/>
+ 
+    <arg name="table_name" default="table"/>
+    <arg name="table_file" default="$(find jaco_graspit_sample)/models/obstacles/table.xml" />
 
-   	<node name="add_model_client_cube" pkg="grasp_planning_graspit_ros" type="add_model_client" respawn="false" output="screen" args="$(arg object_name) $(arg object_file) false true"/>
+   	<node name="add_model_client_cube" pkg="grasp_planning_graspit_ros" type="add_model_client" respawn="false" output="screen"
+        args="$(arg object_name) $(arg object_file) false true"/>
+
+   	<node if="$(arg load_table)" name="add_model_client_table" pkg="grasp_planning_graspit_ros" type="add_model_client" respawn="false" output="screen"
+        args="$(arg table_name) $(arg table_file) false false"/>
 </launch>

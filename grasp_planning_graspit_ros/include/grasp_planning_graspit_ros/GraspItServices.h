@@ -84,6 +84,8 @@ class EigenGraspResult;
  *    *manipulation_msgs::GraspPlanning.srv*
  * - "default_max_planning_steps" is the default maximum planning steps to
  *    use for the GraspIt::EigenGraspPlanner planning process.
+ * - "grasp_msg_position_factor" is a factor by which all position values are multiplied
+ *      before a grasp result is being saved in a manipulation_msgs/Grasp message.
  * - "results_output_directory" is the directory where results should be saved
  * - "save_result_files_inventor" is a boolean flag specifying whether to save
  *    the results as inventor files in the folder specified in "results_output_directory".
@@ -168,6 +170,7 @@ private:
     std::string egPlanningTopic;
     int defaultMaxPlanningSteps;
     int defaultNumRepeatPlanning;
+    float graspMsgPositionFactor;
     std::string resultsOutputDirectory;
     bool saveResultFilesInventor;
     bool saveResultFilesGraspit;

@@ -27,6 +27,8 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fstream>
+#include <boost/filesystem.hpp>
 
 #include <ros/ros.h>
 
@@ -64,10 +66,74 @@ void handler(int sig)
     exit(1);
 }
 
+
+template<typename ROSMessage>
+bool saveToFile(const ROSMessage& msg, const std::string& filename, bool asBinary)
+{
+
+    std::ios_base::openmode mode;
+    if (asBinary) mode = std::ios::out | std::ios::binary;
+    else mode = std::ios::out;
+
+    std::ofstream ofs(filename.c_str(), mode);
+
+    if (!ofs.is_open())
+    {
+        ROS_ERROR("File %s cannot be opened.", filename.c_str());
+        return false;
+    }
+
+    if (asBinary)
+    {
+        uint32_t serial_size = ros::serialization::serializationLength(msg);
+        boost::shared_array<uint8_t> obuffer(new uint8_t[serial_size]);
+        ros::serialization::OStream ostream(obuffer.get(), serial_size);
+        ros::serialization::serialize(ostream, msg);
+        ofs.write((char*) obuffer.get(), serial_size);
+    }
+    else
+    {
+        ofs<<msg; 
+    }
+    ofs.close();
+    return true;
+}
+
+
+bool makeDirectoryIfNeeded(const std::string& dPath)
+{
+    try
+    {
+        boost::filesystem::path dir(dPath);
+        boost::filesystem::path buildPath;
+
+        for (boost::filesystem::path::iterator it(dir.begin()), it_end(dir.end()); it != it_end; ++it)
+        {
+            buildPath /= *it;
+            // std::cout << buildPath << std::endl;
+
+            if (!boost::filesystem::exists(buildPath) &&
+                    !boost::filesystem::create_directory(buildPath))
+            {
+                PRINTERROR("Could not create directory " << buildPath);
+                return false;
+            }
+        }
+    }
+    catch (const boost::filesystem::filesystem_error& ex)
+    {
+        PRINTERROR(ex.what());
+        return false;
+    }
+    return true;
+}
+
+
 void printHelp(const char * progName)
 {
-    PRINTMSG("Usage: " << progName << " <robot name> <object id>");
-    PRINTMSG("Only objects added to the database and loaded into the graspit world can be referenced.");
+    PRINTMSG("Usage: " << progName << " <robot name> <object id> [<output-path>]");
+    PRINTMSG("Where <robot name> is a string, <object id> is and id and <output-path> is the path where resulting Grasp.msg are written");
+    PRINTMSG("Only robots/objects added to the database and loaded into the graspit world can be referenced.");
 }
 
 int run(int argc, char **argv)
@@ -76,6 +142,23 @@ int run(int argc, char **argv)
     {
         printHelp(argv[0]);
         return 0;
+    }
+
+    std::string output_path;
+    if (argc >= 4)
+    {
+        output_path=std::string(argv[3]);    
+        if (!makeDirectoryIfNeeded(output_path))
+        {
+            PRINTERROR("Could not create directory "<<output_path);
+            return 0;
+        }
+    }
+        
+    if (output_path.empty())
+    {
+        PRINTWARN("No output path configured, will print results on screen only.");
+        printHelp(argv[0]);
     }
 
     const std::string robotArg(argv[1]);
@@ -148,12 +231,29 @@ int run(int argc, char **argv)
     }
 
     PRINTMSG("Successfully finished grasp planning. Have " << srv.response.grasps.size() << " resulting grasps.");
-    /*    std::vector<manipulation_msgs::Grasp>::iterator it;
-        for (it = srv.response.grasps.begin(); it != srv.response.grasps.end(); ++it)
+    std::vector<manipulation_msgs::Grasp>::iterator it;
+    int i=1;
+    for (it = srv.response.grasps.begin(); it != srv.response.grasps.end(); ++it)
+    {
+        if (!output_path.empty())
+        {
+            std::stringstream filename;
+            filename<<output_path<<"/Grasp_"<<i<<".msg";
+            std::stringstream filename_txt;
+            filename_txt<<output_path<<"/Grasp_"<<i<<"_string.msg";
+            ++i;
+            if (!saveToFile(*it, filename.str(), true))
+            {
+                PRINTERROR("Could not save to file "<<filename.str());
+                continue;
+            }
+            saveToFile(*it, filename_txt.str(), false);
+        }
+        else
         {
             PRINTMSG(*it);
         }
-    */
+    }
     return 0;
 }
 

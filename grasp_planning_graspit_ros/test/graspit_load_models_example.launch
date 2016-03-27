@@ -1,7 +1,33 @@
 <launch>
     <arg name="robot_id" default="1"/>
     <arg name="object_id" default="2"/>
+    <arg name="table_id" default="3"/>
 
-   	<node name="load_model_client_robot" pkg="grasp_planning_graspit_ros" type="load_model_client" respawn="false" output="screen" args="$(arg robot_id) true"/>
-   	<node name="load_model_client_object" pkg="grasp_planning_graspit_ros" type="load_model_client" respawn="false" output="screen" args="$(arg object_id) false"/>
+    <arg name="load_table" default="false"/>
+
+
+    <arg name="rbt_x" default="0"/>
+    <arg name="rbt_y" default="0"/>
+    <arg name="rbt_z" default="200"/>
+    <arg name="rbt_qx" default="0"/>
+    <arg name="rbt_qy" default="0.7071"/>
+    <arg name="rbt_qz" default="0"/>
+    <arg name="rbt_qw" default="0.7071"/>
+
+    <arg name="obj_x" default="100"/>
+    <arg name="obj_y" default="0"/>
+    <arg name="obj_z" default="0"/>
+
+    <arg name="tbl_x" default="0"/>
+    <arg name="tbl_y" default="-250"/>
+    <arg name="tbl_z" default="500"/>
+
+   	<node name="load_model_client_robot" pkg="grasp_planning_graspit_ros" type="load_model_client" respawn="false" output="screen"
+        args="$(arg robot_id) true $(arg rbt_x) $(arg rbt_y) $(arg rbt_z) $(arg rbt_qx) $(arg rbt_qy) $(arg rbt_qz) $(arg rbt_qw)"/>
+
+   	<node name="load_model_client_object" pkg="grasp_planning_graspit_ros" type="load_model_client" respawn="false" output="screen"
+        args="$(arg object_id) false $(arg obj_x) $(arg obj_y) $(arg obj_z)"/>
+
+   	<node if="$(arg load_table)" name="load_model_client_table" pkg="grasp_planning_graspit_ros" type="load_model_client" respawn="false" output="screen"
+        args="$(arg table_id) false $(arg tbl_x) $(arg tbl_y) $(arg tbl_z)"/>
 </launch>

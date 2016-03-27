@@ -59,7 +59,7 @@ public:
      * \param _qualVolume The volume quality for this grasp
      * \param _energy The energy used by the simulated annealing-based planners
      */
-    EigenGraspResult(const EigenTransform _relTransform,
+    EigenGraspResult(const EigenTransform& _relTransform,
                      const std::vector<double>& _dofs,
                      const std::vector<double>& _egVals,
                      const bool _legal,
