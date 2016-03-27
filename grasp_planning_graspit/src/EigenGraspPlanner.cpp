@@ -382,8 +382,7 @@ bool EigenGraspPlanner::plan(const int maxPlanningSteps,
 
 GraspIt::EigenTransform EigenGraspPlanner::getHandTransform(const GraspPlanningState * s) const
 {
-    const PositionState* handPosition = s->readPosition();
-    EigenTransform handTransform = getEigenTransform(handPosition->getCoreTran());
+    EigenTransform handTransform = getEigenTransform(s->getTotalTran());
     return handTransform;
 }
 
@@ -567,17 +566,17 @@ void EigenGraspPlanner::getResults(std::vector<EigenGraspResult>& allGrasps) con
         }
 
         EigenTransform handTransform = getHandTransform(s);
-        // PRINTMSG("RESULT "<<i<<" Hand transform: " << handTransform);
+        //PRINTMSG("RESULT "<<i<<" Hand transform: " << handTransform);
 
         EigenTransform objectTransform = getObjectTransform(s);
-        // PRINTMSG("RESULT "<<i<<" Object transform: " << objectTransform);
+        //PRINTMSG("RESULT "<<i<<" Object transform: " << objectTransform);
 
         // Compute hand transform relative to object
         // objectTransform * relTransform = handTransform
         // relTransform = objectTransform.inverse() * handTransform;
         EigenTransform relTransform = objectTransform.inverse() * handTransform;
         
-        PRINTMSG("RESULT "<<i<<" rel transform: " << relTransform);
+        //PRINTMSG("RESULT "<<i<<" rel transform: " << relTransform);
 
         // PRINTMSG("Relative transform: " << relTransform);
         std::vector<double> dofs;
