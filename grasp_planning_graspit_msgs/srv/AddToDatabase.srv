@@ -20,9 +20,8 @@ bool asGraspable
 # request will fail, and you have to try another name.
 string modelName
 
-# if this is a robot file, this array contains the URDF joint
-# names in the order they are specified in the graspit
-# file.
+# if this is a robot file, this array contains the URDF finger
+# joint names in the order they are specified in the graspit file.
 string[] jointNames
 
 ---

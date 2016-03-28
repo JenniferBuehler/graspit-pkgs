@@ -81,6 +81,8 @@ public:
      * \param robotName the name to store this robot with, and also the name to use for this robot in the
      *                  graspit world.
      * \param jointNames The URDF names of the joints in the order as they appear in the graspit file
+     *          These are all joints that are involved in resulting grasps, so mostly these are only
+     *          the fingers.
      * \retval >=0 success, and returns int ID of this model (model IDs are for robots and objects)
      * \retval -1 failed to load world with graspit source.
      * \retval -2 graspit not initialized.
@@ -227,6 +229,8 @@ public:
 
     /**
      * Returns the joint names for this robot as used in loadRobotToDatabase().
+     * These are all joints that are involved in resulting grasps, so mostly these are only
+     * the fingers.
      * \return false if this robot is not in the database.
      */
     virtual bool getRobotJointNames(const std::string& robotName,

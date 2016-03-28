@@ -384,23 +384,9 @@ bool EigenGraspPlanner::plan(const int maxPlanningSteps,
             EigenGraspResult res;
             if (finishWithAutograsp)
             {
-                /*std::vector<double> dofsBefore;
-                getJointDOFs(s, dofsBefore);*/
                 sCopy->execute();
                 sCopy->getHand()->autoGrasp(false,0.1,false);
                 sCopy->saveCurrentHandState();
-                /*std::vector<double> dofsAfter;
-                getJointDOFs(finalS, dofsAfter);
-                if (dofsBefore.size()!=dofsAfter.size())
-                {
-                    PRINTERROR("Before/after not same size");
-                    continue;
-                }
-                PRINTMSG("Before/after: ");
-                for (int i=0; i<dofsBefore.size(); ++i)
-                {
-                    PRINTMSG("Before: "<<dofsBefore[i]<<", after "<<dofsAfter[i]);
-                }*/
             }
             results.push_back(sCopy);
         }

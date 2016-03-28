@@ -31,7 +31,6 @@
 #include <unistd.h>
 
 #include <ros/ros.h>
-
 #include <grasp_planning_graspit/GraspItSceneManagerNoGui.h>
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/EigenGraspPlanner.h>

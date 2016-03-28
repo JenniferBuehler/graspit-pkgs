@@ -60,7 +60,7 @@ endif(DOXYGEN_FOUND)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES grasp_planning_graspit_ros
+  LIBRARIES eigengrasp_planner_client
   CATKIN_DEPENDS roscpp grasp_planning_graspit grasp_planning_graspit_msgs manipulation_msgs
 #  DEPENDS system_lib
 )
@@ -78,14 +78,10 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(grasp_planning_graspit_ros
-#   src/${PROJECT_NAME}/grasp_planning_graspit_ros.cpp
-# )
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(grasp_planning_graspit_ros ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_library(eigengrasp_planner_client
+  src/EigenGraspPlannerClient.cpp
+)
+add_dependencies(eigengrasp_planner_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 add_executable(grasp_planning_node src/grasp_planning_node.cpp)
@@ -94,7 +90,7 @@ add_executable(grasp_planning_service src/grasp_planning_service.cpp src/GraspIt
 add_executable(add_model_client test/grasp_planning_add_model_client.cpp)
 add_executable(load_model_client test/grasp_planning_load_model_client.cpp)
 add_executable(save_world_client test/grasp_planning_save_world_client.cpp)
-add_executable(eigengrasp_planner_client test/grasp_planning_eg_planner_client.cpp)
+add_executable(eigengrasp_planner_client_node test/grasp_planning_eg_planner_client.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -103,7 +99,7 @@ add_dependencies(grasp_planning_service ${${PROJECT_NAME}_EXPORTED_TARGETS} ${ca
 add_dependencies(add_model_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(load_model_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(save_world_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(eigengrasp_planner_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(eigengrasp_planner_client_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(grasp_planning_node ${catkin_LIBRARIES})
@@ -112,6 +108,7 @@ target_link_libraries(add_model_client ${catkin_LIBRARIES})
 target_link_libraries(load_model_client ${catkin_LIBRARIES})
 target_link_libraries(save_world_client ${catkin_LIBRARIES})
 target_link_libraries(eigengrasp_planner_client ${catkin_LIBRARIES})
+target_link_libraries(eigengrasp_planner_client_node ${catkin_LIBRARIES})
 
 # style checking
 roslint_cpp()
@@ -133,7 +130,7 @@ roslint_cpp()
 ## Mark executables and/or libraries for installation
 install(TARGETS grasp_planning_node grasp_planning_service
         add_model_client load_model_client
-        save_world_client eigengrasp_planner_client
+        save_world_client eigengrasp_planner_client eigengrasp_planner_client_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
