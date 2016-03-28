@@ -122,7 +122,7 @@ int EigenGraspPlannerClient::loadModel(const int modelID, bool clearWorld, const
         ROS_ERROR("EigenGraspPlannerClient not isOK() properly.");
         return -3;
     }
-    PRINTMSG("Loading model " << modelID << " to graspit world. Clear others: " << clearWorld);
+    PRINTMSG("Loading model " << modelID << " to graspit world, at pose "<<modelPose<<std::endl<<"Clear others: " << clearWorld);
 
     grasp_planning_graspit_msgs::LoadDatabaseModel srv;
     srv.request.model_id = modelID;
