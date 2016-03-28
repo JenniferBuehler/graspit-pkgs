@@ -292,7 +292,8 @@ GraspIt::EigenTransform EigenGraspPlannerNoQt::getObjectTransform(const GraspPla
     return objectTransform;
 }
 
-void EigenGraspPlannerNoQt::getJointDOFs(const GraspPlanningState * s, std::vector<double>& dofs) const
+
+void EigenGraspPlannerNoQt::getGraspJointDOFs(const GraspPlanningState * s, std::vector<double>& dofs) const
 {
     if (!s->getHand())
     {
@@ -300,7 +301,7 @@ void EigenGraspPlannerNoQt::getJointDOFs(const GraspPlanningState * s, std::vect
         return;
     }
     const PostureState* handPosture = s->readPosture();
-    if (!s->readPosture())
+    if (!handPosture)
     {
         PRINTERROR("Posture is NULL!");
         return;
@@ -316,6 +317,45 @@ void EigenGraspPlannerNoQt::getJointDOFs(const GraspPlanningState * s, std::vect
         dofs.push_back(_dofs[k]);
     }
 }
+
+
+void EigenGraspPlannerNoQt::getPregraspJointDOFs(const GraspPlanningState * s, std::vector<double>& dofs) const
+{
+    GraspPlanningState sCopy(s);
+
+    if (!sCopy.getHand())
+    {
+        PRINTERROR("Hand is NULL!");
+        return;
+    }
+    
+    // execute the auto-grasp in "opening" direction
+    sCopy.execute();
+    sCopy.getHand()->autoGrasp(false,-0.1,true);
+    sCopy.saveCurrentHandState();
+
+    const PostureState* handPosture = sCopy.readPosture();
+    if (!handPosture)
+    {
+        PRINTERROR("Posture is NULL!");
+        return;
+    }
+
+    // this gets the DOF values for the 3 fingers. If the hand has only one EigenGrasp which is symmetric,
+    // the 3 values will be the same.
+    const int numDOF = sCopy.getHand()->getNumDOF();
+    double * _dofs = new double[numDOF];
+    handPosture->getHandDOF(_dofs);
+    for (int k = 0; k < numDOF; ++k)
+    {
+        dofs.push_back(_dofs[k]);
+    }
+}
+
+
+
+
+
 
 void EigenGraspPlannerNoQt::getEigenGraspValues(const GraspPlanningState * s, std::vector<double>& egVals) const
 {
@@ -456,21 +496,30 @@ void EigenGraspPlannerNoQt::getResults(std::vector<EigenGraspResult>& allGrasps)
         EigenTransform relTransform = objectTransform.inverse() * handTransform;
 
         // PRINTMSG("Relative transform: " << relTransform);
-        std::vector<double> dofs;
-        getJointDOFs(s, dofs);
+        std::vector<double> graspDOFs;
+        getGraspJointDOFs(s, graspDOFs);
         /*     int k=0;
-             for (std::vector<double>::const_iterator it=dofs.begin(); it!=dofs.end(); ++it){
-                 PRINTMSG("Hand DOF "<<k<<": "<<*it);
+             for (std::vector<double>::const_iterator it=graspDOFs.begin(); it!=graspDOFs.end(); ++it){
+                 PRINTMSG("Grasp hand DOF "<<k<<": "<<*it);
                  ++k;
              }
         */
+        std::vector<double> pregraspDOFs;
+        getPregraspJointDOFs(s, pregraspDOFs);
+        /*     int k=0;
+             for (std::vector<double>::const_iterator it=pregraspDOFs.begin(); it!=pregraspDOFs.end(); ++it){
+                 PRINTMSG("Grasp hand DOF "<<k<<": "<<*it);
+                 ++k;
+             }
+        */
+
         std::vector<double> egVals;
         getEigenGraspValues(s, egVals);
         /*      for (std::vector<double>::const_iterator it=egVals.begin(); it!=egVals.end(); ++it){
                   PRINTMSG("EigenGrasp value "<<k<<": "<<*it);
                   ++k;
               }*/
-        allGrasps.push_back(EigenGraspResult(relTransform, dofs, egVals,
+        allGrasps.push_back(EigenGraspResult(relTransform, graspDOFs, pregraspDOFs, egVals,
                                              s->isLegal(), s->getEpsilonQuality(), s->getVolume(), s->getEnergy()));
     }
 }

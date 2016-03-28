@@ -299,9 +299,15 @@ private:
     bool checkStateValidity(const GraspPlanningState * s) const;
 
     /**
-     * Gets the DOFs of the joints for this grasp state
+     * Gets the DOFs of the joints for the grasp of this state
      */
-    void getJointDOFs(const GraspPlanningState * s, std::vector<double>& dofs) const;
+    void getGraspJointDOFs(const GraspPlanningState * s, std::vector<double>& dofs) const;
+
+    /**
+     * Gets the DOFs of the joints for the pre-grasp of this state. This will execute
+     * an auto-grasp to open the hand before reading the DOF values.
+     */
+    void getPregraspJointDOFs(const GraspPlanningState * s, std::vector<double>& dofs) const;
 
     /**
      * gets the Eigengrasp values associated with this grasp state

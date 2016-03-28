@@ -60,7 +60,8 @@ public:
      * \param _energy The energy used by the simulated annealing-based planners
      */
     EigenGraspResult(const EigenTransform& _relTransform,
-                     const std::vector<double>& _dofs,
+                     const std::vector<double>& _dofsGrasp,
+                     const std::vector<double>& _dofsPregrasp,
                      const std::vector<double>& _egVals,
                      const bool _legal,
                      const double _qualEpsilon,
@@ -74,7 +75,7 @@ public:
     }
 
     /**
-     * Returns the joint's DOF values (joint angles).
+     * Returns the joint's DOF values (joint angles) for a closing grasp.
      * The order corresponds to the order the joints were given in the GraspIt
      * robot description file.
      * If generated with urdf2graspit, this corresponds to the order the joints are
@@ -82,9 +83,16 @@ public:
      * The size of the returned vector should be the same size as the movable
      * joints used for the EigenGrasp.
      */
-    const std::vector<double>& getJointDOFs() const
+    const std::vector<double>& getGraspJointDOFs() const
     {
-        return dofs;
+        return graspDOFs;
+    }
+    /**
+     * Like getGraspJointDOFs(), but for the pre-grasp.
+     */
+    const std::vector<double>& getPregraspJointDOFs() const
+    {
+        return pregraspDOFs;
     }
 
     /**
@@ -137,10 +145,10 @@ public:
 
         // o<<"Quality (eps) = "<<r.qualEpsilon<<" Quality (vol) = "<<r.qualVolume<<" ";
         o << "Energy = " << r.energy << " Joint DOFs = [";
-        for (std::vector<double>::const_iterator it = r.dofs.begin(); it != r.dofs.end(); ++it)
+        for (std::vector<double>::const_iterator it = r.graspDOFs.begin(); it != r.graspDOFs.end(); ++it)
         {
             o << *it;
-            if ((it + 1) != r.dofs.end()) o << ", ";
+            if ((it + 1) != r.graspDOFs.end()) o << ", ";
         }
         o << "] EigenGrasps = [";
         for (std::vector<double>::const_iterator it = r.egVals.begin(); it != r.egVals.end(); ++it)
@@ -155,7 +163,8 @@ public:
 private:
     EigenTransform relTransform;
 
-    std::vector<double> dofs;
+    std::vector<double> graspDOFs;
+    std::vector<double> pregraspDOFs;
     std::vector<double> egVals;
 
     // The energy used by the simulated annealing-based planners

@@ -248,31 +248,37 @@ manipulation_msgs::Grasp GraspItServices::getGraspMsg(const EigenGraspResult& eg
     manipulation_msgs::Grasp g;
     g.id = id;
 
-    // pre joint state not supported yet
     sensor_msgs::JointState preJS;
-    // preJS. ...
-
     sensor_msgs::JointState graspJS;
     graspJS.name = robotJointNames;
-    std::vector<double> dofs = egResult.getJointDOFs();
+    preJS.name = robotJointNames;
+    std::vector<double> graspDOFs = egResult.getGraspJointDOFs();
+    std::vector<double> pregraspDOFs = egResult.getPregraspJointDOFs();
 
-    int nJoints = std::min(dofs.size(), robotJointNames.size());
+    int nJoints = std::min(graspDOFs.size(), robotJointNames.size());
 
-    if (dofs.size() != robotJointNames.size())
+    if (graspDOFs.size() != robotJointNames.size())
     {
         PRINTERROR("Number of DOFs for the robot is not equal to number of joint names.");
         PRINTERROR("Therefore will only write the first " << nJoints << " joint values.");
     }
+    if (graspDOFs.size() != pregraspDOFs.size())
+    {
+        PRINTERROR("Inconsistency: the number of joints in grasp should be equal to pre-grasp");
+        pregraspDOFs=graspDOFs; // use the same state, so the rest of the code doesn't crash
+    }
+
     graspJS.position.resize(nJoints, 0);
+    preJS.position.resize(nJoints, 0);
     for (int i = 0; i < nJoints; ++i)
     {
         int mult = 1;
         if (negateJointDOFs) mult = -1;
-        graspJS.position[i] = mult * dofs[i];
+        graspJS.position[i] = mult * graspDOFs[i];
+        preJS.position[i] = mult * pregraspDOFs[i];
     }
-    // not setting header for the moment. Joint positions don't really need a reference
+    // not setting graspJS.header for the moment. Joint positions don't really need a reference
     // frame and we don't care about the timing...
-    // graspJS.header.
 
     EigenTransform oToHand = egResult.getObjectToHandTransform();
     geometry_msgs::PoseStamped graspPose;

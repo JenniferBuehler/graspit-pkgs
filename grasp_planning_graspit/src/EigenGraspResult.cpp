@@ -26,7 +26,8 @@ using GraspIt::EigenGraspResult;
 
 EigenGraspResult::EigenGraspResult(const EigenGraspResult& o):
     relTransform(o.relTransform),
-    dofs(o.dofs),
+    graspDOFs(o.graspDOFs),
+    pregraspDOFs(o.pregraspDOFs),
     egVals(o.egVals),
     legal(o.legal),
     qualEpsilon(o.qualEpsilon),
@@ -38,14 +39,16 @@ EigenGraspResult::EigenGraspResult(const EigenGraspResult& o):
 
 EigenGraspResult::EigenGraspResult(
     const EigenTransform& _relTransform,
-    const std::vector<double>& _dofs,
+    const std::vector<double>& _graspDOFs,
+    const std::vector<double>& _pregraspDOFs,
     const std::vector<double>& _egVals,
     const bool _legal,
     const double _qualEpsilon,
     const double _qualVolume,
     const double _energy):
     relTransform(_relTransform),
-    dofs(_dofs),
+    graspDOFs(_graspDOFs),
+    pregraspDOFs(_pregraspDOFs),
     egVals(_egVals),
     legal(_legal),
     qualEpsilon(_qualEpsilon),
@@ -57,7 +60,7 @@ EigenGraspResult::EigenGraspResult(
 /*std::ostream& GraspIt::operator<<(std::ostream& o, const EigenGraspResult& r) {
 
     GraspIt::EigenGraspResult::EigenTransform relTransform=r.getObjectToHandTransform();
-    std::vector<double> dofs = r.getJointDOFs();
+    std::vector<double> graspDOFs = r.getGraspJointDOFs();
     std::vector<double> egVals = r.getEigenGraspValues();
 
     o<<"Joint DOFs = [";
