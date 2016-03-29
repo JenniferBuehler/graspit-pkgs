@@ -1,0 +1,8 @@
+<launch>
+    <arg name="node_name"/>
+    <arg name="config_file" default="$(find grasp_planning_graspit_ros)/config/EigenGraspPlannerClient.yaml"/>
+    
+    # Load the ROS parameters from config file: 
+    <rosparam ns="$(arg node_name)" file="$(arg config_file)"/>
+</launch>
+    
