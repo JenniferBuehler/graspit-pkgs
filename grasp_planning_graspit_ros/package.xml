@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>grasp_planning_graspit_ros</name>
-  <version>0.1.4</version>
+  <version>0.1.5</version>
   <description>ROS services for the grasp_planning_graspit package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 

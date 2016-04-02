@@ -2,8 +2,8 @@
 Changelog for package grasp_planning_graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.5 (2016-04-02)
+------------------
 * Added pre-grasp state computation
 * Added helper class EigenGraspPlannerClient and some example grasp results for Jaco
 * Now supports an extra auto-grasp as finalization of planning, and control of how many results are saved

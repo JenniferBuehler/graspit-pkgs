@@ -2,8 +2,8 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.5 (2016-04-02)
+------------------
 * Small fix: create mesh directory if the mesh filename implies more directories
 * Contributors: Jennifer Buehler
 
