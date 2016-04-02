@@ -2,6 +2,15 @@
 Changelog for package grasp_planning_graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added pre-grasp state computation
+* Added helper class EigenGraspPlannerClient and some example grasp results for Jaco
+* Now supports an extra auto-grasp as finalization of planning, and control of how many results are saved
+* Fixed broken hand transform which was returned for resulting grasps
+* Added means to save a Grasp.msg and added a table obstacle
+* Contributors: Jennifer Buehler
+
 0.1.3 (2016-03-08)
 ------------------
 * changed catkin_package system depends to names in rosdep

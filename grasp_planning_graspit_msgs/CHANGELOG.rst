@@ -2,6 +2,11 @@
 Changelog for package grasp_planning_graspit_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added helper class EigenGraspPlannerClient and some example grasp results for Jaco
+* Contributors: Jennifer Buehler
+
 0.1.3 (2016-03-08)
 ------------------
 

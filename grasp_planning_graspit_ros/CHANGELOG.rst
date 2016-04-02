@@ -2,6 +2,14 @@
 Changelog for package grasp_planning_graspit_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added pre-grasp state computation
+* Added helper class EigenGraspPlannerClient and some example grasp results for Jaco
+* Now support addition of an auto-grasp as finalization of grasp planning, and control of how many results are saved
+* Added means to save a Grasp.msg and added a table obstacle
+* Contributors: Jennifer Buehler
+
 0.1.3 (2016-03-08)
 ------------------
 * added launch directory installs

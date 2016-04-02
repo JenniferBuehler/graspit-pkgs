@@ -2,6 +2,13 @@
 Changelog for package jaco_graspit_sample
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added pre-grasp state computation
+* Added helper class EigenGraspPlannerClient and some example grasp results for Jaco
+* Added means to save a Grasp.msg and added a table obstacle
+* Contributors: Jennifer Buehler
+
 0.1.3 (2016-03-08)
 ------------------
 * added launch directory installs
