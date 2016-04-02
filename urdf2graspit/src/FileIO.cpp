@@ -64,8 +64,14 @@ std::string urdf2graspit::FileIO::getRobotDir(const std::string& robotName) cons
     return targetDir.str();
 }
 
-
-
+void findAndReplace(const std::string& newStr, const std::string& oldStr, const std::string& in, std::string& out){
+  size_t pos = 0;
+  out=in;
+  while((pos = out.find(oldStr, pos)) != std::string::npos){
+     out = out.replace(pos, oldStr.length(), newStr);
+     pos += newStr.length();
+  }
+}
 
 bool urdf2graspit::FileIO::writeMeshFiles(const std::string& robotName,
         const std::map<std::string, MeshFormat>& meshes,
@@ -93,10 +99,21 @@ bool urdf2graspit::FileIO::writeMeshFiles(const std::string& robotName,
     for (mit = meshes.begin(); mit != meshes.end(); ++mit)
     {
         std::stringstream outFilename;
-        outFilename << outputMeshDir << "/" << mit->first << meshOutputExtension;
+        std::string _outFilename=mit->first;
+        //findAndReplace("_", "/", _outFilename, _outFilename);
+        outFilename << outputMeshDir << "/" << _outFilename << meshOutputExtension;
+
+        std::string pathToFile=urdf2graspit::helpers::getPath(outFilename.str().c_str()); 
+        //ROS_INFO_STREAM("Directory of path "<<outFilename.str()<<": "<<pathToFile);
+        if (!pathToFile.empty() &&
+            !urdf2graspit::helpers::makeDirectoryIfNeeded(pathToFile.c_str()))
+        {
+            ROS_ERROR_STREAM("Could not make directory "<<pathToFile);
+        }
+
         if (!urdf2graspit::helpers::writeToFile(mit->second, outFilename.str()))
         {
-            ROS_ERROR("Could not write file %s", outFilename.str().c_str());
+            ROS_ERROR("Could not write mesh file %s", outFilename.str().c_str());
             return false;
         }
     }
@@ -105,7 +122,9 @@ bool urdf2graspit::FileIO::writeMeshFiles(const std::string& robotName,
     for (mdit = meshDescXML.begin(); mdit != meshDescXML.end(); ++mdit)
     {
         std::stringstream outXMLFile;
-        outXMLFile << outputMeshDir << "/" << mdit->first << ".xml";
+        std::string _outFilename=mdit->first;
+        //findAndReplace("_", "/", _outFilename, _outFilename);
+        outXMLFile << outputMeshDir << "/" << _outFilename << ".xml";
         if (!urdf2graspit::helpers::writeToFile(mdit->second, outXMLFile.str()))
         {
             ROS_ERROR("Could not write file %s", outXMLFile.str().c_str());

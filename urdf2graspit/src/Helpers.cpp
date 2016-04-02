@@ -94,6 +94,13 @@ bool urdf2graspit::helpers::directoryExists(const char* dPath)
     return boost::filesystem::exists(dPath);
 }
 
+
+std::string urdf2graspit::helpers::getPath(const char * file)
+{
+    boost::filesystem::path dPath(file);
+    return dPath.parent_path().string(); 
+}
+
 bool urdf2graspit::helpers::makeDirectoryIfNeeded(const char * dPath)
 {
     try

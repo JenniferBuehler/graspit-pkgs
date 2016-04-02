@@ -56,6 +56,8 @@ extern void redirectStdOut(const char * toFile);
 
 extern bool directoryExists(const char* dPath);
 
+extern std::string getPath(const char * file);
+
 extern bool fileExists(const char* file);
 
 extern bool makeDirectoryIfNeeded(const char * dPath);
