@@ -22,35 +22,54 @@
 
 #include <string>
 #include <map>
+#include <urdf2inventor/ConversionResult.h>
 
 namespace urdf2graspit
 {
+
+class ConversionParameters: 
+    public urdf2inventor::ConversionParameters
+{
+public:
+    explicit ConversionParameters(const std::string& _robotName,
+        const std::string& _rootLinkName,
+        const std::string& material,
+        const std::vector<std::string>& _fingerRoots):
+        urdf2inventor::ConversionParameters(_rootLinkName,material),
+        robotName(_robotName),
+        fingerRoots(_fingerRoots){}
+    ConversionParameters(const ConversionParameters& o):
+        urdf2inventor::ConversionParameters(o),
+        robotName(o.robotName),
+        fingerRoots(o.fingerRoots) {}
+
+    virtual ~ConversionParameters() {}
+    std::string robotName;
+    std::vector<std::string> fingerRoots;
+};
+
 
 /**
  * \brief Encapsulates all result fields for a conversion
  * \author Jennifer Buehler
  * \date November 2015
  */
-template<typename MeshFormat>
-class ConversionResult
+class ConversionResult:
+    public urdf2inventor::ConversionResult<std::string>
 {
 public:
+    typedef std::string MeshFormatT;
+
     explicit ConversionResult(const std::string& _meshOutputExtension, const std::string& _meshOutputDirectoryName):
-        meshOutputExtension(_meshOutputExtension),
-        meshOutputDirectoryName(_meshOutputDirectoryName),
-        success(false) {}
+        urdf2inventor::ConversionResult<MeshFormatT>(_meshOutputExtension, _meshOutputDirectoryName){}
     ConversionResult(const ConversionResult& o):
+        urdf2inventor::ConversionResult<MeshFormatT>(o),
         robotName(o.robotName),
         robotXML(o.robotXML),
-        meshes(o.meshes),
         meshXMLDesc(o.meshXMLDesc),
         eigenGraspXML(o.eigenGraspXML),
         contacts(o.contacts),
-        meshOutputExtension(o.meshOutputExtension),
-        meshOutputDirectoryName(o.meshOutputDirectoryName),
-        world(o.world),
-        success(o.success) {}
-
+        world(o.world){}
 
     virtual ~ConversionResult() {}
 
@@ -58,11 +77,8 @@ public:
 
     std::string robotXML;
 
-    // the resulting meshes (inventor files), indexed by the link name
-    std::map<std::string, MeshFormat> meshes;
-
     // the resulting GraspIt! XML description files for the meshes, indexed by the link name
-    std::map<std::string, MeshFormat> meshXMLDesc;
+    std::map<std::string, std::string> meshXMLDesc;
 
     // XML description of the EigenGrasp for the hand
     std::string eigenGraspXML;
@@ -70,19 +86,8 @@ public:
     // the content of the file to specify contacts
     std::string contacts;
 
-    // the extension to use for mesh files (e.g. ".iv" for inventor)
-    std::string meshOutputExtension;
-
-    std::string meshOutputDirectoryName;
-
     // the contents of the XML world file loading up the robot
     std::string world;
-
-    bool success;
-
-private:
-    ConversionResult():
-        success(false) {}
 };
 
 }  //  namespace urdf2graspit

@@ -1,33 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(urdf2graspit)
 
-# set this variable to true if you would like that cmake
-# downloads and builds the ivcon package
-# (https://github.com/JenniferBuehler/ivcon).
-# If this is set to false, it will search for the package
-# ivcon in your catkin workspace instead.
-# IMPORTANT: If you set this to false and are compiling
-# with catkin, uncomment the <*_depend> tags relating to
-# graspit in package.xml!
-if (NOT BUILD_IVCON)
-    set (BUILD_IVCON true)
-endif (NOT BUILD_IVCON)
+include(cmake/architecture_binding.cmake.in)
 
 set (CATKIN_PKGS
   roscpp
   urdf
   eigen_conversions
-  roslint
+  urdf2inventor
+  architecture_binding
 )
-
-if (NOT BUILD_IVCON)
-    set (CATKIN_PKGS ${CATKIN_PKGS} ivcon)
-endif (NOT BUILD_IVCON)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS})
+find_package(catkin REQUIRED COMPONENTS ${CATKIN_PKGS} roslint)
 
 ## System dependencies are found with CMake's conventions
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
@@ -35,33 +22,11 @@ find_package(SoQt4 REQUIRED)
 find_package(Coin REQUIRED)
 find_package(Qt4 REQUIRED)
 
-# if the ivcon fork should be build with this package,
-# do this now.
-if (BUILD_IVCON)
-    set (GLOBAL_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/ivcon/install)
-    include(CMakeLists-external-ivcon.txt)
-endif (BUILD_IVCON)
-
-
 ###################################
 ## catkin specific configuration ##
 ###################################
 
-set (CATKIN_DEPEND_PKGS roscpp urdf eigen_conversions)
-if (NOT BUILD_IVCON)
-    set (CATKIN_DEPEND_PKGS ${CATKIN_DEPEND_PKGS} ivcon)
-endif (NOT BUILD_IVCON)
-
-
-#set(CATKIN_DEPENDS_LIBS Qt4 SoQt4)
-#if (BUILD_IVCON)
-#    set(CATKIN_DEPENDS_LIBS
-#        ${CATKIN_DEPENDS_LIBS}
-#        ${IVCON_LIBRARIES} 
-#        ${IVCON_SYSTEM_LIBRARIES}
-#    )
-#endif (BUILD_IVCON)
-
+set (CATKIN_DEPEND_PKGS ${CATKIN_PKGS})
 set (CATKIN_DEPENDS_LIBS libsoqt4-dev libqt4-dev libcoin80-dev git)
 
 ## The catkin_package macro generates cmake config files for your package
@@ -98,7 +63,6 @@ include_directories(
 add_library(urdf2graspit
     src/Urdf2Graspit.cpp
     src/DHParam.cpp
-    src/Helpers.cpp
     src/MarkerSelector.cpp
     src/XMLFuncs.cpp
     src/FileIO.cpp
@@ -113,11 +77,6 @@ add_executable(marker_selector_viewer src/viewer.cpp src/MarkerSelector.cpp src/
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(urdf2graspit_node urdf2graspit_generate_messages_cpp)
 
-if (BUILD_IVCON)
-    add_dependencies(urdf2graspit ivcon_ext)
-    add_dependencies(marker_selector_viewer ivcon_ext)
-endif (BUILD_IVCON)
-
 add_dependencies(urdf2graspit_node urdf2graspit)
 
 
@@ -127,13 +86,6 @@ set (DEPEND_LIBRARIES
    ${SOQT_LIBRARY}
    ${QT_LIBRARIES}
 )
-
-if (BUILD_IVCON)
-    set (DEPEND_LIBRARIES
-       ${DEPEND_LIBRARIES}
-       ${IVCON_LIBRARY}
-    )
-endif (BUILD_IVCON)
 
 target_link_libraries(urdf2graspit ${DEPEND_LIBRARIES})
 target_link_libraries(urdf2graspit_node urdf2graspit ${DEPEND_LIBRARIES})

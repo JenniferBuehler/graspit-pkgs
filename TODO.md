@@ -1,5 +1,5 @@
 - move grasp_planning_graspit(_ros) to new architecture_binding
-- use the urdf2inventor dependency. FileIO and ConversionResult need to be derived though, as they contain GraspIt! specific things. Also helpers resetStdOut not in urdf2inventor.
+- use the urdf2inventor dependency. FileIO and ConversionResult need to be derived though, as they contain GraspIt! specific things.
     MarkerSelector can probably use parts of InventorViewer. Before converting, should create a proper class hierarchy separated in general URDF traversal and operations
     such as mesh conversion and model scaling.
     When pulling in the dependency, can also get rid of compiling ivcon in urdf2graspit.

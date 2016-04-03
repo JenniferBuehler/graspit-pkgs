@@ -18,7 +18,7 @@
 
 #include <ros/ros.h>
 
-#include <urdf2graspit/Helpers.h>
+#include <urdf2inventor/Helpers.h>
 #include <urdf2graspit/Urdf2Graspit.h>
 #include <urdf2graspit/FileIO.h>
 #include <string>
@@ -59,7 +59,6 @@ int main(int argc, char** argv)
         roots.push_back(fingerJoint);
     }
 
-
     std::string outputMaterial = "plastic";
     double scaleFactor = 1000;
 
@@ -73,11 +72,11 @@ int main(int argc, char** argv)
 
     ROS_INFO("Starting model conversion...");
 
-    urdf2graspit::Urdf2GraspIt::ConversionResultT cResult =
+    urdf2graspit::Urdf2GraspIt::ConversionResultPtr cResult =
         converter.processAll(urdf_filename,
                              palmLinkName,
                              roots, outputMaterial);
-    if (!cResult.success)
+    if (!cResult->success)
     {
         ROS_ERROR("Failed to process.");
         return 1;
