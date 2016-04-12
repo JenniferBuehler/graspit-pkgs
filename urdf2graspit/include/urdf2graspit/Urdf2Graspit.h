@@ -79,9 +79,6 @@ public:
         Urdf2GraspItBase(_scaleFactor),
         negateJointMoves(_negateJointMoves),
         isDHScaled(false),
-#if 0
-        isContactsScaled(false),
-#endif
         dhTransformed(false)
     {
         urdf2inventor::Urdf2Inventor::MESH_OUTPUT_DIRECTORY_NAME = "iv";
@@ -91,12 +88,6 @@ public:
     {
     }
 
-#if 0
-    /**
-     * Transform the URDF such that all rotation axises (in the joint's local reference frame) are this axis
-     */
-    bool allRotationsToAxis(const std::string& fromLinkName, const Eigen::Vector3d& axis);
-#endif
     /**
      * Convenience method which does all the operations required for the conversion. This method can be used as a template to create
      * variations of this process. You may be interested in calling cleanup() after processing this in order to clean out temporary
@@ -140,29 +131,6 @@ public:
      */
     bool toDenavitHartenberg(const std::string& fromLink);
 
-
-#if 0
-    /**
-     * Transforms the model for denavit hartenberg parameters starting from link \e fromLink.
-     * This involves changing all rotation axes to be the z axis by calling
-     * allRotationsToAxis(), and and joining all fixed links by calling joinFixedLinks().
-     * 
-     * After this has been done successfully, getDenavitHartenbergParams() and toDenavitHartenberg()
-     * can be called. 
-     */
-    bool prepareForDenavitHartenberg(const std::string& fromLink);
-
-
-    /**
-     * Scales the model using the scale factor specified in constructor. This
-     * will also affect the DH parameters previously generated in toDenavitHartenberg().
-     * This will however not include the original mesh files. Use Urdf2Inventor::convertMeshes() and convertGraspItMeshes() to generate the 
-     * inventor and GraspIt! meshes
-     * using a scale factor.
-     */
-    bool scaleAll();
-#endif
-
     /**
      * Convert all meshes starting from fromLinkName into the GraspIt! inventor format, and store them in the given
      * mesh files container.
@@ -174,99 +142,7 @@ public:
                        double scale_factor, const std::string& material,
                        std::map<std::string, std::string>& meshDescXML);
 
-#if 0
-    /**
-     * Generates contacts file out of the markers defined in the map. This function is provided in case the markers information
-     * is obtained in a user-defined way. You may be interested in using generateContactsWithViewer().
-     * After contacts have been generated, they have to be put into DH-space for GraspIt!, which is done in toDenavitHartenberg().
-     * They also need scaling, if the model is to be scaled, which is done in scaleAll().
-     * \param markers a map with the markers.
-     */
-    bool generateContacts(const std::vector<std::string>& rootFingerJoints, const std::string& palmLinkName,
-                          const float coefficient, const markerselector::MarkerSelector::MarkerMap& markers);
-    /**
-     * Starts a viewer in which the user may select contact points to be defined for the hand. The function generateContacts()
-     * is then called so that contacts are defined for the model. Observe that it is less intuitive to call this function
-     * after toDenavitHartenberg() or convert() have been called, as the model is not in its original shape then (the viewer
-     * does not use denavit hartenberg convention).
-     * After contacts have been generated, they have to be put into DH-space for GraspIt!, which is done in toDenavitHartenberg().
-     * They also need scaling, if the model is to be scaled, which is done in scaleAll().
-     */
-    bool generateContactsWithViewer(const std::vector<std::string>& fingerRoots,
-                                    const std::string& palmLinkName, float standard_coefficient);
-#endif
-
 protected:
-#if 0
-    /**
-      * \brief Helper class to encapsulate contact information
-      */
-    class Contact
-    {
-    public:
-        Contact(): numFrictionEdges(-1), fingerNum(-1), linkNum(-1), cof(0) {}
-        Contact(const Contact& o):
-            numFrictionEdges(o.numFrictionEdges), frictionEdges(o.frictionEdges),
-            fingerNum(o.fingerNum), linkNum(o.linkNum),
-            loc(o.loc), ori(o.ori), norm(o.norm), cof(o.cof) {}
-
-        friend std::ostream& operator<<(std::ostream& o, const Contact& c)
-        {
-            o << c.linkNum << ", " << c.fingerNum << ": " << c.loc;
-            return o;
-        }
-
-        // Number of friction edges
-        unsigned int numFrictionEdges;
-        // Friction edges (6*numFrictionEdges doubles)
-        // The 6 values specify friction cone boundary wrenches.
-        // See more documentation in function Urdf2GraspIt::setUpFrictionEllipsoid().
-        std::vector<double> frictionEdges;
-        // Finger number
-        int fingerNum;
-        // Link number
-        int linkNum;
-        // Contact (frame) location
-        Eigen::Vector3d loc;
-        // Contact (frame) orientation
-        Eigen::Quaterniond ori;
-        // Contact normal (facing away from link)
-        Eigen::Vector3d norm;
-        // Contact friciton coefficient
-        float cof;
-    };
-    typedef boost::shared_ptr<Contact> ContactPtr;
-
-
-private:
-
-    /**
-     * \brief Recursion data for getting a list of joints, ordered by dependency (no joint depending on others
-     * will come before them in the result vector)
-     */
-    class OrderedJointsRecursionParams: public Urdf2GraspIt::RecursionParams
-    {
-    public:
-        typedef boost::shared_ptr<OrderedJointsRecursionParams> Ptr;
-        OrderedJointsRecursionParams(): RecursionParams() {}
-        OrderedJointsRecursionParams(bool _allowSplits, bool _onlyActive):
-            allowSplits(_allowSplits),
-            onlyActive(_onlyActive) {}
-        OrderedJointsRecursionParams(const OrderedJointsRecursionParams& o):
-            RecursionParams(o) {}
-        virtual ~OrderedJointsRecursionParams() {}
-
-        // Result set
-        std::vector<Urdf2GraspIt::JointPtr> dependencyOrderedJoints;
-
-        // Allow splits, i.e. one link has several child joints. if this is set to false,
-        // the recursive operation will fail at splitting points.
-        bool allowSplits;
-
-        // Only add joints to the result which are active.
-        bool onlyActive;
-    };
-#endif
 
 private:
 
@@ -313,13 +189,6 @@ private:
      */
     void printParams(const std::vector<DHParam>& dh) const;
   
-#if 0 
-    /**
-     * scales the contacts by given factor
-     */ 
-    void scaleContacts(double scale_factor);
-#endif
-
     /**
      * Transforms all link's visuals, collisions and intertials according to the DH parameters.
      * This is needed because the sequence of DH transforms is not equal to the sequence of URDF joint transforms.
@@ -332,32 +201,6 @@ private:
      * the visuals/collisions/intertials by it.
      */
     bool linksToDHReferenceFrames(std::vector<DHParam>& dh);
-
-#if 0
-    /**
-     * Applies the transformation on the joint transform
-     * \param scaleTransform set to true if the urdf's transforms are to be scaled (using scaleFactor) before applying the transform
-     */
-    bool applyTransform(JointPtr& joint, const EigenTransform& trans, bool preMult);
-
-    /**
-     * Applies the transformation on the link's visuals, collisions and intertial.
-     * \param scaleTransform set to true if the urdf's transforms are to be scaled (using scaleFactor) before applying the transform
-     */
-    void applyTransform(LinkPtr& link, const EigenTransform& trans, bool preMult);
-
-    /**
-     * \return true if this joint needs a transformation to align its rotation axis with the given axis.
-     * In this case the rotation parameter contains the necessary rotation.
-     */
-    bool jointTransformForAxis(const urdf::Joint& joint, const Eigen::Vector3d& axis, Eigen::Quaterniond& rotation);
-
-    /**
-     * Recursively re-arranges all joint-transforms (starting from joint) and visual/collision/intertial
-     * rotations such that all joints rotate around z-axis
-     */
-    bool allRotationsToAxis(JointPtr& joint, const Eigen::Vector3d& axis);
-#endif
 
     /**
      * Function to be called during recursion incurred in convertGraspItMeshes()
@@ -387,33 +230,6 @@ private:
     bool getXML(const std::vector<DHParam>& dhparams, const std::vector<std::string>& rootFingerJoints,
                 const std::string& palmLinkName, const std::string * eigenXML,
                 const std::string * contactsVGR, const std::string& mesh_pathprepend, std::string& result);
-
-#if 0
-    // Helper function for generateContacts()
-    bool generateContactsForallVisuals(const std::string& linkName,
-                                       const int linkNum, const int fingerNum,
-                                       const float coefficient,
-                                       const std::vector<markerselector::MarkerSelector::Marker>& markers);
-#endif
-
-#if 0
-    // Function for recursive getDependencyOrderedJoints
-    int addJointLink(RecursionParamsPtr& p);
-
-    /**
-     * Returns all joints starting from from_joint (including from_joint) within the tree. This is obtained by depth-first traversal,
-     * so all joints in the result won't depend on any joints further back in the result set.
-     */
-    bool getDependencyOrderedJoints(std::vector<JointPtr>& result, const JointPtr& from_joint,
-                                    bool allowSplits = true, bool onlyActive = true);
-
-    /**
-     * Returns all joints down from from_link within the tree. This is obtained by depth-first traversal,
-     * so all joints in the result won't depend on any joints further back in the result set.
-     */
-    bool getDependencyOrderedJoints(std::vector<JointPtr>& result, const LinkPtr& from_link,
-                                    bool allowSplits = true, bool onlyActive = true);
-#endif
 
     // Returns if this is a revoluting joint in the URDF description
     inline bool isRevoluting(const JointPtr& joint) const
@@ -473,22 +289,12 @@ private:
      */
     bool getDHTransform(const JointPtr& joint, const std::vector<DHParam>& dh, EigenTransform& result) const;
 
-#if 0
-    /**
-     * Writes the file for the contacts. The contacts need to be specified in DH parameter space.
-     */
-    std::string getContactsFileContent(const std::string& robotName);
-#endif
-
     /**
      * Gets the XML content which has to go into the world file
      */
     std::string getWorldFileTemplate(const std::string& robotName,
                                      const std::vector<DHParam>& dhparams,
                                      const std::string& prependpath);
-
-
-
 
     /**
      * Obsolete at this stage -- may be of use still in future.
@@ -504,16 +310,9 @@ private:
 
     bool negateJointMoves;
     bool isDHScaled;
-#if 0
-    bool isContactsScaled;
-#endif
     bool dhTransformed;
 
     std::vector<DHParam> dh_parameters;
-#if 0
-    std::vector<ContactPtr> contacts;
-    std::map<std::string, std::vector<ContactPtr> > linkContacts;
-#endif
 };
 
 }  //  namespace urdf2graspit
