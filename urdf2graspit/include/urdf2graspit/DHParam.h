@@ -21,7 +21,7 @@
 // Copyright Jennifer Buehler
 
 #include <urdf/model.h>
-
+#include <architecture_binding/SharedPtr.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -37,9 +37,11 @@ class DHParam
 {
 public:
     typedef Eigen::Transform<double, 3, Eigen::Affine> EigenTransform;
+    typedef architecture_binding::shared_ptr<const urdf::Joint>::type JointConstPtr;
+    typedef architecture_binding::shared_ptr<const urdf::Link>::type LinkConstPtr;
 
     DHParam():
-        joint(boost::shared_ptr<urdf::Joint>()),
+        joint(JointConstPtr()),
         dof_index(-1),
         d(0),
         r(0),
@@ -47,6 +49,7 @@ public:
         alpha(0) { }
     DHParam(const DHParam& p):
         joint(p.joint),
+        childLink(p.childLink),
         dof_index(p.dof_index),
         d(p.d),
         r(p.r),
@@ -54,19 +57,19 @@ public:
         alpha(p.alpha) { }
 
 
-    boost::shared_ptr<urdf::Joint> joint;
+    JointConstPtr joint;
+    LinkConstPtr childLink;
     int dof_index;   // < index of this dh-parameter in the list of DOF specifications of graspit
     double d;  // < distance along previous z
     double r;  // < orthogonal distance from previous z axis to current z
     double theta;  // < rotation of previous x around previous z to current x
     double alpha;  // < rotation of previous z to current z
 
-
-
     DHParam& operator=(const DHParam& p)
     {
         if (&p == this) return *this;
         joint = p.joint;
+        childLink = p.childLink;
         dof_index = p.dof_index;
         d = p.d;
         r = p.r;
@@ -104,7 +107,13 @@ public:
     static EigenTransform getTransform(const DHParam& p);
 
 
-
+    /**
+     * For each child link defined in the DH parameters \e dh the transform
+     * the transform from DH to URDF space is returned in \e transforms
+     * \param transforms for each link, the transform from DH to URDF space
+     * \retval false if there is a consistency error
+     */
+    static bool dh2urdfTransforms(const std::vector<DHParam>& dh, std::map<std::string,EigenTransform>& transforms);
 
 private:
     /**
@@ -136,6 +145,12 @@ private:
     static bool getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi, const Eigen::Vector3d& pi_1,
                                 const Eigen::Vector3d& pi, Eigen::Vector3d& commonNormal,
                                 Eigen::Vector3d& nOriginOnZi_1, double& shortestDistance, bool& parallel);
+
+
+    static EigenTransform getTransform(const urdf::Pose& p);
+    // Get joint transform to parent
+    static EigenTransform getTransform(const DHParam::JointConstPtr& joint);
+
 };
 
 }  //  namespace urdf2graspit

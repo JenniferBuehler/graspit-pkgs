@@ -76,10 +76,10 @@ int main(int argc, char** argv)
         converter.processAll(urdf_filename,
                              palmLinkName,
                              roots, outputMaterial);
-    if (!cResult->success)
+    if (!cResult || !cResult->success)
     {
         ROS_ERROR("Failed to process.");
-        return 1;
+        return 0;
     }
 
     ROS_INFO("Conversion done.");
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     if (!fileIO.write(cResult))
     {
         ROS_ERROR("Could not write files");
-        return 1;
+        return 0;
     }
 
     ROS_INFO("Cleaning up...");

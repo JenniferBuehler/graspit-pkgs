@@ -22,6 +22,7 @@
 #include <urdf2graspit/XMLFuncs.h>
 #include <urdf2graspit/MarkerSelector.h>
 #include <urdf2graspit/ContactFunctions.h>
+#include <urdf2graspit/ContactsGenerator.h>
 
 #include <string>
 #include <ros/ros.h>
@@ -164,7 +165,7 @@ void Urdf2GraspIt::toGlobalCoordinates(const EigenTransform& transform,
 
 void Urdf2GraspIt::getGlobalCoordinates(const JointPtr& joint,
                                         const EigenTransform& parentWorldTransform,
-                                        Eigen::Vector3d& rotationAxis, Eigen::Vector3d& position)
+                                        Eigen::Vector3d& rotationAxis, Eigen::Vector3d& position) const
 {
     Eigen::Vector3d rotAxis = getRotationAxis(joint);
     EigenTransform jointTransform = getTransform(joint);
@@ -184,7 +185,7 @@ void Urdf2GraspIt::getGlobalCoordinates(const JointPtr& joint,
 bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPtr& joint,
                                const EigenTransform& parentWorldTransform,
                                const Eigen::Vector3d& parentX, const Eigen::Vector3d& parentZ,
-                               const Eigen::Vector3d parentPos, bool asRootJoint)
+                               const Eigen::Vector3d parentPos, bool asRootJoint) const
 {
     ROS_INFO_STREAM("Transforming joint " << joint->name << " to DH parameters");
 
@@ -227,7 +228,23 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
         }
 
         param.dof_index = dhparameters.size();
-        param.joint = getParentJoint(joint);
+        param.joint = readParentJoint(joint);
+
+        if (!param.joint.get())
+        {
+            ROS_ERROR_STREAM("Consistency: Joint "<<joint->name
+                <<" has no parent, should have been added as root joint instead!");
+            return false;
+        }
+        LinkPtr paramChildLink;
+        getRobot().getLink(param.joint->child_link_name, paramChildLink);
+        if (!paramChildLink.get())
+        {
+            ROS_ERROR("consistency, no child link");
+            return false;
+        }
+        param.childLink = paramChildLink;
+        
         dhparameters.push_back(param);
     }
 
@@ -242,6 +259,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
         DHParam param;
         param.dof_index = dhparameters.size();
         param.joint = joint;
+        param.childLink = childLink;
 
         param.r = 0;
         param.d = 0;
@@ -264,8 +282,13 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
 
 
 
-bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const LinkPtr& from_link)
+bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const LinkPtr& from_link) const
 {
+    if (!isDHReady(from_link->name))
+    {
+        ROS_ERROR("Need to call prepareModelForDenavitHartenberg() before DH parameters can be calculated");
+        return false;
+    }
     // first, adjust the transform such that from_link's rotation axis points in z-direction
     JointPtr parentJoint = from_link->parent_joint;
     EigenTransform root_transform;
@@ -284,7 +307,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const LinkPtr
 
 
 
-bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparams, const std::string& fromLinkName)
+bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparams, const std::string& fromLinkName) const
 {
     LinkPtr from_link;
     getRobot().getLink(fromLinkName, from_link);
@@ -297,7 +320,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparams, const std::string
     return getDHParams(dhparams, from_link);
 }
 
-bool Urdf2GraspIt::getDHTransform(const JointPtr& joint, const std::vector<DHParam>& dh, EigenTransform& result)
+bool Urdf2GraspIt::getDHTransform(const JointPtr& joint, const std::vector<DHParam>& dh, EigenTransform& result) const
 {
     for (std::vector<DHParam>::const_iterator it = dh.begin(); it != dh.end(); ++it)
     {
@@ -374,9 +397,7 @@ bool Urdf2GraspIt::coordsConvert(const JointPtr& joint, const JointPtr& root_joi
 }
 */
 
-
-
-
+#if 0
 bool Urdf2GraspIt::linksToDHReferenceFrames(std::vector<DHParam>& dh)
 {
     // starting from the root of a chain, these are the current reference frame transforms in the chain,
@@ -400,7 +421,7 @@ bool Urdf2GraspIt::linksToDHReferenceFrames(std::vector<DHParam>& dh)
         resetChain = false;
 
         ++chainCnt;
-        JointPtr joint = it->joint;
+        JointConstPtr joint = it->joint;
         LinkPtr childLink;
         getRobot().getLink(joint->child_link_name, childLink);
 
@@ -451,8 +472,36 @@ bool Urdf2GraspIt::linksToDHReferenceFrames(std::vector<DHParam>& dh)
 
     return true;
 }
+#endif
 
 
+bool Urdf2GraspIt::linksToDHReferenceFrames(std::vector<DHParam>& dh)
+{
+    std::map<std::string,EigenTransform> transforms;
+    if (!DHParam::dh2urdfTransforms(dh, transforms))
+    {
+        ROS_ERROR("Could not get transforms from DH to URDF");
+        return false; 
+    }
+
+    std::map<std::string,EigenTransform>::iterator it;
+    for (it=transforms.begin(); it!=transforms.end(); ++it)
+    {
+            
+        LinkPtr link=getLink(it->first);
+        if (!link.get())
+        {
+            ROS_ERROR("Link %s does not exist", it->first.c_str());
+            return false;
+        }
+        bool preApply = true;
+        applyTransform(link, it->second, preApply);
+    }
+    
+    return true;
+}
+
+#if 0
 bool Urdf2GraspIt::applyTransform(JointPtr& joint, const EigenTransform& trans, bool preMult)
 {
     EigenTransform vTrans = getTransform(joint);
@@ -492,6 +541,7 @@ void Urdf2GraspIt::applyTransform(LinkPtr& link, const EigenTransform& trans, bo
     else vTrans = vTrans * trans;
     setTransform(vTrans, link->inertial->origin);
 
+#if 0
     std::map<std::string, std::vector<ContactPtr> >::iterator lCnt = linkContacts.find(link->name);
     if (lCnt != linkContacts.end())
     {
@@ -509,9 +559,11 @@ void Urdf2GraspIt::applyTransform(LinkPtr& link, const EigenTransform& trans, bo
             c->norm = trans.rotation() * c->norm;
         }
     }
+#endif
 }
+#endif
 
-
+#if 0
 bool equalAxes(const Eigen::Vector3d& z1, const Eigen::Vector3d& z2)
 {
     double dot = z1.dot(z2);
@@ -519,7 +571,6 @@ bool equalAxes(const Eigen::Vector3d& z1, const Eigen::Vector3d& z2)
     // float alpha = acos(z1.dot(z2));
     // return (std::fabs(alpha) < U2G_EPSILON);
 }
-
 
 bool Urdf2GraspIt::jointTransformForAxis(const urdf::Joint& joint,
         const Eigen::Vector3d& axis, Eigen::Quaterniond& rotation)
@@ -600,7 +651,7 @@ bool Urdf2GraspIt::allRotationsToAxis(JointPtr& joint, const Eigen::Vector3d& ax
     }
     return true;
 }
-
+#endif
 
 
 
@@ -666,33 +717,24 @@ bool Urdf2GraspIt::convertGraspItMeshes(const std::string& fromLinkName,
 }
 
 
-void Urdf2GraspIt::scaleContacts(double scale_factor)
+void Urdf2GraspIt::scaleParams(std::vector<DHParam>& dh, double scale_factor) const
 {
-    if (isContactsScaled) return;
-    std::map<std::string, std::vector<ContactPtr> >::iterator linkItr;
-    for (linkItr=linkContacts.begin(); linkItr!=linkContacts.end(); ++linkItr)
-    {
-        for (std::vector<ContactPtr>::iterator it = linkItr->second.begin(); it != linkItr->second.end(); ++it)
-        {
-            ContactPtr c = *it;
-            c->loc *= scale_factor;
-        }
-    }
-    isContactsScaled = true;
-}
-
-
-void Urdf2GraspIt::scaleParams(std::vector<DHParam>& dh, double scale_factor)
-{
-    if (isDHScaled) return;
     for (std::vector<DHParam>::iterator it = dh.begin(); it != dh.end(); ++it)
     {
         it->d *= scale_factor;
         it->r *= scale_factor;
     }
-    isDHScaled = true;
 }
 
+
+void Urdf2GraspIt::printParams(const std::vector<DHParam>& dh) const
+{
+    ROS_INFO("--- DH Parameters: ---");
+    for (std::vector<DHParam>::const_iterator it = dh.begin(); it != dh.end(); ++it)
+    {
+        ROS_INFO_STREAM(*it);
+    }
+}
 
 
 
@@ -713,7 +755,6 @@ bool Urdf2GraspIt::toDenavitHartenberg(const std::string& fromLink)
         ROS_INFO_STREAM("DH param: "<<*d);
     }*/
 
-
     ROS_INFO("############### Transform links to DH reference frames");
 
     if (!linksToDHReferenceFrames(dhparams))
@@ -725,13 +766,19 @@ bool Urdf2GraspIt::toDenavitHartenberg(const std::string& fromLink)
     return true;
 }
 
+
+#if 0
 bool Urdf2GraspIt::scaleAll()
 {
     ROS_INFO("############### Scaling up model");
     
     // now, scale up all dh parameters to match the scale factor,
     // and also all link/collision/intertial transforms given in the URDF
-    scaleParams(dh_parameters, getScaleFactor());
+    if (!isDHScaled)
+    {
+        scaleParams(dh_parameters, getScaleFactor());
+        isDHScaled = true;
+    }
     scaleContacts(getScaleFactor());
     // scale the inventor meshes:
     if (!scale())
@@ -742,10 +789,45 @@ bool Urdf2GraspIt::scaleAll()
 
     return true;
 }
+#endif
+
+bool Urdf2GraspIt::checkConversionPrerequisites(const GraspItConversionParametersPtr& param) const
+{
+    if (!isDHReady(param->rootLinkName))
+    {
+        ROS_ERROR("Need to call prepareModelForDenavitHartenberg() before DH parameters can be calculated");
+        return false;
+    }
+    
+    // Can only convert if there are no active joints between the root
+    // joint and the finger bases, and all fixed joints have been joined.
+    LinkConstPtr rootLink = readLink(param->rootLinkName);
+    if (!rootLink.get())
+    {
+        ROS_ERROR_STREAM("No link named '"<<param->rootLinkName<<"' found in URDF.");
+        return false;
+    }
+    for (std::vector<std::string>::iterator rIt=param->fingerRoots.begin(); rIt != param->fingerRoots.end(); ++rIt)
+    {
+        JointConstPtr fingerRootJoint = readJoint(*rIt);
+        if (!fingerRootJoint.get())
+        {
+            ROS_ERROR_STREAM("No link named '"<<*rIt<<"' found in URDF.");
+            return false;
+        }
+        if (!isChildJointOf(rootLink, fingerRootJoint))
+        {
+            ROS_ERROR_STREAM("Link named '"<<*rIt<<"' is not direct child of root '"<<param->rootLinkName
+                <<". There can be no active joints between the root (palm) link and the finger root links."
+                <<" This is a requirement for conversion to GraspIt in the current version.");
+            return false;
+        }
+    }
+    return true; 
+}
 
 Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParametersPtr& cparams)
 {
-   
     GraspItConversionParametersPtr param = architecture_binding_ns::dynamic_pointer_cast<GraspItConversionParameters>(cparams);
     if (!param.get())
     {
@@ -755,25 +837,43 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParam
     
     ROS_INFO_STREAM("### Urdf2GraspIt::pretConvert for robot "<<param->robotName);
     outStructure.setRobotName(param->robotName); 
+    
+    GraspItConversionResultPtr failResult;
 
     std::string outputMeshDir =  outStructure.getMeshDirPath();
     GraspItConversionResultPtr result(new GraspItConversionResult(OUTPUT_EXTENSION, outputMeshDir));
     result->success = false;
     result->robotName = param->robotName;
-   
+
+    if (!checkConversionPrerequisites(param))
+    {
+        ROS_ERROR("Prerequisites for conversion not fulfilled.");
+        return failResult;
+    }
+
     ROS_INFO("##### Computing DH parameters out of model");
     if (!dhTransformed && !toDenavitHartenberg(param->rootLinkName))
     {
         ROS_ERROR("Could not transform to DH reference frames");
-        return result;
+        return failResult;
     }
 
-    ROS_INFO("##### scaling DH parameters");
+    printParams(dh_parameters);
+    
+    ROS_INFO("##### Scaling DH parameters");
     // scale up all dh parameters to match the scale factor,
     // and also all link/collision/intertial transforms given in the URDF
-    scaleParams(dh_parameters, getScaleFactor());
+
+    if (!isDHScaled)
+    {
+        scaleParams(dh_parameters, getScaleFactor());
+        isDHScaled = true;
+    }
+
+#if 0
     scaleContacts(getScaleFactor());
-    
+#endif
+
     return result;
 }
 
@@ -822,6 +922,24 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::postConvert(const ConversionPara
     // ROS_INFO_STREAM("XML: "<<std::endl<<res.robotXML);
 
     result->world = getWorldFileTemplate(param->robotName, dh_parameters, outStructure.getRobotFilePath());
+
+    ROS_INFO("### Generating contacts...");
+    ContactsGenerator contGen(getScaleFactor());
+    // need to load the model into the contacts generator as well.
+    // this will then be a fresh model (not the one already converted to DH).
+    std::string _robot_urdf=getRobotURDF();
+    if (_robot_urdf.empty() || !contGen.loadModelFromXMLString(_robot_urdf))
+    {
+        ROS_ERROR("Could not load the model into the contacts generator");
+        return result;
+    }
+    float coefficient = 0.2;
+    if (!contGen.generateContactsWithViewer(param->fingerRoots, param->rootLinkName, coefficient, dh_parameters))
+    {
+        ROS_ERROR("Could not generate contacts");
+        return result;
+    }
+    result->contacts = contGen.getContactsFileContent(result->robotName);
 
     result->success = true; 
     return result;
@@ -900,7 +1018,7 @@ void Urdf2GraspIt::getJointMoves(const urdf::Joint& j, float& velocity, float& e
     }
 }
 
-
+#if 0
 int Urdf2GraspIt::addJointLink(RecursionParamsPtr& p)
 {
     OrderedJointsRecursionParams::Ptr param = architecture_binding_ns::dynamic_pointer_cast<OrderedJointsRecursionParams>(p);
@@ -1025,7 +1143,6 @@ Urdf2GraspIt::JointPtr Urdf2GraspIt::getParentJoint(const JointPtr& joint)
 }
 
 
-
 bool Urdf2GraspIt::generateContactsForallVisuals(const std::string& linkName, const int linkNum, const int fingerNum,
         const float coefficient, const std::vector<MarkerSelector::Marker>& markers)
 {
@@ -1115,8 +1232,6 @@ bool Urdf2GraspIt::generateContactsForallVisuals(const std::string& linkName, co
 
     return true;
 }
-
-
 
 
 bool Urdf2GraspIt::generateContacts(const std::vector<std::string>& rootFingerJoints, const std::string& palmLinkName,
@@ -1279,6 +1394,21 @@ bool Urdf2GraspIt::generateContactsWithViewer(const std::vector<std::string>& fi
     return true;
 }
 
+void Urdf2GraspIt::scaleContacts(double scale_factor)
+{
+    if (isContactsScaled) return;
+    std::map<std::string, std::vector<ContactPtr> >::iterator linkItr;
+    for (linkItr=linkContacts.begin(); linkItr!=linkContacts.end(); ++linkItr)
+    {
+        for (std::vector<ContactPtr>::iterator it = linkItr->second.begin(); it != linkItr->second.end(); ++it)
+        {
+            ContactPtr c = *it;
+            c->loc *= scale_factor;
+        }
+    }
+    isContactsScaled = true;
+}
+#endif
 
 std::string Urdf2GraspIt::getWorldFileTemplate(
     const std::string& robotName,
@@ -1288,8 +1418,29 @@ std::string Urdf2GraspIt::getWorldFileTemplate(
     return urdf2graspit::xmlfuncs::getWorldFileTemplate(robotName, dhparams, prependpath, negateJointMoves);
 }
 
-
-
+   
+#if 0 
+bool Urdf2GraspIt::prepareForDenavitHartenberg(const std::string& fromLink)
+{
+    ROS_INFO("### Joining fixed links..");
+    if (!joinFixedLinks(fromLink))
+    {
+        ROS_ERROR("Could not joint fixed links");
+        return false;
+    }
+    // p.printModel(palmLinkName);
+    
+    ROS_INFO("### Transforming rotation axes to z...");
+    Eigen::Vector3d z(0, 0, 1);
+    if (!allRotationsToAxis(fromLink, z))
+    {
+        ROS_ERROR("Could not transform rotation axes");
+        return false;
+    }
+    isDHReady=true;
+    return true;
+}
+#endif
 
 Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& urdfFilename,
         const std::string& palmLinkName,
@@ -1309,56 +1460,42 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
         return failResult;
     }
 
-
     ROS_INFO("### Converting files for robot %s", getRobot().getName().c_str());
-    ROS_INFO("### Joining fixed links..");
-
-    if (!joinFixedLinks(palmLinkName))
+    if (!prepareModelForDenavitHartenberg(palmLinkName))
     {
-        ROS_ERROR("Could not traverse");
+        ROS_ERROR("Could not prepare for DH conversion");
         return failResult;
     }
-    // ROS_INFO("00000000000000000000000");
-    // p.printModel(palmLinkName);
-    
-    ROS_INFO("### Transforming rotation axes to z...");
-
-    Eigen::Vector3d z(0, 0, 1);
-    if (!allRotationsToAxis(palmLinkName, z))
-    {
-        ROS_ERROR("Failed");
-        return failResult;
-    }
-    
-    ROS_INFO("### Generating contacts...");
-
+      
+/*    ROS_INFO("### Generating contacts...");
     float coefficient = 0.2;
     if (!generateContactsWithViewer(fingerRootNames, palmLinkName, coefficient))
     {
         ROS_ERROR("Could not generate contacts");
         return failResult;
     }
-    
+*/
     ROS_INFO("### Converting files...");
-
     ConversionParametersPtr params(new GraspItConversionParameters(getRobot().getName(), palmLinkName, material, fingerRootNames));
     ConversionResultPtr convResult = convert(params);
-    if (!convResult->success)
+    if (!convResult || !convResult->success)
     {
         ROS_ERROR("Could not do the conversion");
-        return convResult;
+        return convResult ? convResult : failResult;
     }
 
     GraspItConversionResultPtr result = architecture_binding_ns::dynamic_pointer_cast<GraspItConversionResult>(convResult);
     if (!result.get())
     {
         ROS_ERROR("postConvert: result not of right type");
-        convResult->success = false;
-        return convResult;
+        return convResult ? convResult : failResult;
     }
  
     result->robotName = getRobot().getName();
+
+#if 0
     result->contacts = getContactsFileContent(result->robotName);
+#endif
 
     // ROS_INFO_STREAM("Contacts generated: "<<result->contacts);
 

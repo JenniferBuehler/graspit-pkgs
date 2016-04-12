@@ -31,7 +31,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <urdf2inventor/Urdf2Inventor.h>
+#include <urdf2graspit/Urdf2GraspItBase.h>
 
 #include <urdf2graspit/DHParam.h>
 #include <urdf2graspit/MarkerSelector.h>
@@ -60,7 +60,7 @@ namespace urdf2graspit
  * </ol>
  * \author Jennifer Buehler
  */
-class Urdf2GraspIt: public urdf2inventor::Urdf2Inventor
+class Urdf2GraspIt: public Urdf2GraspItBase
 {
 public:
     typedef urdf2graspit::ConversionResult GraspItConversionResult;
@@ -76,12 +76,13 @@ public:
      * \param _negateJointMoves negates (inverts) joint limits and velocity/effort specified in URDF
      */
     explicit Urdf2GraspIt(float _scaleFactor = 1000, bool _negateJointMoves = true):
-        urdf2inventor::Urdf2Inventor(_scaleFactor),
+        Urdf2GraspItBase(_scaleFactor),
         negateJointMoves(_negateJointMoves),
         isDHScaled(false),
+#if 0
         isContactsScaled(false),
-        dhTransformed(false),
-        outStructure("iv")
+#endif
+        dhTransformed(false)
     {
         urdf2inventor::Urdf2Inventor::MESH_OUTPUT_DIRECTORY_NAME = "iv";
     }
@@ -90,16 +91,12 @@ public:
     {
     }
 
-    OutputStructure getOutStructure() const
-    {
-        return outStructure;
-    }
-
+#if 0
     /**
      * Transform the URDF such that all rotation axises (in the joint's local reference frame) are this axis
      */
     bool allRotationsToAxis(const std::string& fromLinkName, const Eigen::Vector3d& axis);
-
+#endif
     /**
      * Convenience method which does all the operations required for the conversion. This method can be used as a template to create
      * variations of this process. You may be interested in calling cleanup() after processing this in order to clean out temporary
@@ -121,8 +118,6 @@ public:
                                  const std::string& material = "plastic");
 
 
-
-
     /**
      * Method which does the conversion from URDF to GraspIt!. This converts the model to DH parameters (if not previously done),
      * scales up the model using the scale factor specified in the constructor (if not previously done), converts the mesh files,
@@ -140,21 +135,33 @@ public:
 
     /**
      * Transforms the model to denavit hartenberg parameters, starting from the specified link.
-     * This will change some transforms of joints/links and visuals/inertails/collisions,
-     * and will also affect the contacts previously calculated with generateContacts.
+     * This will change some transforms of joints/links and visuals/inertails/collisions.
+     * The model must have been transformed before with prepareModelForDenavitHartenberg()!
      */
     bool toDenavitHartenberg(const std::string& fromLink);
 
 
+#if 0
+    /**
+     * Transforms the model for denavit hartenberg parameters starting from link \e fromLink.
+     * This involves changing all rotation axes to be the z axis by calling
+     * allRotationsToAxis(), and and joining all fixed links by calling joinFixedLinks().
+     * 
+     * After this has been done successfully, getDenavitHartenbergParams() and toDenavitHartenberg()
+     * can be called. 
+     */
+    bool prepareForDenavitHartenberg(const std::string& fromLink);
+
+
     /**
      * Scales the model using the scale factor specified in constructor. This
-     * will also affect the contacts previously calculated with generateContacts, and the DH parameters previously
-     * calculated in toDenavitHartenberg.
+     * will also affect the DH parameters previously generated in toDenavitHartenberg().
      * This will however not include the original mesh files. Use Urdf2Inventor::convertMeshes() and convertGraspItMeshes() to generate the 
      * inventor and GraspIt! meshes
      * using a scale factor.
      */
     bool scaleAll();
+#endif
 
     /**
      * Convert all meshes starting from fromLinkName into the GraspIt! inventor format, and store them in the given
@@ -167,7 +174,7 @@ public:
                        double scale_factor, const std::string& material,
                        std::map<std::string, std::string>& meshDescXML);
 
-
+#if 0
     /**
      * Generates contacts file out of the markers defined in the map. This function is provided in case the markers information
      * is obtained in a user-defined way. You may be interested in using generateContactsWithViewer().
@@ -177,7 +184,6 @@ public:
      */
     bool generateContacts(const std::vector<std::string>& rootFingerJoints, const std::string& palmLinkName,
                           const float coefficient, const markerselector::MarkerSelector::MarkerMap& markers);
-
     /**
      * Starts a viewer in which the user may select contact points to be defined for the hand. The function generateContacts()
      * is then called so that contacts are defined for the model. Observe that it is less intuitive to call this function
@@ -188,9 +194,10 @@ public:
      */
     bool generateContactsWithViewer(const std::vector<std::string>& fingerRoots,
                                     const std::string& palmLinkName, float standard_coefficient);
-
+#endif
 
 protected:
+#if 0
     /**
       * \brief Helper class to encapsulate contact information
       */
@@ -259,7 +266,11 @@ private:
         // Only add joints to the result which are active.
         bool onlyActive;
     };
+#endif
 
+private:
+
+    bool checkConversionPrerequisites(const GraspItConversionParametersPtr& param) const;
 
     virtual ConversionResultPtr preConvert(const ConversionParametersPtr& params);
     virtual ConversionResultPtr postConvert(const ConversionParametersPtr& rootLink, ConversionResultPtr& result);
@@ -279,31 +290,35 @@ private:
     bool getDHParams(std::vector<DHParam>& dhparameters, const JointPtr& joint,
                      const EigenTransform& parentWorldTransform,
                      const Eigen::Vector3d& parentX, const Eigen::Vector3d& parentZ,
-                     const Eigen::Vector3d parentPos, bool asRootJoint);
-
-
-    /**
-     * Returns the Denavit-Hartenberg parameters starting from link from_link
-     */
-    bool getDHParams(std::vector<DHParam>& dhparameters, const LinkPtr& from_link);
-
+                     const Eigen::Vector3d parentPos, bool asRootJoint) const;
 
     /**
      * Returns the Denavit-Hartenberg parameters starting from the link with fromLinkName
      */
-    bool getDHParams(std::vector<DHParam>& dhparams, const std::string& fromLinkName);
+    bool getDHParams(std::vector<DHParam>& dhparams, const std::string& fromLinkName) const;
+
+    /**
+     * Returns the Denavit-Hartenberg parameters starting from link from_link
+     */
+    bool getDHParams(std::vector<DHParam>& dhparameters, const LinkPtr& from_link) const;
+
 
     /**
      * scales r and d parameters in \e dh by the given factor
      */
-    void scaleParams(std::vector<DHParam>& dh, double scale_factor);
-   
+    void scaleParams(std::vector<DHParam>& dh, double scale_factor) const;
+
+    /**
+     * Prints the DH parameters
+     */
+    void printParams(const std::vector<DHParam>& dh) const;
+  
+#if 0 
     /**
      * scales the contacts by given factor
      */ 
     void scaleContacts(double scale_factor);
-
-
+#endif
 
     /**
      * Transforms all link's visuals, collisions and intertials according to the DH parameters.
@@ -318,6 +333,7 @@ private:
      */
     bool linksToDHReferenceFrames(std::vector<DHParam>& dh);
 
+#if 0
     /**
      * Applies the transformation on the joint transform
      * \param scaleTransform set to true if the urdf's transforms are to be scaled (using scaleFactor) before applying the transform
@@ -341,6 +357,7 @@ private:
      * rotations such that all joints rotate around z-axis
      */
     bool allRotationsToAxis(JointPtr& joint, const Eigen::Vector3d& axis);
+#endif
 
     /**
      * Function to be called during recursion incurred in convertGraspItMeshes()
@@ -371,14 +388,15 @@ private:
                 const std::string& palmLinkName, const std::string * eigenXML,
                 const std::string * contactsVGR, const std::string& mesh_pathprepend, std::string& result);
 
-
+#if 0
     // Helper function for generateContacts()
     bool generateContactsForallVisuals(const std::string& linkName,
                                        const int linkNum, const int fingerNum,
                                        const float coefficient,
                                        const std::vector<markerselector::MarkerSelector::Marker>& markers);
+#endif
 
-
+#if 0
     // Function for recursive getDependencyOrderedJoints
     int addJointLink(RecursionParamsPtr& p);
 
@@ -395,7 +413,7 @@ private:
      */
     bool getDependencyOrderedJoints(std::vector<JointPtr>& result, const LinkPtr& from_link,
                                     bool allowSplits = true, bool onlyActive = true);
-
+#endif
 
     // Returns if this is a revoluting joint in the URDF description
     inline bool isRevoluting(const JointPtr& joint) const
@@ -416,7 +434,7 @@ private:
     }
 
     // Returns the joint's rotation axis as Eigen Vector
-    inline Eigen::Vector3d getRotationAxis(const JointPtr& j)
+    inline Eigen::Vector3d getRotationAxis(const JointPtr& j) const
     {
         return Eigen::Vector3d(j->axis.x, j->axis.y, j->axis.z);
     }
@@ -427,13 +445,15 @@ private:
      * \retval 0 if the joint has no child joints (it's an end effector joint),
      * \retval 1 if a child joint is returned in parameter "child"
      */
-    int getChildJoint(const JointPtr& joint, JointPtr& child);
-
+/*    int getChildJoint(const JointPtr& joint, JointPtr& child);
     LinkPtr getChildLink(const JointPtr& joint);
-
     JointPtr getParentJoint(const JointPtr& joint);
+*/
 
-    // Transforms a vector (input) within a local coordinate system (given by transform) into world coordinates
+
+    /**
+     * Transforms a vector (input) within a local coordinate system (given by transform) into world coordinates
+     */
     void toGlobalCoordinates(const EigenTransform& transform,
                              const Eigen::Vector3d& input, Eigen::Vector3d& output);
 
@@ -444,19 +464,21 @@ private:
      */
     void getGlobalCoordinates(const JointPtr& joint,
                               const EigenTransform& parentWorldTransform,
-                              Eigen::Vector3d& rotationAxis, Eigen::Vector3d& position);
+                              Eigen::Vector3d& rotationAxis, Eigen::Vector3d& position) const;
 
 
     /**
      * Returns the transform in DH-space for this joint, as present in the dh parameters. Returns false if this joint
      * is not represented in the dh parameters.
      */
-    bool getDHTransform(const JointPtr& joint, const std::vector<DHParam>& dh, EigenTransform& result);
+    bool getDHTransform(const JointPtr& joint, const std::vector<DHParam>& dh, EigenTransform& result) const;
 
+#if 0
     /**
      * Writes the file for the contacts. The contacts need to be specified in DH parameter space.
      */
     std::string getContactsFileContent(const std::string& robotName);
+#endif
 
     /**
      * Gets the XML content which has to go into the world file
@@ -482,14 +504,16 @@ private:
 
     bool negateJointMoves;
     bool isDHScaled;
+#if 0
     bool isContactsScaled;
+#endif
     bool dhTransformed;
 
     std::vector<DHParam> dh_parameters;
+#if 0
     std::vector<ContactPtr> contacts;
     std::map<std::string, std::vector<ContactPtr> > linkContacts;
-
-    OutputStructure outStructure;
+#endif
 };
 
 }  //  namespace urdf2graspit

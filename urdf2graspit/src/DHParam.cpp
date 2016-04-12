@@ -307,3 +307,90 @@ DHParam::EigenTransform DHParam::getTransform(const DHParam& p)
     */
     return ret;
 }
+
+
+
+DHParam::EigenTransform DHParam::getTransform(const urdf::Pose& p)
+{
+    urdf::Vector3 _jtr = p.position;
+    Eigen::Vector3d jtr(_jtr.x, _jtr.y, _jtr.z);
+    urdf::Rotation _jrot = p.rotation;
+    Eigen::Quaterniond jrot(_jrot.w, _jrot.x, _jrot.y, _jrot.z);
+    jrot.normalize();
+    DHParam::EigenTransform tr;
+    tr.setIdentity();
+    tr = tr.translate(jtr);
+    tr = tr.rotate(jrot);
+    return tr;
+}
+
+// Get joint transform to parent
+DHParam::EigenTransform DHParam::getTransform(const DHParam::JointConstPtr& joint)
+{
+    return getTransform(joint->parent_to_joint_origin_transform);
+}
+
+
+bool DHParam::dh2urdfTransforms(const std::vector<DHParam>& dh, std::map<std::string,EigenTransform>& transforms)
+{
+    // starting from the root of a chain, these are the current
+    // reference frame transforms in the chain,
+    // one in DH space, and one in URDF space
+    EigenTransform refFrameDH;
+    EigenTransform refFrameURDF;
+    refFrameDH.setIdentity();
+    refFrameURDF.setIdentity();
+
+    JointConstPtr root_joint;
+    int chainCnt = -1;
+    bool resetChain = false;
+    for (std::vector<DHParam>::const_iterator it = dh.begin(); it != dh.end(); ++it)
+    {
+        if (resetChain)
+        {
+            refFrameDH.setIdentity();
+            refFrameURDF.setIdentity();
+            chainCnt = -1;
+        }
+        resetChain = false;
+
+        ++chainCnt;
+        JointConstPtr joint = it->joint;
+        LinkConstPtr childLink = it->childLink;
+        if (!childLink.get())
+        {
+            ROS_ERROR("DHParam::urdf2DHTransforms: child link is NULL");
+            return false;
+        }
+
+        if (childLink->child_joints.empty())
+        {
+            // this is the end link, and we've defined the end frame to be
+            // at the same location as the last joint,
+            // so no rotation should be needed?
+            resetChain = true;  // reset chain in next iteration
+        }
+
+        EigenTransform dhTrans = DHParam::getTransform(*it);
+
+        EigenTransform jointTransform = EigenTransform::Identity();
+        if (chainCnt > 0) jointTransform = getTransform(joint);
+
+        // ROS_INFO_STREAM("Dh trans for "<<joint->name<<": "<<dhTrans);
+        // ROS_INFO_STREAM("Joint trans for "<<joint->name<<": "<<jointTransform);
+
+        refFrameDH = refFrameDH * dhTrans;
+        refFrameURDF = refFrameURDF * jointTransform;
+
+        EigenTransform dhSpaceToJointSpace = refFrameDH.inverse() * refFrameURDF;
+
+        // ROS_INFO_STREAM("Doing transform for joint "<<joint->name<<": "<<dhSpaceToJointSpace);
+        if (!transforms.insert(std::make_pair(childLink->name, dhSpaceToJointSpace)).second)
+        {
+            ROS_ERROR_STREAM("Consistency: The link "<<childLink->name<<" was already encountered");
+            return false;
+        }
+    }
+    return true;
+}
+
