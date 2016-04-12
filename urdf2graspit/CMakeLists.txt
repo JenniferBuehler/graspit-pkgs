@@ -74,6 +74,7 @@ add_library(urdf2graspit
 
 ## Declare a cpp executable
 add_executable(urdf2graspit_node src/urdf2graspit_node.cpp)
+add_executable(contacts_generator_node src/contacts_generator_node.cpp)
 add_executable(marker_selector_viewer src/viewer.cpp src/MarkerSelector.cpp src/XMLFuncs.cpp)
 
 ## Add cmake target dependencies of the executable/library
@@ -81,6 +82,7 @@ add_executable(marker_selector_viewer src/viewer.cpp src/MarkerSelector.cpp src/
 # add_dependencies(urdf2graspit_node urdf2graspit_generate_messages_cpp)
 
 add_dependencies(urdf2graspit_node urdf2graspit)
+add_dependencies(contacts_generator_node urdf2graspit)
 
 
 # add depending libraries if they don't come with catkin dependencies already
@@ -92,6 +94,7 @@ set (DEPEND_LIBRARIES
 
 target_link_libraries(urdf2graspit ${DEPEND_LIBRARIES})
 target_link_libraries(urdf2graspit_node urdf2graspit ${DEPEND_LIBRARIES})
+target_link_libraries(contacts_generator_node urdf2graspit ${DEPEND_LIBRARIES})
 target_link_libraries(marker_selector_viewer ${DEPEND_LIBRARIES})
 
 
@@ -113,7 +116,7 @@ roslint_cpp()
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS urdf2graspit urdf2graspit_node marker_selector_viewer
+install(TARGETS urdf2graspit urdf2graspit_node contacts_generator_node marker_selector_viewer
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

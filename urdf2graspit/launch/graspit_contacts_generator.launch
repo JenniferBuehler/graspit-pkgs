@@ -1,0 +1,21 @@
+<launch>
+    # the input urdf file
+    <arg name="urdf_file"/>
+	
+    # the directory onto which to write the output files
+    <arg name="output_directory"/>
+     
+    # the root link for the hand (or the arm) which is the start of the chain which should be
+    # converted to the GraspIt format.
+	<arg name="hand_root_link"/>
+
+    # names of all finger joints, separated by white spaces
+    <arg name="finger_joint_names"/>
+
+    # factor to scale the model by 
+    <arg name="scale_factor"/>
+
+	<node name="contacts_generator_node" pkg="urdf2graspit" type="contacts_generator_node" respawn="false"  args="$(arg urdf_file) $(arg output_directory) $(arg hand_root_link) $(arg finger_joint_names)" output="screen">
+		<param name="scale_factor" value="$(arg scale_factor)"/>
+	</node>
+</launch>

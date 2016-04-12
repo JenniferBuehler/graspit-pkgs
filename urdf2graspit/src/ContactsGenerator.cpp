@@ -16,11 +16,10 @@
     Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **/
 
+#include <urdf2graspit/ContactFunctions.h>
 #include <urdf2graspit/ContactsGenerator.h>
 #include <urdf2inventor/Helpers.h>
-//#include <urdf2graspit/XMLFuncs.h>
 #include <urdf2graspit/MarkerSelector.h>
-#include <urdf2graspit/ContactFunctions.h>
 
 #include <string>
 #include <ros/ros.h>
@@ -197,6 +196,13 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
 {
     LinkPtr palm_link;
     getRobot().getLink(palmLinkName, palm_link);
+    if (!palm_link.get())
+    {
+        ROS_ERROR_STREAM("Palm link "<<palmLinkName<<" not found.");
+        return false;
+    }
+
+    initOutStructure(getRobotName());
 
     // first, do the palm:
     MarkerSelector::MarkerMap::const_iterator palmM = markers.find(palmLinkName);

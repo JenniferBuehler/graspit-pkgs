@@ -25,16 +25,10 @@
 #include <string>
 #include <vector>
   
-bool urdf2graspit::FileIO::initOutputDirImpl(const ConversionResultPtr& data) const
+bool urdf2graspit::FileIO::initOutputDirImpl(const std::string& robotName) const
 {
-    GraspItConversionResultPtr graspitData = architecture_binding_ns::dynamic_pointer_cast<GraspItConversionResultT>(data);
-    if (!graspitData.get())
-    {
-        ROS_ERROR("Conversion result not of right type");
-        return false;
-    }
     std::string robotDir;
-    return initGraspItRobotDir(graspitData->robotName,robotDir);
+    return initGraspItRobotDir(robotName,robotDir);
 }
 
 bool urdf2graspit::FileIO::initGraspItRobotDir(const std::string& robotName, std::string& robotDir) const
@@ -121,7 +115,7 @@ bool urdf2graspit::FileIO::writeContacts(const std::string& robotName, const std
         return false;
     }
     std::string contactFilename = getOutputDirectory() + "/" + outStructure.getContactsFilePath();
-    // ROS_INFO("Writing contacts file %s",contactFilename.c_str());
+    ROS_INFO("Writing contacts to file %s",contactFilename.c_str());
     return urdf2inventor::helpers::writeToFile(content, contactFilename);
 }
 
@@ -184,11 +178,11 @@ bool urdf2graspit::FileIO::writeImpl(const ConversionResultPtr& data) const
         return false;
     }
 
-    if (!writeContacts(graspitData->robotName, graspitData->contacts))
+    /*if (!writeContacts(graspitData->robotName, graspitData->contacts))
     {
         ROS_ERROR("Could not write EigenGrasp file");
         return false;
-    }
+    }*/
 
     if (!writeWorldFileTemplate(graspitData->robotName, graspitData->world))
     {

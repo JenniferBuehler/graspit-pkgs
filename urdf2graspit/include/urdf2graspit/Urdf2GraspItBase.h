@@ -66,12 +66,6 @@ public:
     {
     }
 
-    OutputStructure getOutStructure() const
-    {
-        return outStructure;
-    }
-    
-protected:
     /**
      * Prepares the model for conversion to denavit hartenberg parameters starting from link \e fromLink.
      * This involves changing all rotation axes to be the z axis by calling
@@ -79,6 +73,17 @@ protected:
      */
     bool prepareModelForDenavitHartenberg(const std::string& fromLink);
 
+    void initOutStructure(const std::string& robotName)
+    {
+        outStructure.setRobotName(robotName);
+    }
+
+    OutputStructure getOutStructure() const
+    {
+        return outStructure;
+    }
+    
+protected:
     /**
      * Checks whether the loaded URDF model is ready for Denavit-Hartenberg representation.
      * This will return true after prepareModelForDenavitHartenberg has been called.
@@ -88,9 +93,10 @@ protected:
      */
     bool isDHReady(const std::string& fromLink) const;
 
+private:
+
     OutputStructure outStructure;
 
-private:
     /**
      * set to link which has been used in call of prepareModelForDenavitHartenberg().
      * XXX TODO this should be changed to check dynamically from isDHReady(const std::string&).

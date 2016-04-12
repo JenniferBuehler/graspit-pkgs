@@ -61,10 +61,12 @@ public:
     ~FileIO()
     {
     }
+    
+    bool writeContacts(const std::string& robotName, const std::string& content) const;
 
 protected:
 
-    virtual bool initOutputDirImpl(const ConversionResultPtr& data) const;
+    virtual bool initOutputDirImpl(const std::string& robotName) const;
 
     virtual bool writeImpl(const ConversionResultPtr& data) const;
 
@@ -77,7 +79,6 @@ protected:
 
     bool writeRobotXML(const std::string& robotName, const std::string& content) const;
 
-    bool writeContacts(const std::string& robotName, const std::string& content) const;
 
     /**
      * Creates the standard GraspIt! directory structure for the robot.

@@ -20,6 +20,7 @@
 
 #include <urdf2inventor/Helpers.h>
 #include <urdf2graspit/Urdf2Graspit.h>
+#include <urdf2graspit/ContactsGenerator.h>
 #include <urdf2graspit/FileIO.h>
 #include <string>
 #include <vector>
@@ -60,32 +61,53 @@ int main(int argc, char** argv)
 
     std::string outputMaterial = "plastic";
     double scaleFactor = 1000;
-
-    priv.param<std::string>("output_material", outputMaterial, outputMaterial);
-    ROS_INFO("output_material: <%s>", outputMaterial.c_str());
-
     priv.param<double>("scale_factor", scaleFactor, scaleFactor);
     ROS_INFO("scale_factor: <%f>", scaleFactor);
 
+    ROS_INFO("### Getting DH parameters...");
     urdf2graspit::Urdf2GraspIt converter(scaleFactor);
-
-    ROS_INFO("Starting model conversion...");
-
-    urdf2graspit::Urdf2GraspIt::ConversionResultPtr cResult =
-        converter.processAll(urdf_filename,
-                             palmLinkName,
-                             roots, outputMaterial);
-    if (!cResult || !cResult->success)
+    if (!converter.loadModelFromFile(urdf_filename))
     {
-        ROS_ERROR("Failed to process.");
+        ROS_ERROR("Could not load the model into the contacts generator");
         return 0;
     }
 
-    ROS_INFO("Conversion done.");
+    if (!converter.prepareModelForDenavitHartenberg(palmLinkName))
+    {
+        ROS_ERROR("Could not prepare model for DH parameters");
+        return 0;
+    }
+    std::vector<urdf2graspit::DHParam> dh_parameters;
+    if (!converter.getDHParams(dh_parameters, palmLinkName))
+    {
+        ROS_ERROR("Could not retrieve DH parameters from model");
+        return 0;
+    }
 
-    urdf2graspit::FileIO fileIO(outputDir, converter.getOutStructure());
+    ROS_INFO("### Generating contacts for robot %s...", converter.getRobotName().c_str());
+    urdf2graspit::ContactsGenerator contGen(scaleFactor);
+    if (!contGen.loadModelFromFile(urdf_filename))
+    {
+        ROS_ERROR("Could not load the model into the contacts generator");
+        return 0;
+    }
+    float coefficient = 0.2;
+    if (!contGen.generateContactsWithViewer(roots, palmLinkName, coefficient, dh_parameters))
+    {
+        ROS_ERROR("Could not generate contacts");
+        return 0;
+    }
+    std::string contacts = contGen.getContactsFileContent(contGen.getRobotName());
+    ROS_INFO_STREAM("Contacts generated for robot "<<contGen.getRobotName()); // <<": "<<contacts);
 
-    if (!fileIO.write(cResult))
+    urdf2graspit::FileIO fileIO(outputDir, contGen.getOutStructure());
+    if (!fileIO.initOutputDir(contGen.getRobotName()))
+    {
+        ROS_ERROR_STREAM("Could not initialize output directory "
+            <<outputDir<<" for robot "<<contGen.getRobotName());
+        return 0;
+    }
+    if (!fileIO.writeContacts(contGen.getRobotName(), contacts))
     {
         ROS_ERROR("Could not write files");
         return 0;
@@ -94,7 +116,7 @@ int main(int argc, char** argv)
     ROS_INFO("Cleaning up...");
     bool deleteOutputRedirect = true;
     converter.cleanup(deleteOutputRedirect);
-
+    
     ROS_INFO("Done.");
     return 0;
 }

@@ -64,16 +64,13 @@ public:
         urdf2inventor::ConversionResult<MeshFormatT>(_meshOutputExtension, _meshOutputDirectoryName){}
     ConversionResult(const ConversionResult& o):
         urdf2inventor::ConversionResult<MeshFormatT>(o),
-        robotName(o.robotName),
         robotXML(o.robotXML),
         meshXMLDesc(o.meshXMLDesc),
         eigenGraspXML(o.eigenGraspXML),
-        contacts(o.contacts),
+        // contacts(o.contacts),
         world(o.world){}
 
     virtual ~ConversionResult() {}
-
-    std::string robotName;
 
     std::string robotXML;
 
@@ -84,7 +81,7 @@ public:
     std::string eigenGraspXML;
 
     // the content of the file to specify contacts
-    std::string contacts;
+    // std::string contacts;
 
     // the contents of the XML world file loading up the robot
     std::string world;

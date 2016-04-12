@@ -20,9 +20,9 @@
 
 #include <urdf2graspit/Urdf2Graspit.h>
 #include <urdf2graspit/XMLFuncs.h>
-#include <urdf2graspit/MarkerSelector.h>
-#include <urdf2graspit/ContactFunctions.h>
-#include <urdf2graspit/ContactsGenerator.h>
+// #include <urdf2graspit/MarkerSelector.h>
+// #include <urdf2graspit/ContactFunctions.h>
+// #include <urdf2graspit/ContactsGenerator.h>
 
 #include <string>
 #include <ros/ros.h>
@@ -564,7 +564,7 @@ bool Urdf2GraspIt::checkConversionPrerequisites(const GraspItConversionParameter
         if (!isChildJointOf(rootLink, fingerRootJoint))
         {
             ROS_ERROR_STREAM("Link named '"<<*rIt<<"' is not direct child of root '"<<param->rootLinkName
-                <<". There can be no active joints between the root (palm) link and the finger root links."
+                <<". This is either the wrong link, or there are other active joints between the root (palm) link and the finger root links."
                 <<" This is a requirement for conversion to GraspIt in the current version.");
             return false;
         }
@@ -582,11 +582,11 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParam
     }
     
     ROS_INFO_STREAM("### Urdf2GraspIt::pretConvert for robot "<<param->robotName);
-    outStructure.setRobotName(param->robotName); 
+    initOutStructure(param->robotName); 
     
     GraspItConversionResultPtr failResult;
 
-    std::string outputMeshDir =  outStructure.getMeshDirPath();
+    std::string outputMeshDir =  getOutStructure().getMeshDirPath();
     GraspItConversionResultPtr result(new GraspItConversionResult(OUTPUT_EXTENSION, outputMeshDir));
     result->success = false;
     result->robotName = param->robotName;
@@ -651,8 +651,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::postConvert(const ConversionPara
     result->eigenGraspXML = urdf2graspit::xmlfuncs::getEigenGraspXML(dh_parameters, negateJointMoves);
 
     // path to eigen file from robot directory, needed below. Has to match the one created here.
-    std::string eigenXML = outStructure.getEigenGraspFileRel();
-    std::string contactsVGR = outStructure.getContactsFileRel();
+    std::string eigenXML = getOutStructure().getEigenGraspFileRel();
+    std::string contactsVGR = getOutStructure().getContactsFileRel();
 
     if (!getXML(dh_parameters, param->fingerRoots, 
             param->rootLinkName, &eigenXML, &contactsVGR, std::string(), result->robotXML))
@@ -663,9 +663,9 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::postConvert(const ConversionPara
 
     // ROS_INFO_STREAM("XML: "<<std::endl<<res.robotXML);
 
-    result->world = getWorldFileTemplate(param->robotName, dh_parameters, outStructure.getRobotFilePath());
+    result->world = getWorldFileTemplate(param->robotName, dh_parameters, getOutStructure().getRobotFilePath());
 
-    ROS_INFO("### Generating contacts...");
+    /*ROS_INFO("### Generating contacts...");
     ContactsGenerator contGen(getScaleFactor());
     // need to load the model into the contacts generator as well.
     // this will then be a fresh model (not the one already converted to DH).
@@ -682,61 +682,11 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::postConvert(const ConversionPara
         return result;
     }
     result->contacts = contGen.getContactsFileContent(result->robotName);
-
+    */
     result->success = true; 
     return result;
 }
 
-/*Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::convert(const std::string& robotName,
-        const std::string& palmLinkName,
-        const std::vector<std::string>& fingerRootJoints,
-        const std::string& material)
-{
-    ConversionResultT res(MESH_OUTPUT_EXTENSION, MESH_OUTPUT_DIRECTORY_NAME);
-    res.success = false;
-    res.robotName = robotName;
-
-    if (!dhTransformed && !toDenavitHartenberg(palmLinkName))
-    {
-        ROS_ERROR("Could not transform to DH reference frames");
-        return res;
-    }
-
-    if (!isScaled && !scaleAll())
-    {
-        ROS_ERROR("Failed to scale model");
-    }
-
-    ROS_INFO("############### Converting meshes");
-
-    if (!convertGraspItMeshes(palmLinkName, getScaleFactor(), material, res.meshes, res.meshXMLDesc))
-    {
-        ROS_ERROR("Could not convert meshes");
-        return res;
-    }
-
-    ROS_INFO("############### Getting XML");
-
-    res.eigenGraspXML = urdf2graspit::xmlfuncs::getEigenGraspXML(dh_parameters, negateJointMoves);
-
-    // path to eigen file from robot directory, needed below. Has to match the one created here.
-    std::string eigenXML = outStructure.getEigenGraspFileRel();
-    std::string contactsVGR = outStructure.getContactsFileRel();
-
-    if (!getXML(dh_parameters, fingerRootJoints, palmLinkName, &eigenXML, &contactsVGR, std::string(), res.robotXML))
-    {
-        ROS_ERROR("Could not get xml");
-        return res;
-    }
-
-    // ROS_INFO_STREAM("XML: "<<std::endl<<res.robotXML);
-
-    res.world = getWorldFileTemplate(robotName, dh_parameters, outStructure.getRobotFilePath());
-
-    res.success = true;
-
-    return res;
-}*/
 
 void Urdf2GraspIt::getLimits(const urdf::Joint& j, float& min, float& max)
 {
@@ -775,7 +725,7 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
         const std::string& material)
 {
     
-    std::string outputMeshDir =  outStructure.getMeshDirPath();
+    std::string outputMeshDir =  getOutStructure().getMeshDirPath();
     GraspItConversionResultPtr failResult(new GraspItConversionResult(OUTPUT_EXTENSION, outputMeshDir));
     failResult->success = false;
 
@@ -787,7 +737,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
         return failResult;
     }
 
-    ROS_INFO("### Converting files for robot %s", getRobot().getName().c_str());
+    ROS_INFO("### Converting files for robot %s, starting from link %s",
+        getRobot().getName().c_str(), palmLinkName.c_str());
     if (!prepareModelForDenavitHartenberg(palmLinkName))
     {
         ROS_ERROR("Could not prepare for DH conversion");

@@ -110,19 +110,11 @@ public:
 
 
     /**
-     * Method which does the conversion from URDF to GraspIt!. This converts the model to DH parameters (if not previously done),
-     * scales up the model using the scale factor specified in the constructor (if not previously done), converts the mesh files,
-     * and produces all XML output files.
-     *
-     * \param robotName name of the robot, mainly used to create folder names and file names
-     * \param palmLinkName the name of the palm link in the URDF file
-     * \param fingerRootJoints the roots of all fingers in the hand, i.e. the beginningsn of all GraspIt! chains.
-     * \param material the material to use in the converted format
+     * Returns the Denavit-Hartenberg parameters starting from the link with fromLinkName
+     * This will only work if prepareModelForDenavitHartenberg() has been called before.
      */
-    /*ConversionResultPtr convert(const std::string& robotName,
-                              const std::string& palmLinkName,
-                              const std::vector<std::string>& fingerRootJoints,
-                              const std::string& material);*/
+    bool getDHParams(std::vector<DHParam>& dhparams, const std::string& fromLinkName) const;
+
 
     /**
      * Transforms the model to denavit hartenberg parameters, starting from the specified link.
@@ -167,11 +159,6 @@ private:
                      const EigenTransform& parentWorldTransform,
                      const Eigen::Vector3d& parentX, const Eigen::Vector3d& parentZ,
                      const Eigen::Vector3d parentPos, bool asRootJoint) const;
-
-    /**
-     * Returns the Denavit-Hartenberg parameters starting from the link with fromLinkName
-     */
-    bool getDHParams(std::vector<DHParam>& dhparams, const std::string& fromLinkName) const;
 
     /**
      * Returns the Denavit-Hartenberg parameters starting from link from_link

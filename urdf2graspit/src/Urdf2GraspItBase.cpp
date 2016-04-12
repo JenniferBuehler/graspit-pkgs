@@ -32,6 +32,15 @@ using urdf2graspit::Urdf2GraspItBase;
     
 bool Urdf2GraspItBase::prepareModelForDenavitHartenberg(const std::string& fromLink)
 {
+    ROS_INFO("### Preparing for DH conversion...");
+
+    LinkPtr _rootLink = getLink(fromLink);
+    if (!_rootLink.get())
+    {
+        ROS_ERROR("Root link %s does not exist",fromLink.c_str());
+        return false;
+    }
+
     ROS_INFO("### Joining fixed links..");
     if (!joinFixedLinks(fromLink))
     {
@@ -39,6 +48,14 @@ bool Urdf2GraspItBase::prepareModelForDenavitHartenberg(const std::string& fromL
         return false;
     }
     // p.printModel(palmLinkName);
+
+    _rootLink = getLink(fromLink);
+    if (!_rootLink.get())
+    {
+        ROS_ERROR("Root link %s does not exist any more: Joining of fixed links must have elimiated it.",
+            fromLink.c_str());
+        return false;
+    }
     
     ROS_INFO("### Transforming rotation axes to z...");
     Eigen::Vector3d z(0, 0, 1);

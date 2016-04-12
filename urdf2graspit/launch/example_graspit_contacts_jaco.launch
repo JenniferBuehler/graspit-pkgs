@@ -1,0 +1,21 @@
+<launch>
+    # the input urdf file
+    <arg name="urdf_file" default="$(find jaco_description)/urdf/jaco_robot.urdf"/>
+	
+    # the directory onto which to write the output files
+    <arg name="output_directory"/>
+
+	<arg name="hand_root_link" default="6_hand_limb"/>
+
+    <arg name="finger_joint_names" default="finger_joint_0 finger_joint_2 finger_joint_4"/>
+
+    <arg name="scale_factor" default="1000"/>
+    
+    <include file="$(find urdf2graspit)/launch/graspit_contacts_generator.launch">
+		<arg name="urdf_file" value="$(arg urdf_file)"/>
+		<arg name="output_directory" value="$(arg output_directory)"/>
+		<arg name="hand_root_link" value="$(arg hand_root_link)"/>
+		<arg name="finger_joint_names" value="$(arg finger_joint_names)"/>
+		<arg name="scale_factor" value="$(arg scale_factor)"/>
+	</include>
+</launch>
