@@ -64,6 +64,9 @@ int main(int argc, char** argv)
     priv.param<double>("scale_factor", scaleFactor, scaleFactor);
     ROS_INFO("scale_factor: <%f>", scaleFactor);
 
+    std::string useFilename;
+    priv.param<std::string>("filename", useFilename, useFilename);
+
     ROS_INFO("### Getting DH parameters...");
     urdf2graspit::Urdf2GraspIt converter(scaleFactor);
     if (!converter.loadModelFromFile(urdf_filename))
@@ -107,7 +110,7 @@ int main(int argc, char** argv)
             <<outputDir<<" for robot "<<contGen.getRobotName());
         return 0;
     }
-    if (!fileIO.writeContacts(contGen.getRobotName(), contacts))
+    if (!fileIO.writeContacts(contGen.getRobotName(), contacts, useFilename))
     {
         ROS_ERROR("Could not write files");
         return 0;

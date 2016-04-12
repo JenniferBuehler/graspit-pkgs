@@ -61,8 +61,13 @@ public:
     ~FileIO()
     {
     }
-    
-    bool writeContacts(const std::string& robotName, const std::string& content) const;
+   
+    /** 
+     * if \e useName is not empty, use this filename instead of the default
+     * determined by OutputStructure set in the constructor.
+     */
+    bool writeContacts(const std::string& robotName, const std::string& content,
+        const std::string& useFilename) const;
 
 protected:
 

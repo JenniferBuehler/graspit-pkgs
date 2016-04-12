@@ -58,9 +58,9 @@ void urdf2graspit::OutputStructure::getEigenGraspDirPath(std::vector<std::string
     structure.push_back("eigen");
 }
 
-std::string urdf2graspit::OutputStructure::getEigenGraspFilePath() const
+std::string urdf2graspit::OutputStructure::getEigenGraspFilePath(const std::string& useName) const
 {
-    return getEigenGraspDirPath() + eigengraspFile;
+    return getEigenGraspDirPath() + (useName.empty()? eigengraspFile : useName);
 }
 
 std::string urdf2graspit::OutputStructure::getEigenGraspFileRel() const
@@ -79,9 +79,9 @@ std::string urdf2graspit::OutputStructure::getContactsFileRel() const
     return "virtual/" + contactsFile;
 }
 
-std::string urdf2graspit::OutputStructure::getContactsFilePath() const
+std::string urdf2graspit::OutputStructure::getContactsFilePath(const std::string& useName) const
 {
-    return getContactsDirPath() + contactsFile;
+    return getContactsDirPath() + (useName.empty()? contactsFile : useName);
 }
 
 

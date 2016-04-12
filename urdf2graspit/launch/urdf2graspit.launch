@@ -4,7 +4,9 @@
     # the input urdf file
     <arg name="urdf_file"/>
 	
-    # the directory onto which to write the output files
+    # The directory onto which to write the output files
+    # Output files will be saved into the standard GraspIt! directory
+    # structure within this directory.
     <arg name="output_directory"/>
      
     # the root link for the hand (or the arm) which is the start of the chain which should be

@@ -96,7 +96,7 @@ bool urdf2graspit::FileIO::writeEigen(const std::string& robotName, const std::s
         return false;
     }
 
-    std::string eigenFile = getOutputDirectory() + "/" + outStructure.getEigenGraspFilePath();
+    std::string eigenFile = getOutputDirectory() + "/" + outStructure.getEigenGraspFilePath("");
     if (!urdf2inventor::helpers::writeToFile(content, eigenFile))
     {
         ROS_ERROR("Could not write eigengrasp file %s", eigenFile.c_str());
@@ -106,7 +106,8 @@ bool urdf2graspit::FileIO::writeEigen(const std::string& robotName, const std::s
 }
 
 
-bool urdf2graspit::FileIO::writeContacts(const std::string& robotName, const std::string& content) const
+bool urdf2graspit::FileIO::writeContacts(const std::string& robotName, const std::string& content,
+    const std::string& filename) const
 {
     std::string contactDir = getOutputDirectory() + "/" + outStructure.getContactsDirPath();
     if (!urdf2inventor::helpers::makeDirectoryIfNeeded(contactDir.c_str()))
@@ -114,7 +115,8 @@ bool urdf2graspit::FileIO::writeContacts(const std::string& robotName, const std
         ROS_ERROR("Could not make directory %s", contactDir.c_str());
         return false;
     }
-    std::string contactFilename = getOutputDirectory() + "/" + outStructure.getContactsFilePath();
+    
+    std::string contactFilename = getOutputDirectory() + "/" + outStructure.getContactsFilePath(filename);
     ROS_INFO("Writing contacts to file %s",contactFilename.c_str());
     return urdf2inventor::helpers::writeToFile(content, contactFilename);
 }

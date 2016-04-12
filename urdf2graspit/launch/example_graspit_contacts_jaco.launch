@@ -5,6 +5,10 @@
     # the directory onto which to write the output files
     <arg name="output_directory"/>
 
+    # the filename to use for writing the contact file. If
+    # set to empty string, the default filename is used.
+    <arg name="filename" default=""/>
+ 
 	<arg name="hand_root_link" default="6_hand_limb"/>
 
     <arg name="finger_joint_names" default="finger_joint_0 finger_joint_2 finger_joint_4"/>
@@ -14,6 +18,7 @@
     <include file="$(find urdf2graspit)/launch/graspit_contacts_generator.launch">
 		<arg name="urdf_file" value="$(arg urdf_file)"/>
 		<arg name="output_directory" value="$(arg output_directory)"/>
+		<arg name="filename" value="$(arg filename)"/>
 		<arg name="hand_root_link" value="$(arg hand_root_link)"/>
 		<arg name="finger_joint_names" value="$(arg finger_joint_names)"/>
 		<arg name="scale_factor" value="$(arg scale_factor)"/>

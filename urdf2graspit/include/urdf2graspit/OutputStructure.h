@@ -86,14 +86,22 @@ public:
     // directory path relative to the root output directory
     std::string getEigenGraspDirPath() const;
 
-    // file path relative to the root output directory
-    std::string getEigenGraspFilePath() const;
+    /**
+     * file path relative to the root output directory.
+     * if \e useName is not empty, use this filename instead of the default
+     * set in the constructor.
+     */
+    std::string getEigenGraspFilePath(const std::string& useName) const;
 
     // directory path relative to the root output directory
     std::string getContactsDirPath() const;
 
-    // file path relative to the root output directory
-    std::string getContactsFilePath() const;
+    /**
+     * file path relative to the root output directory.
+     * if \e useName is not empty, use this filename instead of the default
+     * set in the constructor.
+     */
+    std::string getContactsFilePath(const std::string& useName) const;
 
     // directory path relative to the root output directory
     std::string getMeshDirPath() const;

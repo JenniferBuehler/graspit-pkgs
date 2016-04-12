@@ -2,8 +2,14 @@
     # the input urdf file
     <arg name="urdf_file"/>
 	
-    # the directory onto which to write the output files
+    # The directory onto which to write the output files.
+    # Output files will be saved into the standard GraspIt! directory
+    # structure within this directory.
     <arg name="output_directory"/>
+    
+    # the filename to use for writing the contact file. If
+    # set to empty string, the default filename is used.
+    <arg name="filename" default=""/>
      
     # the root link for the hand (or the arm) which is the start of the chain which should be
     # converted to the GraspIt format.
@@ -17,5 +23,6 @@
 
 	<node name="contacts_generator_node" pkg="urdf2graspit" type="contacts_generator_node" respawn="false"  args="$(arg urdf_file) $(arg output_directory) $(arg hand_root_link) $(arg finger_joint_names)" output="screen">
 		<param name="scale_factor" value="$(arg scale_factor)"/>
+		<param name="filename" value="$(arg filename)"/>
 	</node>
 </launch>
