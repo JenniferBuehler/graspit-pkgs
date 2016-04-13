@@ -112,10 +112,9 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
         return false;
     }
 
-
     if (parallel)
     {
-        // ROS_INFO("Parallel case for getRAndAlpha");
+        ROS_INFO("DHParam: Parallel case for getRAndAlpha");
         // Re-set nOriginOnZi_1:
         // TODO: Should we consider this case?
         // a) if joint is revolute, set to pi_1 (so that parameter d in the end will be calculated to 0)
@@ -124,7 +123,6 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
         alpha = 0;
         return true;
     }
-
 
     alpha = acos(zi_1.dot(zi));
     // maybe adapt sign, as rotation is counter-clockwise around x

@@ -60,6 +60,7 @@ int main(int argc, char** argv)
 
     std::string outputMaterial = "plastic";
     double scaleFactor = 1000;
+    bool negateJointMoves = true;
 
     priv.param<std::string>("output_material", outputMaterial, outputMaterial);
     ROS_INFO("output_material: <%s>", outputMaterial.c_str());
@@ -67,7 +68,7 @@ int main(int argc, char** argv)
     priv.param<double>("scale_factor", scaleFactor, scaleFactor);
     ROS_INFO("scale_factor: <%f>", scaleFactor);
 
-    urdf2graspit::Urdf2GraspIt converter(scaleFactor);
+    urdf2graspit::Urdf2GraspIt converter(scaleFactor, negateJointMoves);
 
     ROS_INFO("Starting model conversion...");
 

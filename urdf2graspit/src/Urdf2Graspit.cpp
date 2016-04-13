@@ -219,7 +219,6 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
         jointWorldTransform = parentWorldTransform * jointTransform;
         getGlobalCoordinates(joint, parentWorldTransform, z, pos);
 
-
         DHParam param;
         if (!DHParam::toDenavitHartenberg(param, parentZ, parentX, parentPos, z, pos, x))
         {
@@ -248,7 +247,6 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
         dhparameters.push_back(param);
     }
 
-
     if (childLink->child_joints.empty())
     {
         // we've come to the end of the chain, so we have to add the parameter for the last frame.
@@ -270,7 +268,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
         return true;
     }
 
-
+    // recurse to child joints
     for (std::vector<JointPtr>::const_iterator pj = childLink->child_joints.begin();
             pj != childLink->child_joints.end(); pj++)
     {
@@ -437,7 +435,7 @@ int Urdf2GraspIt::convertGraspItMesh(RecursionParamsPtr& p)
 
     LinkPtr link = param->link;
 
-    std::string linkMeshFile = link->name + OUTPUT_EXTENSION;
+    std::string linkMeshFile = urdf2inventor::helpers::getFilename(link->name.c_str()) + OUTPUT_EXTENSION;
     std::string linkXML = urdf2graspit::xmlfuncs::getLinkDescXML(link, linkMeshFile, param->material);
     // ROS_INFO("XML: %s",linkXML.c_str());
 
@@ -449,8 +447,6 @@ int Urdf2GraspIt::convertGraspItMesh(RecursionParamsPtr& p)
 
     return 1;
 }
-
-
 
 bool Urdf2GraspIt::convertGraspItMeshes(const std::string& fromLinkName,
                                  double scale_factor, const std::string& material,
