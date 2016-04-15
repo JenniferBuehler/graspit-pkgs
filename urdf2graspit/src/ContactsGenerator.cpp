@@ -16,6 +16,7 @@
     Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **/
 
+#include <urdf2inventor/IVHelpers.h>
 #include <urdf2graspit/ContactFunctions.h>
 #include <urdf2graspit/ContactsGenerator.h>
 #include <urdf2inventor/Helpers.h>
@@ -38,7 +39,7 @@ using urdf2graspit::markerselector::MarkerSelector;
 bool ContactsGenerator::transformToDHReferenceFrames(const std::vector<DHParam>& dh)
 {
     std::map<std::string,EigenTransform> transforms;
-    if (!DHParam::dh2urdfTransforms(dh, transforms))
+    if (!DHParam::getTransforms(dh, true, transforms))
     {
         ROS_ERROR("Could not get transforms from DH to URDF");
         return false; 
@@ -47,7 +48,6 @@ bool ContactsGenerator::transformToDHReferenceFrames(const std::vector<DHParam>&
     std::map<std::string,EigenTransform>::iterator it;
     for (it=transforms.begin(); it!=transforms.end(); ++it)
     {
-            
         LinkPtr link=getLink(it->first);
         if (!link.get())
         {
@@ -57,7 +57,6 @@ bool ContactsGenerator::transformToDHReferenceFrames(const std::vector<DHParam>&
         bool preApply = true;
         applyTransformToContacts(link, it->second, preApply);
     }
-    
     return true;
 }
 
@@ -190,7 +189,8 @@ bool ContactsGenerator::generateContactsForallVisuals(const std::string& linkNam
 }
 
 
-bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFingerJoints, const std::string& palmLinkName,
+bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFingerJoints,
+        const std::string& palmLinkName,
         const float coefficient, const MarkerSelector::MarkerMap& markers,
         const std::vector<DHParam>& dh)
 {
@@ -332,10 +332,96 @@ std::string ContactsGenerator::getContactsFileContent(const std::string& robotNa
 }
 
 
+
+SoNode * ContactsGenerator::getAxesAsInventor(
+        const LinkPtr& from_link, 
+        const std::vector<DHParam>& dh,
+        float _axesRadius, float _axesLength,
+        bool linkIsRoot)
+{
+    ROS_INFO_STREAM("Get axes of "<<from_link->name<<" (parent joint "<<from_link->parent_joint->name<<")");
+        
+    EigenTransform transform;
+    if (!linkIsRoot)
+    {
+        JointPtr parentJoint = from_link->parent_joint;
+        DHParam jointDH;
+        if (!getDHParam(parentJoint->name, dh, jointDH))
+        {
+            ROS_ERROR_STREAM("Could not get DH parameter for "<<parentJoint->name);
+            return NULL;
+        }
+
+        ROS_INFO_STREAM("* Using DH params "<<jointDH);
+
+        transform.setIdentity();
+        Eigen::Vector3d x(1,0,0); 
+        Eigen::Vector3d y(0,1,0); 
+        Eigen::Vector3d z(0,0,1);
+        transform.rotate(Eigen::AngleAxisd(jointDH.theta,z));
+        transform.translate(z*jointDH.d);
+        transform.rotate(Eigen::AngleAxisd(jointDH.alpha,x));
+        transform.translate(x*jointDH.r);
+    }
+    else
+    {
+        ROS_INFO_STREAM("* Transforming as root node ");
+    }
+
+    SoSeparator * allVisuals = new SoSeparator();
+    allVisuals->ref(); 
+    // Eigen::Vector3d pos(0,0,0);
+    // urdf2inventor::addSphere(allVisuals, pos, _axesRadius, 1,0,0);            
+    addLocalAxes(from_link, allVisuals, false, _axesRadius, _axesLength);
+
+
+    for (std::vector<JointPtr>::const_iterator pj = from_link->child_joints.begin();
+            pj != from_link->child_joints.end(); pj++)
+    {
+        JointPtr joint = *pj;
+        LinkPtr childLink = getLink(joint->child_link_name);
+        SoNode * childNode = getAxesAsInventor(childLink, dh, _axesRadius, _axesLength, false);
+        if (!childNode)
+        {
+            ROS_ERROR_STREAM("Could not get child node for "<<childLink->name);
+            return NULL;
+        }
+        if (linkIsRoot)
+        {
+            transform = getTransform(joint);
+        }
+        allVisuals = urdf2inventor::addSubNode(childNode, allVisuals, transform);
+    }
+
+    return allVisuals;
+}
+
+bool ContactsGenerator::getDHParam(const std::string jointName, const std::vector<DHParam>& dh, DHParam& jointDH)
+{
+    for (std::vector<DHParam>::const_iterator it=dh.begin(); it!=dh.end(); ++it)
+    {
+        if (it->joint->name == jointName)
+        {
+            jointDH=*it;
+            return true;
+        }
+    }
+    return false;
+}
+
 bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string>& fingerRoots,
         const std::string& palmLinkName, float standard_coefficient,
-        const std::vector<DHParam>& dh)
+        const std::vector<DHParam>& dh,
+        bool _displayAxes, bool _axesFromDH,
+        float _axesRadius, float _axesLength)
 {
+    LinkPtr palm = getLink(palmLinkName);
+    if (!palm.get())
+    {
+        ROS_ERROR_STREAM("Could not find palm link "<<palmLinkName);
+        return false;
+    }
+
     if (!prepareModelForDenavitHartenberg(palmLinkName))
     {
         ROS_ERROR("Could not prepare for DH parameter compatible URDF model.");
@@ -345,11 +431,32 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
     bool success = true;
     MarkerSelector markerSelector(0.002);
     //markerSelector.init("Marker selector");
-    SoNode * node = getAsInventor(palmLinkName,false);
+    SoNode * node = getAsInventor(palmLinkName,false, _displayAxes && !_axesFromDH, _axesRadius, _axesLength);
     if (!node)
     {
         ROS_ERROR("Could not get inventor node");
         return false;
+    }
+
+    if (_displayAxes && _axesFromDH)
+    {
+        SoNode * dhAxes = getAxesAsInventor (palm, dh, _axesRadius, _axesLength, true);
+        if (!dhAxes)
+        {
+            ROS_ERROR("Could not the DH axes, so they won't be displayed");
+        }
+        else
+        {
+            SoSeparator * sep = dynamic_cast<SoSeparator*>(node);
+            if (!sep)
+            {
+                ROS_ERROR("Inventor node parent is not a separator");
+            }
+            else
+            {
+                sep->addChild(dhAxes);
+            }
+        }
     }
 
     ROS_INFO_STREAM("Model inventor files loaded, now loading into viewer...");

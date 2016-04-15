@@ -85,11 +85,19 @@ public:
      * Starts a viewer in which the user may select contact points to be defined for the hand. The function generateContacts()
      * is then called so that contacts are defined for the model.
      *
+     * \param _displayAxes add the local coordinate system axes of the links to the inventor nodes to display. 
+     *      z axis is displayed blue, y axis green, x axis red.
+     * \param _axesFromDH if true, then \e _displayAxes will display the DH reference frame axes,
+     *      otherwise it will be the link reference frames in URDF.
+     * \param _axesRadius radius of the axes, if \e _addAxes is true 
+     * \param _axesLength length of the axes, if \e _addAxes is true
      */
     bool generateContactsWithViewer(const std::vector<std::string>& fingerRoots,
                                     const std::string& palmLinkName,
                                     float standard_coefficient,
-                                    const std::vector<DHParam>& dh);
+                                    const std::vector<DHParam>& dh,
+                                    bool _displayAxes, bool _axesFromDH,
+                                    float _axesRadius = 0.003, float _axesLength=0.015);
 
     /**
      * Writes the file for the contacts. Will only work after generateContacts() has been called.
@@ -142,6 +150,12 @@ protected:
     void applyTransformToContacts(LinkPtr& link, const EigenTransform& trans, bool preMult);
 
 
+    static bool getDHParam(const std::string jointName, const std::vector<DHParam>& dh, DHParam& jointDH);
+
+    SoNode * getAxesAsInventor(const LinkPtr& from_link, 
+            const std::vector<DHParam>& dh,
+            float _axesRadius, float _axesLength,
+            bool linkIsRoot);
 private:
 
     /**

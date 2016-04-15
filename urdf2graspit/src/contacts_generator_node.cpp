@@ -68,7 +68,8 @@ int main(int argc, char** argv)
     priv.param<std::string>("filename", useFilename, useFilename);
 
     ROS_INFO("### Getting DH parameters...");
-    urdf2graspit::Urdf2GraspIt converter(scaleFactor);
+    bool negateJointMoves=false;
+    urdf2graspit::Urdf2GraspIt converter(scaleFactor,negateJointMoves, false);
     if (!converter.loadModelFromFile(urdf_filename))
     {
         ROS_ERROR("Could not load the model into the contacts generator");
@@ -95,7 +96,13 @@ int main(int argc, char** argv)
         return 0;
     }
     float coefficient = 0.2;
-    if (!contGen.generateContactsWithViewer(roots, palmLinkName, coefficient, dh_parameters))
+    bool addAxes = true;
+    bool urdfAxes = true;
+    float axRad=0.0015;
+    float axLen=0.015;
+    if (!contGen.generateContactsWithViewer(roots,
+        palmLinkName, coefficient, dh_parameters, addAxes,
+        urdfAxes, axRad, axLen))
     {
         ROS_ERROR("Could not generate contacts");
         return 0;

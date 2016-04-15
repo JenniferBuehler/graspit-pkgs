@@ -17,6 +17,7 @@
 **/
 
 #include <urdf2graspit/MarkerSelector.h>
+#include <urdf2inventor/IVHelpers.h>
 
 #include <Inventor/SoDB.h>  // for file reading
 #include <Inventor/SoInput.h>   // for file reading
@@ -183,7 +184,17 @@ void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
         ROS_INFO("No face normal correction possible, you didn't click on a triangle. Using default normal.");
     }
 
-    // ROS_INFO_STREAM("Adding marker "<<marker);
-    addSphere(linkNode, marker.coords, marker_size);
+
+    SoSeparator * _nodeSep = dynamic_cast<SoSeparator*>(linkNode);
+    if (!_nodeSep)
+    {
+        ROS_WARN_STREAM("The node for link "<<marker.linkName
+            <<" is not a separator, so cannot add visual marker sphere");
+    }
+    else 
+    {
+        // ROS_INFO_STREAM("Adding marker "<<marker);
+        urdf2inventor::addSphere(_nodeSep, marker.coords, marker_size, 1, 0, 0);
+    }
     markers.push_back(marker);
 }

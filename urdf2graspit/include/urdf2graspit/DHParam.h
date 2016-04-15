@@ -29,8 +29,11 @@ namespace urdf2graspit
 {
 
 /**
- * \brief Class providing functions for conversion from urdf to a model
- * described by denavit-hartenberg parameters
+ * \brief Class providing functions for conversion from urdf to a model described by denavit-hartenberg parameters
+ * 
+ * DH Parameters given in this class transform from a reference frame (i) to (i+1).
+ * The URDF joint is located at frame (i).
+ *
  * \author Jennifer Buehler
  * \date last edited October 2015
  */
@@ -57,7 +60,8 @@ public:
         theta(p.theta),
         alpha(p.alpha) { }
 
-
+    // URDF joint which is located at reference frame (i).
+    // The DH parameters transform to frame (i+1).
     JointConstPtr joint;
     LinkConstPtr childLink;
     int dof_index;   // < index of this dh-parameter in the list of DOF specifications of graspit
@@ -111,11 +115,13 @@ public:
 
     /**
      * For each child link defined in the DH parameters \e dh the transform
-     * the transform from DH to URDF space is returned in \e transforms
+     * the transform from DH to URDF space is returned in \e transforms. The transform is given in the
+     * local joint space.
      * \param transforms for each link, the transform from DH to URDF space
      * \retval false if there is a consistency error
+     * \param dh2urdf if true, return transforms from DH to URDF. Otherwise, return it the other way round.
      */
-    static bool dh2urdfTransforms(const std::vector<DHParam>& dh, std::map<std::string,EigenTransform>& transforms);
+    static bool getTransforms(const std::vector<DHParam>& dh, const bool dh2urdf, std::map<std::string,EigenTransform>& transforms);
 
 private:
     /**

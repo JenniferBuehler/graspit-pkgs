@@ -40,6 +40,20 @@ bool parallelAxis(const Eigen::Vector3d& z1, const Eigen::Vector3d& z2)
     return (std::fabs(dot) - 1.0) < DH_EPSILON;
 }
 
+/**
+ * \retval 0 neither equal nor parallel
+ * \retval 1 paralllel
+ * \retval 2 equal
+ */
+int equalOrParallelAxis(const Eigen::Vector3d& z1, const Eigen::Vector3d& z2)
+{
+    double dot = z1.dot(z2);
+    bool parallel = (std::fabs(dot) - 1.0) < DH_EPSILON;
+    bool equal = (std::fabs(dot - 1.0)) < DH_EPSILON;
+    if (equal) return 2;
+    if (parallel) return 1;
+    return 0;
+}
 
 /**
  * returns distance between two lines (squared) L1=pi_1 + m1* zi_1 and L2=pi + m2 * zi.
@@ -124,8 +138,27 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
         return true;
     }
 
+    // for alpha, rotation is to be counter-clockwise around x
+
+/*  // New, probably less efficient code which should
+    // do the same for computing alpha:
+    Eigen::AngleAxisd zi1_to_zi(Eigen::Quaterniond::FromTwoVectors(zi_1, zi));
+    Eigen::Vector3d zi1_to_zi_ax = zi1_to_zi.axis();
+    alpha = zi1_to_zi.angle();
+    int axEqPl = equalOrParallelAxis(commonNormal, zi1_to_zi_ax);
+    if (axEqPl == 0)
+    {
+        ROS_ERROR("Consistency: rotation of zi-1 to zi should have been along common normal. alpha=%f, r=%f", alpha, r);
+        ROS_INFO_STREAM(zi << ", " << zi_1 << ", rot axis " << zi1_to_zi.axis() << ". common normal: " << commonNormal);
+        return false;
+    }
+    if (axEqPl != 2)
+    {   // axes are parallel but not equal, so turn around rotation axis, which will then also
+        // negate the angle
+        alpha = -alpha;
+    }
+*/
     alpha = acos(zi_1.dot(zi));
-    // maybe adapt sign, as rotation is counter-clockwise around x
     Eigen::AngleAxisd corr(alpha, commonNormal);
     Eigen::Vector3d corrV = corr * zi_1;
     if (!parallelAxis(zi, corrV))
@@ -135,10 +168,12 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
         return false;
     }
     if (!equalAxis(zi, corrV))
-    {
+    {   // correct alpha to be 
         alpha = -alpha;
     }
-
+    
+    if (fabs(r) < 1e-07) r=0;
+    if (fabs(alpha) < 1e-07) alpha=0;
     return true;
 }
 
@@ -180,6 +215,9 @@ bool DHParam::getDAndTheta(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& x
         theta = -theta;
     }
 
+    if (fabs(theta) < 1e-07) theta=0;
+    if (fabs(d) < 1e-07) d=0;
+      
     return true;
 }
 
@@ -329,7 +367,7 @@ DHParam::EigenTransform DHParam::getTransform(const DHParam::JointConstPtr& join
 }
 
 
-bool DHParam::dh2urdfTransforms(const std::vector<DHParam>& dh, std::map<std::string,EigenTransform>& transforms)
+bool DHParam::getTransforms(const std::vector<DHParam>& dh, const bool dh2urdf, std::map<std::string,EigenTransform>& transforms)
 {
     // starting from the root of a chain, these are the current
     // reference frame transforms in the chain,
@@ -380,10 +418,18 @@ bool DHParam::dh2urdfTransforms(const std::vector<DHParam>& dh, std::map<std::st
         refFrameDH = refFrameDH * dhTrans;
         refFrameURDF = refFrameURDF * jointTransform;
 
-        EigenTransform dhSpaceToJointSpace = refFrameDH.inverse() * refFrameURDF;
+        EigenTransform trans;
+        if (dh2urdf)
+        {   // dhSpaceToJointSpace
+            trans = refFrameDH.inverse() * refFrameURDF;
+        }
+        else
+        {   // jointSpaceToDH 
+            trans = refFrameURDF.inverse() * refFrameDH;
+        }
 
         // ROS_INFO_STREAM("Doing transform for joint "<<joint->name<<": "<<dhSpaceToJointSpace);
-        if (!transforms.insert(std::make_pair(childLink->name, dhSpaceToJointSpace)).second)
+        if (!transforms.insert(std::make_pair(childLink->name, trans)).second)
         {
             ROS_ERROR_STREAM("Consistency: The link "<<childLink->name<<" was already encountered");
             return false;

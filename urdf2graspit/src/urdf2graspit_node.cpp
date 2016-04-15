@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 
     std::string outputMaterial = "plastic";
     double scaleFactor = 1000;
-    bool negateJointMoves = true;
+    bool negateJointMoves = false;
 
     priv.param<std::string>("output_material", outputMaterial, outputMaterial);
     ROS_INFO("output_material: <%s>", outputMaterial.c_str());

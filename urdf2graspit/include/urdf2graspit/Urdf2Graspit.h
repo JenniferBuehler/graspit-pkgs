@@ -75,8 +75,9 @@ public:
      * This can be specified with this scale factor.
      * \param _negateJointMoves negates (inverts) joint limits and velocity/effort specified in URDF
      */
-    explicit Urdf2GraspIt(float _scaleFactor = 1000, bool _negateJointMoves = true):
-        Urdf2GraspItBase(_scaleFactor),
+    explicit Urdf2GraspIt(float _scaleFactor = 1000, bool _negateJointMoves = false,
+            bool _addAxes=false, float _axesRadius = 0.003, float _axesLength=0.015):
+        Urdf2GraspItBase(_scaleFactor, _addAxes, _axesRadius, _axesLength),
         negateJointMoves(_negateJointMoves),
         isDHScaled(false),
         dhTransformed(false)
@@ -110,7 +111,14 @@ public:
 
 
     /**
-     * Returns the Denavit-Hartenberg parameters starting from the link with fromLinkName
+     * Returns the Denavit-Hartenberg parameters starting from the link \e fromLinkName.
+     * DH parameters are returned *for each child joint of fromLinkName*, where each child joint
+     * is going to be treated as a root joint starting at the origin.
+     *
+     * TODO: Provide a function like this, and also toDenavitHartenberg(), which starts at one
+     * root joint instead. At the moment the existing solution is tailored for the needs to convert
+     * to GraspIt!, but the code can be changed relatively easily to start from a root joint.
+     *
      * This will only work if prepareModelForDenavitHartenberg() has been called before.
      */
     bool getDHParams(std::vector<DHParam>& dhparams, const std::string& fromLinkName) const;
@@ -118,7 +126,9 @@ public:
 
     /**
      * Transforms the model to denavit hartenberg parameters, starting from the specified link.
-     * This will change some transforms of joints/links and visuals/inertails/collisions.
+     * See also comments in getDHParams().
+     *
+     * This method will change some transforms of joints/links and visuals/inertails/collisions.
      * The model must have been transformed before with prepareModelForDenavitHartenberg()!
      */
     bool toDenavitHartenberg(const std::string& fromLink);
@@ -234,12 +244,6 @@ private:
     inline bool isPrismatic(const JointPtr& joint) const
     {
         return (joint->type == urdf::Joint::PRISMATIC);
-    }
-
-    // Returns the joint's rotation axis as Eigen Vector
-    inline Eigen::Vector3d getRotationAxis(const JointPtr& j) const
-    {
-        return Eigen::Vector3d(j->axis.x, j->axis.y, j->axis.z);
     }
 
     /**

@@ -52,12 +52,9 @@ namespace urdf2graspit
 class Urdf2GraspItBase: public urdf2inventor::Urdf2Inventor
 {
 public:
-    /**
-     * \param _scaleFactor the graspit model might have to be scaled (the urdf model is in meters, graspit! in millimeters).
-     * This can be specified with this scale factor.
-     */
-    explicit Urdf2GraspItBase(float _scaleFactor = 1000):
-        urdf2inventor::Urdf2Inventor(_scaleFactor),
+    explicit Urdf2GraspItBase(float _scaleFactor = 1000,
+            bool _addAxes=false, float _axesRadius = 0.003, float _axesLength=0.015):
+        urdf2inventor::Urdf2Inventor(_scaleFactor, _addAxes, _axesRadius, _axesLength),
         outStructure("iv")
     {
     }
