@@ -21,8 +21,12 @@
     # factor to scale the model by 
     <arg name="scale_factor"/>
 
+    # negate the joint movement direction
+    <arg name="negate_joint_movement" default="false"/>
+
 	<node name="contacts_generator_node" pkg="urdf2graspit" type="contacts_generator_node" respawn="false"  args="$(arg urdf_file) $(arg output_directory) $(arg hand_root_link) $(arg finger_joint_names)" output="screen">
 		<param name="scale_factor" value="$(arg scale_factor)"/>
 		<param name="filename" value="$(arg filename)"/>
+        <param name="negate_joint_movement" value="$(arg negate_joint_movement)"/>
 	</node>
 </launch>

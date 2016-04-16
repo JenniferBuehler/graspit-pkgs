@@ -22,5 +22,6 @@
 		<arg name="hand_root_link" value="$(arg hand_root_link)"/>
 		<arg name="finger_joint_names" value="$(arg finger_joint_names)"/>
 		<arg name="scale_factor" value="$(arg scale_factor)"/>
+        <arg name="negate_joint_movement" value="true"/>
 	</include>
 </launch>

@@ -59,14 +59,16 @@ int main(int argc, char** argv)
     }
 
     std::string outputMaterial = "plastic";
-    double scaleFactor = 1000;
-    bool negateJointMoves = false;
-
     priv.param<std::string>("output_material", outputMaterial, outputMaterial);
     ROS_INFO("output_material: <%s>", outputMaterial.c_str());
 
+    double scaleFactor = 1000;
     priv.param<double>("scale_factor", scaleFactor, scaleFactor);
     ROS_INFO("scale_factor: <%f>", scaleFactor);
+    
+    bool negateJointMoves = false;
+    priv.param<bool>("negate_joint_movement", negateJointMoves, negateJointMoves);
+    ROS_INFO("negate_joint_movement: <%d>", negateJointMoves);
 
     urdf2graspit::Urdf2GraspIt converter(scaleFactor, negateJointMoves);
 

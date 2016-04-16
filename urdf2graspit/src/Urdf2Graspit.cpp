@@ -168,19 +168,28 @@ void Urdf2GraspIt::getGlobalCoordinates(const JointPtr& joint,
                                         Eigen::Vector3d& rotationAxis, Eigen::Vector3d& position) const
 {
     Eigen::Vector3d rotAxis = getRotationAxis(joint);
+    // ROS_INFO_STREAM("Orig rotation axis of joint "<<joint->name<<": "<<rotAxis);
     EigenTransform jointTransform = getTransform(joint);
-
     EigenTransform jointWorldTransform = parentWorldTransform * jointTransform;
-
-    EigenTransform wtInv = jointWorldTransform.inverse();
-
+    // ROS_INFO_STREAM("Joint transform: "<<jointTransform);
     // ROS_INFO_STREAM("Joint world transform: "<<jointWorldTransform);
 
-    // transform the rotation axis in world coordinate frame
-    // rotationAxis * jointWorldTransform = rotAxis
+    /** OLD code which was actually wrong (I think?) 
+    EigenTransform wtInv = jointWorldTransform.inverse();
+    // ROS_INFO_STREAM("Inverse joint world transform: "<<wtInv);
+    // ROS_INFO_STREAM("Rot axis: "<<rotAxis);
     rotationAxis = wtInv.rotation() * rotAxis;
-    rotationAxis.normalize();
+    */
 
+    // transform the rotation axis in world coordinate frame
+    rotationAxis = jointWorldTransform.rotation() * rotAxis;
+    // ROS_INFO_STREAM("Transformed rotation axis of joint "<<joint->name<<": "<<rotationAxis);
+    // rotationAxis.normalize();
+    if ((rotationAxis.norm()-1.0) > 1e-03)
+    {
+        ROS_ERROR_STREAM("getGlobalCoordinates: rotation axis is not uniform any more. "<<rotationAxis);
+    }
+    
     position = jointWorldTransform.translation();
 }
 
@@ -211,6 +220,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
         jointWorldTransform.setIdentity();
 
         z = getRotationAxis(joint);   // rotation axis is already in world coorinates
+        // ROS_INFO_STREAM("Rotation axis of joint "<<joint->name<<": "<<z);
         pos = Eigen::Vector3d(0, 0, 0);
         x = parentX;
     }
@@ -218,10 +228,13 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
     {
         EigenTransform jointTransform = getTransform(joint);
         jointWorldTransform = parentWorldTransform * jointTransform;
-        // ROS_INFO_STREAM("Parent world transform: "<<parentWorldTransform);
-        // ROS_INFO_STREAM("Joint transform: "<<jointTransform);
-        // ROS_INFO_STREAM("Joint world transform: "<<jointWorldTransform);
+        //ROS_INFO_STREAM("Parent world transform: "<<parentWorldTransform);
+        //ROS_INFO_STREAM("Joint transform: "<<jointTransform);
+        //ROS_INFO_STREAM("Joint world transform: "<<jointWorldTransform);
+
         getGlobalCoordinates(joint, parentWorldTransform, z, pos);
+        // ROS_INFO_STREAM("Rotation axis of joint "<<joint->name<<": "<<z);
+        //ROS_INFO_STREAM("GLOBAL: "<<z<<", pos = "<<pos);
 
         DHParam param;
         if (!DHParam::toDenavitHartenberg(param, parentZ, parentX, parentPos, z, pos, x))

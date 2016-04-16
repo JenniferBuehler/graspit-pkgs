@@ -339,7 +339,7 @@ SoNode * ContactsGenerator::getAxesAsInventor(
         float _axesRadius, float _axesLength,
         bool linkIsRoot)
 {
-    ROS_INFO_STREAM("Get axes of "<<from_link->name<<" (parent joint "<<from_link->parent_joint->name<<")");
+    // ROS_INFO_STREAM("Get axes of "<<from_link->name<<" (parent joint "<<from_link->parent_joint->name<<")");
         
     EigenTransform transform;
     if (!linkIsRoot)
@@ -365,7 +365,7 @@ SoNode * ContactsGenerator::getAxesAsInventor(
     }
     else
     {
-        ROS_INFO_STREAM("* Transforming as root node ");
+         ROS_INFO_STREAM("* Transforming as root node ");
     }
 
     SoSeparator * allVisuals = new SoSeparator();

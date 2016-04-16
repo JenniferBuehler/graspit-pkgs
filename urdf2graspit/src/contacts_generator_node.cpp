@@ -63,12 +63,16 @@ int main(int argc, char** argv)
     double scaleFactor = 1000;
     priv.param<double>("scale_factor", scaleFactor, scaleFactor);
     ROS_INFO("scale_factor: <%f>", scaleFactor);
+    
+    bool negateJointMoves=false;
+    priv.param<bool>("negate_joint_movement", negateJointMoves, negateJointMoves);
+    ROS_INFO("negate_joint_movement: <%d>", negateJointMoves);
 
     std::string useFilename;
     priv.param<std::string>("filename", useFilename, useFilename);
 
     ROS_INFO("### Getting DH parameters...");
-    bool negateJointMoves=false;
+    
     urdf2graspit::Urdf2GraspIt converter(scaleFactor,negateJointMoves, false);
     if (!converter.loadModelFromFile(urdf_filename))
     {
