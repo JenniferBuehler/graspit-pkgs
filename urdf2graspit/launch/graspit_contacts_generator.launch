@@ -24,9 +24,25 @@
     # negate the joint movement direction
     <arg name="negate_joint_movement" default="false"/>
 
+
+    # An axis and angle (degrees) can be specified which will transform *all*
+    # visuals (not links, but their visuals!) within their local coordinate system.
+    # This can be used to correct transformation errors which may have been 
+    # introduced in converting meshes from one format to the other, losing orientation information
+    # For example, .dae has an "up vector" definition which may have been ignored.
+    <arg name="visual_corr_axis_x" default="1"/>
+    <arg name="visual_corr_axis_y" default="0"/>
+    <arg name="visual_corr_axis_z" default="0"/>
+    <arg name="visual_corr_axis_angle" default="0"/>
+
+
 	<node name="contacts_generator_node" pkg="urdf2graspit" type="contacts_generator_node" respawn="false"  args="$(arg urdf_file) $(arg output_directory) $(arg hand_root_link) $(arg finger_joint_names)" output="screen">
 		<param name="scale_factor" value="$(arg scale_factor)"/>
 		<param name="filename" value="$(arg filename)"/>
         <param name="negate_joint_movement" value="$(arg negate_joint_movement)"/>
+        <param name="visual_corr_axis_x" value="$(arg visual_corr_axis_x)"/>
+        <param name="visual_corr_axis_y" value="$(arg visual_corr_axis_y)"/>
+        <param name="visual_corr_axis_z" value="$(arg visual_corr_axis_z)"/>
+        <param name="visual_corr_axis_angle" value="$(arg visual_corr_axis_angle)"/>
 	</node>
 </launch>

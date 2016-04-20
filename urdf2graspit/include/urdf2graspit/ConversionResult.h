@@ -34,8 +34,9 @@ public:
     explicit ConversionParameters(const std::string& _robotName,
         const std::string& _rootLinkName,
         const std::string& material,
-        const std::vector<std::string>& _fingerRoots):
-        urdf2inventor::ConversionParameters(_rootLinkName,material),
+        const std::vector<std::string>& _fingerRoots,
+        const EigenTransform& _addVisualTransform):
+        urdf2inventor::ConversionParameters(_rootLinkName, material,_addVisualTransform),
         robotName(_robotName),
         fingerRoots(_fingerRoots){}
     ConversionParameters(const ConversionParameters& o):

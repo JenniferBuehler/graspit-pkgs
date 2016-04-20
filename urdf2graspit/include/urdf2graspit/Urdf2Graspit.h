@@ -103,11 +103,16 @@ public:
      * \param rootLinkName the name of the link in the URDF which will be the root of the GraspIt! model. usually, this is the palm.
      * \param fingerRootNames the roots of all fingers in the hand (the names of the joints which are the first in each finger)
      * \param material the material to use in the converted format
+     * \param addVisualTransform this transform will be post-multiplied on all links' **visuals** (not links!) local
+     *      transform (their "origin"). This can be used to correct transformation errors which may have been 
+     *      introduced in converting meshes from one format to the other, losing orientation information
+     *      (for example, .dae has an "up vector" definition which may have been ignored)
      */
     ConversionResultPtr processAll(const std::string& urdfFilename,
                                  const std::string& rootLinkName,
                                  const std::vector<std::string>& fingerRootNames,
-                                 const std::string& material = "plastic");
+                                 const std::string& material/* = "plastic"*/,
+                                 const EigenTransform& addVisualTransform);
 
 
     /**
@@ -139,10 +144,15 @@ public:
      * While converting, the mesh files can be scaled by the given factor.
      * \param material the material to use in the converted format
      * \param meshDescXML the resulting GraspIt! XML description files for the meshes, indexed by the link names
+     * \param addVisualTransform this transform will be post-multiplied on all links' **visuals** (not links!) local
+     *      transform (their "origin"). This can be used to correct transformation errors which may have been 
+     *      introduced in converting meshes from one format to the other, losing orientation information
+     *      (for example, .dae has an "up vector" definition which may have been ignored)
      */
     bool convertGraspItMeshes(const std::string& fromLinkName,
-                       double scale_factor, const std::string& material,
-                       std::map<std::string, std::string>& meshDescXML);
+                        double scale_factor, const std::string& material,
+                        const EigenTransform& addVisualTransform,
+                        std::map<std::string, std::string>& meshDescXML);
 
 protected:
 

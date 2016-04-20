@@ -413,7 +413,8 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
         const std::string& palmLinkName, float standard_coefficient,
         const std::vector<DHParam>& dh,
         bool _displayAxes, bool _axesFromDH,
-        float _axesRadius, float _axesLength)
+        float _axesRadius, float _axesLength,
+        const EigenTransform& addVisualTransform)
 {
     LinkPtr palm = getLink(palmLinkName);
     if (!palm.get())
@@ -431,7 +432,8 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
     bool success = true;
     MarkerSelector markerSelector(0.002);
     //markerSelector.init("Marker selector");
-    SoNode * node = getAsInventor(palmLinkName,false, _displayAxes && !_axesFromDH, _axesRadius, _axesLength);
+    SoNode * node = getAsInventor(palmLinkName,false, 
+        _displayAxes && !_axesFromDH, _axesRadius, _axesLength, addVisualTransform);
     if (!node)
     {
         ROS_ERROR("Could not get inventor node");

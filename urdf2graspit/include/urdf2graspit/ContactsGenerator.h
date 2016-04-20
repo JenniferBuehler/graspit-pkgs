@@ -91,13 +91,18 @@ public:
      *      otherwise it will be the link reference frames in URDF.
      * \param _axesRadius radius of the axes, if \e _addAxes is true 
      * \param _axesLength length of the axes, if \e _addAxes is true
+     * \param addVisualTransform this transform will be post-multiplied on all links' **visuals** (not links!) local
+     *      transform (their "origin"). This can be used to correct transformation errors which may have been 
+     *      introduced in converting meshes from one format to the other, losing orientation information
+     *      (for example, .dae has an "up vector" definition which may have been ignored)
      */
     bool generateContactsWithViewer(const std::vector<std::string>& fingerRoots,
                                     const std::string& palmLinkName,
                                     float standard_coefficient,
                                     const std::vector<DHParam>& dh,
                                     bool _displayAxes, bool _axesFromDH,
-                                    float _axesRadius = 0.003, float _axesLength=0.015);
+                                    float _axesRadius, float _axesLength,
+                                    const EigenTransform& addVisualTransform);
 
     /**
      * Writes the file for the contacts. Will only work after generateContacts() has been called.

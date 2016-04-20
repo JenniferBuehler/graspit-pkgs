@@ -469,6 +469,7 @@ int Urdf2GraspIt::convertGraspItMesh(RecursionParamsPtr& p)
 
 bool Urdf2GraspIt::convertGraspItMeshes(const std::string& fromLinkName,
                                  double scale_factor, const std::string& material,
+                                 const EigenTransform& addVisualTransform,
                                  std::map<std::string, std::string>& meshDescXML)
 {
     LinkPtr from_link;
@@ -482,7 +483,7 @@ bool Urdf2GraspIt::convertGraspItMeshes(const std::string& fromLinkName,
     // do one call of convertGraspitMesh
     LinkPtr parent;  // leave parent NULL
     MeshConvertRecursionParams::Ptr meshParams(new MeshConvertRecursionParams(parent, from_link, 0,
-            scale_factor, material));
+            scale_factor, material, addVisualTransform));
 
     RecursionParamsPtr p(meshParams);
     int cvt = convertGraspItMesh(p);
@@ -573,7 +574,7 @@ bool Urdf2GraspIt::checkConversionPrerequisites(const GraspItConversionParameter
         JointConstPtr fingerRootJoint = readJoint(*rIt);
         if (!fingerRootJoint.get())
         {
-            ROS_ERROR_STREAM("No link named '"<<*rIt<<"' found in URDF.");
+            ROS_ERROR_STREAM("No joint named '"<<*rIt<<"' found in URDF.");
             return false;
         }
         if (!isChildJointOf(rootLink, fingerRootJoint))
@@ -655,7 +656,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::postConvert(const ConversionPara
     
     ROS_INFO_STREAM("### Urdf2GraspIt::postConvert for robot "<<param->robotName);
 
-    if (!convertGraspItMeshes(param->rootLinkName, getScaleFactor(), param->material, result->meshXMLDesc))
+    if (!convertGraspItMeshes(param->rootLinkName, getScaleFactor(), param->material,
+        param->addVisualTransform, result->meshXMLDesc))
     {
         ROS_ERROR("Could not convert meshes");
         return result;
@@ -737,7 +739,8 @@ std::string Urdf2GraspIt::getWorldFileTemplate(
 Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& urdfFilename,
         const std::string& palmLinkName,
         const std::vector<std::string>& fingerRootNames,
-        const std::string& material)
+        const std::string& material,
+        const EigenTransform& addVisualTransform)
 {
     
     std::string outputMeshDir =  getOutStructure().getMeshDirPath();
@@ -769,7 +772,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
     }
 */
     ROS_INFO("### Converting files...");
-    ConversionParametersPtr params(new GraspItConversionParameters(getRobot().getName(), palmLinkName, material, fingerRootNames));
+    ConversionParametersPtr params(new GraspItConversionParameters(getRobot().getName(),
+            palmLinkName, material, fingerRootNames, addVisualTransform));
     ConversionResultPtr convResult = convert(params);
     if (!convResult || !convResult->success)
     {

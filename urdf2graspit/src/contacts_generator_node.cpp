@@ -68,6 +68,21 @@ int main(int argc, char** argv)
     priv.param<bool>("negate_joint_movement", negateJointMoves, negateJointMoves);
     ROS_INFO("negate_joint_movement: <%d>", negateJointMoves);
 
+    // An axis and angle (degrees) can be specified which will transform *all*
+    // visuals (not links, but their visuals!) within their local coordinate system.
+    // This can be used to correct transformation errors which may have been 
+    // introduced in converting meshes from one format to the other, losing orientation information
+    // For example, .dae has an "up vector" definition which may have been ignored.
+    float visCorrAxX=0;
+    priv.param<float>("visual_corr_axis_x", visCorrAxX, visCorrAxX);
+    float visCorrAxY=0;
+    priv.param<float>("visual_corr_axis_y", visCorrAxY, visCorrAxY);
+    float visCorrAxZ=0;
+    priv.param<float>("visual_corr_axis_z", visCorrAxZ, visCorrAxZ);
+    float visCorrAxAngle=0;
+    priv.param<float>("visual_corr_axis_angle", visCorrAxAngle, visCorrAxAngle);
+    urdf2graspit::Urdf2GraspIt::EigenTransform addVisualTrans(Eigen::AngleAxisd(visCorrAxAngle*M_PI/180, Eigen::Vector3d(visCorrAxX,visCorrAxY,visCorrAxZ)));
+
     std::string useFilename;
     priv.param<std::string>("filename", useFilename, useFilename);
 
@@ -106,7 +121,7 @@ int main(int argc, char** argv)
     float axLen=0.015;
     if (!contGen.generateContactsWithViewer(roots,
         palmLinkName, coefficient, dh_parameters, addAxes,
-        urdfAxes, axRad, axLen))
+        urdfAxes, axRad, axLen, addVisualTrans))
     {
         ROS_ERROR("Could not generate contacts");
         return 0;
