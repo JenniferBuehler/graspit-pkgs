@@ -32,7 +32,7 @@
 #include <Eigen/Geometry>
 
 #include <urdf2graspit/Urdf2GraspItBase.h>
-#include <architecture_binding/SharedPtr.h>
+#include <baselib_binding/SharedPtr.h>
 #include <urdf2graspit/DHParam.h>
 #include <urdf2graspit/MarkerSelector.h>
 #include <urdf2graspit/OutputStructure.h>
@@ -57,8 +57,8 @@ public:
      * \param _scaleFactor the graspit model might have to be scaled (the urdf model is in meters, graspit! in millimeters).
      * This can be specified with this scale factor.
      */
-    explicit ContactsGenerator(float _scaleFactor = 1000):
-        Urdf2GraspItBase(_scaleFactor),
+    explicit ContactsGenerator(UrdfTraverserPtr& traverser, float _scaleFactor = 1000):
+        Urdf2GraspItBase(traverser, _scaleFactor),
         isContactsScaled(false)
     {
     }
@@ -148,7 +148,7 @@ protected:
         // Contact friciton coefficient
         float cof;
     };
-    typedef architecture_binding::shared_ptr<Contact>::type ContactPtr;
+    typedef baselib_binding::shared_ptr<Contact>::type ContactPtr;
 
     bool transformToDHReferenceFrames(const std::vector<DHParam>& dh);
     

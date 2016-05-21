@@ -1,14 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(urdf2graspit)
 
-include(cmake/architecture_binding.cmake.in)
-
 set (CATKIN_PKGS
   roscpp
   urdf
   eigen_conversions
   urdf2inventor
-  architecture_binding
+  urdf_viewer
 )
 
 ## Find catkin macros and libraries
@@ -70,6 +68,7 @@ add_library(urdf2graspit
     src/XMLFuncs.cpp
     src/FileIO.cpp
     src/OutputStructure.cpp
+    src/ConvertGraspitMesh.cpp
 )
 
 ## Declare a cpp executable

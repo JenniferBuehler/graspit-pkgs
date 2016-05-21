@@ -20,7 +20,7 @@
 
 #include <grasp_planning_graspit_ros/GraspItServices.h>
 
-#include <grasp_planning_graspit/GraspItSceneManagerNoGui.h>
+#include <grasp_planning_graspit/GraspItSceneManagerHeadless.h>
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/GraspItSimpleDBManager.h>
 
@@ -76,7 +76,7 @@ void GraspItServices::init()
 
     PRINTMSG("Creating graspit interface and database");
 
-    graspitMgr = SHARED_PTR<GraspItSceneManager>(new GraspItSceneManagerNoGui());
+    graspitMgr = SHARED_PTR<GraspItSceneManager>(new GraspItSceneManagerHeadless());
 
     mgr = SHARED_PTR<GraspItSimpleDBManager>(new GraspItSimpleDBManager(dbName, graspitMgr));
     egPlanner = SHARED_PTR<EigenGraspPlanner>(new EigenGraspPlanner(egPlannerName, graspitMgr));

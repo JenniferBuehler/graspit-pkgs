@@ -34,26 +34,10 @@ bool Urdf2GraspItBase::prepareModelForDenavitHartenberg(const std::string& fromL
 {
     ROS_INFO("### Preparing for DH conversion...");
 
-    LinkPtr _rootLink = getLink(fromLink);
-    if (!_rootLink.get())
-    {
-        ROS_ERROR("Root link %s does not exist",fromLink.c_str());
-        return false;
-    }
-
     ROS_INFO("### Joining fixed links..");
     if (!joinFixedLinks(fromLink))
     {
         ROS_ERROR("Could not joint fixed links");
-        return false;
-    }
-    // p.printModel(palmLinkName);
-
-    _rootLink = getLink(fromLink);
-    if (!_rootLink.get())
-    {
-        ROS_ERROR("Root link %s does not exist any more: Joining of fixed links must have elimiated it.",
-            fromLink.c_str());
         return false;
     }
     

@@ -21,7 +21,7 @@
 // Copyright Jennifer Buehler
 
 #include <urdf/model.h>
-#include <architecture_binding/SharedPtr.h>
+#include <urdf_traverser/Types.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -40,9 +40,9 @@ namespace urdf2graspit
 class DHParam
 {
 public:
-    typedef Eigen::Transform<double, 3, Eigen::Affine> EigenTransform;
-    typedef architecture_binding::shared_ptr<const urdf::Joint>::type JointConstPtr;
-    typedef architecture_binding::shared_ptr<const urdf::Link>::type LinkConstPtr;
+    typedef urdf_traverser::EigenTransform EigenTransform;
+    typedef urdf_traverser::JointConstPtr JointConstPtr;
+    typedef urdf_traverser::LinkConstPtr LinkConstPtr;
 
     DHParam():
         joint(JointConstPtr()),

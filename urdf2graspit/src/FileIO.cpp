@@ -15,6 +15,7 @@
     along with this program; if not, write to the Free Software Foundation,
     Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **/
+#include <baselib_binding/SharedPtr.h>
 
 #include <urdf2inventor/Helpers.h>
 #include <urdf2graspit/FileIO.h>
@@ -33,7 +34,7 @@ bool urdf2graspit::FileIO::initOutputDirImpl(const std::string& robotName) const
 
 bool urdf2graspit::FileIO::initGraspItRobotDir(const std::string& robotName, std::string& robotDir) const
 {
-    bool ret = urdf2inventor::helpers::makeDirectoryIfNeeded(getOutputDirectory().c_str());
+    bool ret = urdf_traverser::helpers::makeDirectoryIfNeeded(getOutputDirectory().c_str());
 
     std::stringstream targetDir;
     targetDir << getOutputDirectory();
@@ -43,7 +44,7 @@ bool urdf2graspit::FileIO::initGraspItRobotDir(const std::string& robotName, std
     for (std::vector<std::string>::const_iterator it = dirs.begin(); it != dirs.end(); ++it)
     {
         targetDir << "/" << *it;
-        ret = ret && urdf2inventor::helpers::makeDirectoryIfNeeded(targetDir.str().c_str());
+        ret = ret && urdf_traverser::helpers::makeDirectoryIfNeeded(targetDir.str().c_str());
     }
     if (!ret)
     {
@@ -65,7 +66,7 @@ std::string urdf2graspit::FileIO::getRobotDir(const std::string& robotName) cons
 bool urdf2graspit::FileIO::writeGraspitMeshFiles(const std::map<std::string, std::string>& meshDescXML) const
 {
     std::string outputMeshDir =  getOutputDirectory() + "/" + outStructure.getMeshDirPath();
-    if (!urdf2inventor::helpers::makeDirectoryIfNeeded(outputMeshDir.c_str()))
+    if (!urdf_traverser::helpers::makeDirectoryIfNeeded(outputMeshDir.c_str()))
     {
         ROS_ERROR("Could not create directory %s", outputMeshDir.c_str());
         return false;
@@ -77,7 +78,7 @@ bool urdf2graspit::FileIO::writeGraspitMeshFiles(const std::map<std::string, std
         std::stringstream outXMLFile;
         std::string _outFilename=mdit->first;
         outXMLFile << outputMeshDir << "/" << _outFilename << ".xml";
-        if (!urdf2inventor::helpers::writeToFile(mdit->second, outXMLFile.str()))
+        if (!urdf_traverser::helpers::writeToFile(mdit->second, outXMLFile.str()))
         {
             ROS_ERROR("Could not write file %s", outXMLFile.str().c_str());
             return false;
@@ -90,14 +91,14 @@ bool urdf2graspit::FileIO::writeGraspitMeshFiles(const std::map<std::string, std
 bool urdf2graspit::FileIO::writeEigen(const std::string& robotName, const std::string& content) const
 {
     std::string eigenDir = getOutputDirectory() + "/" + outStructure.getEigenGraspDirPath();
-    if (!urdf2inventor::helpers::makeDirectoryIfNeeded(eigenDir.c_str()))
+    if (!urdf_traverser::helpers::makeDirectoryIfNeeded(eigenDir.c_str()))
     {
         ROS_ERROR("Could not make directory %s", eigenDir.c_str());
         return false;
     }
 
     std::string eigenFile = getOutputDirectory() + "/" + outStructure.getEigenGraspFilePath("");
-    if (!urdf2inventor::helpers::writeToFile(content, eigenFile))
+    if (!urdf_traverser::helpers::writeToFile(content, eigenFile))
     {
         ROS_ERROR("Could not write eigengrasp file %s", eigenFile.c_str());
         return false;
@@ -110,7 +111,7 @@ bool urdf2graspit::FileIO::writeContacts(const std::string& robotName, const std
     const std::string& filename) const
 {
     std::string contactDir = getOutputDirectory() + "/" + outStructure.getContactsDirPath();
-    if (!urdf2inventor::helpers::makeDirectoryIfNeeded(contactDir.c_str()))
+    if (!urdf_traverser::helpers::makeDirectoryIfNeeded(contactDir.c_str()))
     {
         ROS_ERROR("Could not make directory %s", contactDir.c_str());
         return false;
@@ -118,7 +119,7 @@ bool urdf2graspit::FileIO::writeContacts(const std::string& robotName, const std
     
     std::string contactFilename = getOutputDirectory() + "/" + outStructure.getContactsFilePath(filename);
     ROS_INFO("Writing contacts to file %s",contactFilename.c_str());
-    return urdf2inventor::helpers::writeToFile(content, contactFilename);
+    return urdf_traverser::helpers::writeToFile(content, contactFilename);
 }
 
 
@@ -126,14 +127,14 @@ bool urdf2graspit::FileIO::writeRobotXML(const std::string& robotName, const std
 {
     // target dir is robot directory
     std::string outDir = getOutputDirectory() + "/" + outStructure.getRobotDirPath();
-    if (!urdf2inventor::helpers::makeDirectoryIfNeeded(outDir.c_str()))
+    if (!urdf_traverser::helpers::makeDirectoryIfNeeded(outDir.c_str()))
     {
         ROS_ERROR("Could not make directory %s", outDir.c_str());
         return false;
     }
 
     std::string robotFile = getOutputDirectory() + "/" + outStructure.getRobotFilePath();
-    return urdf2inventor::helpers::writeToFile(content, robotFile);
+    return urdf_traverser::helpers::writeToFile(content, robotFile);
 }
 
 
@@ -142,19 +143,19 @@ bool urdf2graspit::FileIO::writeWorldFileTemplate(
     const std::string& content) const
 {
     std::string outDir = getOutputDirectory() + "/" + outStructure.getWorldDirPath();
-    if (!urdf2inventor::helpers::makeDirectoryIfNeeded(outDir.c_str()))
+    if (!urdf_traverser::helpers::makeDirectoryIfNeeded(outDir.c_str()))
     {
         ROS_ERROR("Could not make directory %s", outDir.c_str());
         return false;
     }
     std::string outFilename = getOutputDirectory() + "/" + outStructure.getWorldFilePath();
     // ROS_INFO("Writing world file %s",outFilename.c_str());
-    return urdf2inventor::helpers::writeToFile(content, outFilename);
+    return urdf_traverser::helpers::writeToFile(content, outFilename);
 }
 
 bool urdf2graspit::FileIO::writeImpl(const ConversionResultPtr& data) const
 {
-    GraspItConversionResultPtr graspitData = architecture_binding_ns::dynamic_pointer_cast<GraspItConversionResultT>(data);
+    GraspItConversionResultPtr graspitData = baselib_binding_ns::dynamic_pointer_cast<GraspItConversionResultT>(data);
 
     if (!graspitData.get())
     {

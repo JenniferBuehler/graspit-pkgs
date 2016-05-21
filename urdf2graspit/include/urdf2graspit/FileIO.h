@@ -47,7 +47,7 @@ private:
 public:
     
     typedef urdf2graspit::ConversionResult GraspItConversionResultT;
-    typedef architecture_binding::shared_ptr<GraspItConversionResultT>::type GraspItConversionResultPtr;
+    typedef baselib_binding::shared_ptr<GraspItConversionResultT>::type GraspItConversionResultPtr;
 
     /**
      * \param _outputDir directory where to save the files. Within this directory, a sub-directory "models/robot/<robotName>" is created,

@@ -36,7 +36,7 @@
 #include <eigenGrasp.h>
 #include <EGPlanner/search.h>
 #include <EGPlanner/searchState.h>
-#include <EGPlanner/searchEnergy.h>
+#include <EGPlanner/energy/searchEnergy.h>
 #include <EGPlanner/egPlanner.h>
 #include <EGPlanner/simAnn.h>
 #include <EGPlanner/simAnnPlanner.h>

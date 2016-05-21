@@ -1,6 +1,7 @@
 # Builds external graspit fork (https://github.com/JenniferBuehler/graspit).
 # The parent script needs to define the "GLOBAL_OUTPUT_PATH" variable,
 # which will be used as output directory for all *.lib, *.dll, *.a, *.so, *.pdb files.
+# If a certain branch is to be chosen, put it in the variable "GRASPIT_BRANCH_NAME"
 
 include(ExternalProject)
 
@@ -19,6 +20,8 @@ ExternalProject_Add(
     SOURCE_DIR graspit/src/graspit
     BINARY_DIR graspit/src/graspit-build
     INSTALL_DIR graspit/install
+
+    GIT_TAG ${GRASPIT_BRANCH_NAME}
 
     # unset CATKIN_DEVEL_PREFIX to enforce
     # undefining the variable and prevent building with catkin 

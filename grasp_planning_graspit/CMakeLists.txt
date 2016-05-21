@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(grasp_planning_graspit)
 
-# set this variable to true if you would like that cmake
+# set BUILD_GRASPIT to true if you would like that cmake
 # downloads and builds the fork of GraspIt! which
 # is required for this package (https://github.com/JenniferBuehler/graspit).
 # If this is set to false, it will search for the package
 # GraspIt! using CMakeMacros/Findgraspit.cmake, for which you
 # may set the variable GRASPIT_PATH to the directory where
 # you installed the graspit fork.
+# If set to true, you can also use BRANCH_NAME to select a git branch.
 # IMPORTANT: If you set this to false and are compiling
 # with catkin, uncomment the <*_depend> tags relating to
 # graspit in package.xml!
@@ -46,9 +47,10 @@ if (NOT ENFORCE_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
 endif (NOT ENFORCE_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
 
 if (COMPILE_WITH_CATKIN)
-    find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint) 
     if (NOT BUILD_GRASPIT)
-        find_package(catkin REQUIRED COMPONENTS graspit) 
+        find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint graspit) 
+    else (NOT BUILD_GRASPIT)
+        find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint) 
     endif (NOT BUILD_GRASPIT)
 endif (COMPILE_WITH_CATKIN)
    
@@ -85,6 +87,9 @@ endif(DOXYGEN_FOUND)
 # if the graspit fork should be build with this package,
 # do this now.
 if (BUILD_GRASPIT)
+    if (NOT DEFINED GRASPIT_BRANCH_NAME)
+        set (GRASPIT_BRANCH_NAME master)
+    endif (NOT DEFINED GRASPIT_BRANCH_NAME)
     set (GLOBAL_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/graspit/install)
     include(CMakeLists-external-graspit.txt)
 endif (BUILD_GRASPIT)
@@ -99,7 +104,10 @@ include (${QT_USE_FILE})
 # if compiled with catkin
 set (MOC_HEADERS include/grasp_planning_graspit/EigenGraspPlanner.h) 
 QT4_WRAP_CPP(MOC_OUTFILES ${MOC_HEADERS})
-     
+    
+###############################
+# Build catkin_package() command
+###############################
 if (catkin_FOUND)
     # INCLUDE_DIRS for catkin_package() command
     set(CATKIN_DEPEND_INCLUDE_DIRS
@@ -149,7 +157,6 @@ set(ALL_INCLUDE_DIRECTORIES
   ${EIGEN3_INCLUDE_DIR}
 )
 
-
 add_definitions(
     ${graspit_CXXFLAGS}
     # -std=c++11 
@@ -159,7 +166,6 @@ add_definitions(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
   ${ALL_INCLUDE_DIRECTORIES}
 )

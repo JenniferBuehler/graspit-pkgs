@@ -31,7 +31,7 @@
 #include <unistd.h>
 
 #include <ros/ros.h>
-#include <grasp_planning_graspit/GraspItSceneManagerNoGui.h>
+#include <grasp_planning_graspit/GraspItSceneManagerHeadless.h>
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/EigenGraspPlanner.h>
 #include <grasp_planning_graspit/EigenGraspResult.h>
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 
     PRINTMSG("Creating planner");
     std::string name = "EigenGraspPlanner1";  // TODO make parameter
-    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerNoGui());
+    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerHeadless());
 
     SHARED_PTR<GraspIt::EigenGraspPlanner> p(new GraspIt::EigenGraspPlanner(name, graspitMgr));
 

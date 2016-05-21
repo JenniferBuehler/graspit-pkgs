@@ -88,7 +88,9 @@ int main(int argc, char** argv)
 
     ROS_INFO("### Getting DH parameters...");
     
-    urdf2graspit::Urdf2GraspIt converter(scaleFactor,negateJointMoves, false);
+    urdf2inventor::Urdf2Inventor::UrdfTraverserPtr traverser_conv(new urdf_traverser::UrdfTraverser());
+    urdf2graspit::Urdf2GraspIt converter(traverser_conv, scaleFactor,negateJointMoves, false);
+    
     if (!converter.loadModelFromFile(urdf_filename))
     {
         ROS_ERROR("Could not load the model into the contacts generator");
@@ -107,8 +109,9 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    ROS_INFO("### Generating contacts for robot %s...", converter.getRobotName().c_str());
-    urdf2graspit::ContactsGenerator contGen(scaleFactor);
+    ROS_INFO("### Generating contacts ");
+    urdf2inventor::Urdf2Inventor::UrdfTraverserPtr traverser_cont(new urdf_traverser::UrdfTraverser());
+    urdf2graspit::ContactsGenerator contGen(traverser_cont, scaleFactor);
     if (!contGen.loadModelFromFile(urdf_filename))
     {
         ROS_ERROR("Could not load the model into the contacts generator");
@@ -126,26 +129,26 @@ int main(int argc, char** argv)
         ROS_ERROR("Could not generate contacts");
         return 0;
     }
-    std::string contacts = contGen.getContactsFileContent(contGen.getRobotName());
-    ROS_INFO_STREAM("Contacts generated for robot "<<contGen.getRobotName()); // <<": "<<contacts);
+    std::string contacts = contGen.getContactsFileContent(traverser_cont->getModelName());
+    ROS_INFO_STREAM("Contacts generated."); // <<": "<<contacts);
 
     urdf2graspit::FileIO fileIO(outputDir, contGen.getOutStructure());
-    if (!fileIO.initOutputDir(contGen.getRobotName()))
+    if (!fileIO.initOutputDir(traverser_cont->getModelName()))
     {
         ROS_ERROR_STREAM("Could not initialize output directory "
-            <<outputDir<<" for robot "<<contGen.getRobotName());
+            <<outputDir<<" for robot "<<traverser_cont->getModelName());
         return 0;
     }
-    if (!fileIO.writeContacts(contGen.getRobotName(), contacts, useFilename))
+    if (!fileIO.writeContacts(traverser_cont->getModelName(), contacts, useFilename))
     {
         ROS_ERROR("Could not write files");
         return 0;
     }
     
     ROS_INFO("Cleaning up...");
-    bool deleteOutputRedirect = true;
-    converter.cleanup(deleteOutputRedirect);
-    
+    converter.cleanup();
+    contGen.cleanup();
+
     ROS_INFO("Done.");
     return 0;
 }

@@ -86,7 +86,8 @@ int main(int argc, char** argv)
     priv.param<float>("visual_corr_axis_angle", visCorrAxAngle, visCorrAxAngle);
     urdf2graspit::Urdf2GraspIt::EigenTransform addVisualTrans(Eigen::AngleAxisd(visCorrAxAngle*M_PI/180, Eigen::Vector3d(visCorrAxX,visCorrAxY,visCorrAxZ)));
 
-    urdf2graspit::Urdf2GraspIt converter(scaleFactor, negateJointMoves);
+    urdf2inventor::Urdf2Inventor::UrdfTraverserPtr traverser(new urdf_traverser::UrdfTraverser());
+    urdf2graspit::Urdf2GraspIt converter(traverser, scaleFactor, negateJointMoves);
 
     ROS_INFO("Starting model conversion...");
 
@@ -111,8 +112,7 @@ int main(int argc, char** argv)
     }
     
     ROS_INFO("Cleaning up...");
-    bool deleteOutputRedirect = true;
-    converter.cleanup(deleteOutputRedirect);
+    converter.cleanup();
 
     ROS_INFO("Done.");
     return 0;

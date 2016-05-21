@@ -32,7 +32,6 @@
 #include <Eigen/Geometry>
 
 #include <urdf2inventor/Urdf2Inventor.h>
-#include <architecture_binding/SharedPtr.h>
 #include <urdf2graspit/DHParam.h>
 #include <urdf2graspit/OutputStructure.h>
 
@@ -52,9 +51,12 @@ namespace urdf2graspit
 class Urdf2GraspItBase: public urdf2inventor::Urdf2Inventor
 {
 public:
-    explicit Urdf2GraspItBase(float _scaleFactor = 1000,
+    typedef urdf2inventor::Urdf2Inventor::UrdfTraverserPtr UrdfTraverserPtr;
+
+    explicit Urdf2GraspItBase(UrdfTraverserPtr& traverser,
+            float _scaleFactor = 1000,
             bool _addAxes=false, float _axesRadius = 0.003, float _axesLength=0.015):
-        urdf2inventor::Urdf2Inventor(_scaleFactor, _addAxes, _axesRadius, _axesLength),
+        urdf2inventor::Urdf2Inventor(traverser, _scaleFactor, _addAxes, _axesRadius, _axesLength),
         outStructure("iv")
     {
     }

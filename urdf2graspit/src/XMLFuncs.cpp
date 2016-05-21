@@ -21,7 +21,9 @@
 #include <vector>
 
 using urdf2graspit::xmlfuncs::FingerChain;
-using urdf2graspit::xmlfuncs::JointPtr;
+using urdf2graspit::JointPtr;
+using urdf2graspit::JointConstPtr;
+using urdf2graspit::InertialPtr;
 
 using urdf2graspit::DHParam;
 
@@ -132,11 +134,11 @@ std::string urdf2graspit::xmlfuncs::getEigenGraspXML(const std::vector<DHParam>&
 }
 
 
-bool isRevolutingJoint(const urdf2graspit::xmlfuncs::JointConstPtr& joint)
+bool isRevolutingJoint(const JointConstPtr& joint)
 {
     return (joint->type == urdf::Joint::REVOLUTE) || (joint->type == urdf::Joint::CONTINUOUS);
 }
-bool isPrismaticJoint(const urdf2graspit::xmlfuncs::JointConstPtr& joint)
+bool isPrismaticJoint(const JointConstPtr& joint)
 {
     return (joint->type == urdf::Joint::PRISMATIC);
 }
@@ -234,7 +236,7 @@ std::string urdf2graspit::xmlfuncs::getLinkDescXML(
     const std::string& linkMeshFile,
     const std::string& material)
 {
-    urdf2graspit::xmlfuncs::InertialPtr i = link->inertial;
+    InertialPtr i = link->inertial;
 
     std::stringstream str;
     str << "<?xml version=\"1.0\" ?>" << std::endl;

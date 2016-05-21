@@ -16,10 +16,15 @@
     Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **/
 
+#include <urdf_traverser/Functions.h>
+#include <urdf_traverser/DependencyOrderedJoints.h>
+
 #include <urdf2inventor/IVHelpers.h>
 #include <urdf2graspit/ContactFunctions.h>
 #include <urdf2graspit/ContactsGenerator.h>
 #include <urdf2inventor/Helpers.h>
+
+#include <urdf2graspit/Types.h>
 #include <urdf2graspit/MarkerSelector.h>
 
 #include <string>
@@ -38,6 +43,12 @@ using urdf2graspit::markerselector::MarkerSelector;
 
 bool ContactsGenerator::transformToDHReferenceFrames(const std::vector<DHParam>& dh)
 {
+    UrdfTraverserPtr trav = getTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser not set.");
+        return false;
+    }
     std::map<std::string,EigenTransform> transforms;
     if (!DHParam::getTransforms(dh, true, transforms))
     {
@@ -48,7 +59,7 @@ bool ContactsGenerator::transformToDHReferenceFrames(const std::vector<DHParam>&
     std::map<std::string,EigenTransform>::iterator it;
     for (it=transforms.begin(); it!=transforms.end(); ++it)
     {
-        LinkPtr link=getLink(it->first);
+        LinkPtr link=trav->getLink(it->first);
         if (!link.get())
         {
             ROS_ERROR("Link %s does not exist", it->first.c_str());
@@ -101,7 +112,14 @@ void ContactsGenerator::scaleContacts(double scale_factor)
 bool ContactsGenerator::generateContactsForallVisuals(const std::string& linkName, const int linkNum, const int fingerNum,
         const float coefficient, const std::vector<MarkerSelector::Marker>& markers)
 {
-    LinkPtr link = getLink(linkName);
+    UrdfTraverserPtr trav = getTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser not set.");
+        return false;
+    }
+
+    LinkPtr link = trav->getLink(linkName);
 
     std::map<std::string, std::vector<ContactPtr> >::iterator lCnt = linkContacts.find(linkName);
     if (lCnt == linkContacts.end())
@@ -118,7 +136,7 @@ bool ContactsGenerator::generateContactsForallVisuals(const std::string& linkNam
 
         VisualPtr visual = *vit;
 
-        EigenTransform vTrans = getTransform(visual->origin);   // transform from link reference frame to the visual
+        EigenTransform vTrans = urdf_traverser::getTransform(visual->origin);   // transform from link reference frame to the visual
 
         // move forward in markers vector until we get the correct visual number
         while (m != markers.end())
@@ -194,15 +212,21 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
         const float coefficient, const MarkerSelector::MarkerMap& markers,
         const std::vector<DHParam>& dh)
 {
-    LinkPtr palm_link;
-    getRobot().getLink(palmLinkName, palm_link);
+    UrdfTraverserPtr trav = getTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser not set.");
+        return false;
+    }
+
+    LinkPtr palm_link = trav->getLink(palmLinkName);
     if (!palm_link.get())
     {
         ROS_ERROR_STREAM("Palm link "<<palmLinkName<<" not found.");
         return false;
     }
 
-    initOutStructure(getRobotName());
+    initOutStructure(trav->getModelName());
 
     // first, do the palm:
     MarkerSelector::MarkerMap::const_iterator palmM = markers.find(palmLinkName);
@@ -224,7 +248,7 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
         ++fingerNum;
         // ROS_INFO("Handling root finger %s",it->c_str());
 
-        JointPtr root_joint = getJoint(*it);
+        JointPtr root_joint = trav->getJoint(*it);
         if (!root_joint.get())
         {
             ROS_ERROR("Could not find joint %s", it->c_str());
@@ -232,7 +256,7 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
         }
         std::vector<JointPtr> chain;
         bool onlyActive = true;
-        if (!getDependencyOrderedJoints(chain, root_joint, false, onlyActive) || chain.empty())
+        if (!urdf_traverser::getDependencyOrderedJoints(*trav, chain, root_joint, false, onlyActive) || chain.empty())
         {
             ROS_ERROR("Could not get joint chain, joint %s", root_joint->name.c_str());
             return false;
@@ -374,12 +398,19 @@ SoNode * ContactsGenerator::getAxesAsInventor(
     // urdf2inventor::addSphere(allVisuals, pos, _axesRadius, 1,0,0);            
     addLocalAxes(from_link, allVisuals, false, _axesRadius, _axesLength);
 
+    UrdfTraverserPtr trav = getTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser not set.");
+        return NULL;
+    }
+
 
     for (std::vector<JointPtr>::const_iterator pj = from_link->child_joints.begin();
             pj != from_link->child_joints.end(); pj++)
     {
         JointPtr joint = *pj;
-        LinkPtr childLink = getLink(joint->child_link_name);
+        LinkPtr childLink = trav->getLink(joint->child_link_name);
         SoNode * childNode = getAxesAsInventor(childLink, dh, _axesRadius, _axesLength, false);
         if (!childNode)
         {
@@ -388,7 +419,7 @@ SoNode * ContactsGenerator::getAxesAsInventor(
         }
         if (linkIsRoot)
         {
-            transform = getTransform(joint);
+            transform = urdf_traverser::getTransform(joint);
         }
         allVisuals = urdf2inventor::addSubNode(childNode, allVisuals, transform);
     }
@@ -416,7 +447,14 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
         float _axesRadius, float _axesLength,
         const EigenTransform& addVisualTransform)
 {
-    LinkPtr palm = getLink(palmLinkName);
+    UrdfTraverserPtr trav = getTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser not set.");
+        return false;
+    }
+
+    LinkPtr palm = trav->getLink(palmLinkName);
     if (!palm.get())
     {
         ROS_ERROR_STREAM("Could not find palm link "<<palmLinkName);

@@ -20,7 +20,7 @@
 #define URDF2GRASPIT_MARKERSELECTOR_H
 // Copyright Jennifer Buehler
 
-#include <urdf2inventor/InventorViewer.h>
+#include <urdf_viewer/InventorViewer.h>
 
 #include <Eigen/Geometry>
 
@@ -40,7 +40,7 @@ namespace markerselector
  * \author Jennifer Buehler
  * \date last edited October 2015
  */
-class MarkerSelector: public urdf2inventor::viewer::InventorViewer
+class MarkerSelector: public urdf_viewer::InventorViewer
 {
 public:
     /**
@@ -94,7 +94,7 @@ public:
      * \param _faces_ccw faces are to be treated as counter-clockwise. Needed for normal calculations.
      */
     explicit MarkerSelector(float _marker_size, bool _faces_ccw = true):
-        urdf2inventor::viewer::InventorViewer(_faces_ccw),
+        urdf_viewer::InventorViewer(_faces_ccw),
         marker_size(_marker_size) {}
 
     MarkerSelector(const MarkerSelector& o):

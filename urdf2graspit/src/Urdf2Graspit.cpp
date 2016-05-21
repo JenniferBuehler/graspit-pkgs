@@ -16,13 +16,18 @@
     Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **/
 
-#include <urdf2inventor/Helpers.h>
+#include <baselib_binding/SharedPtr.h> 
 
+#include <urdf_traverser/ActiveJoints.h>
+#include <urdf_traverser/DependencyOrderedJoints.h>
+#include <urdf_traverser/Functions.h>
+
+#include <urdf2inventor/Helpers.h>
+#include <urdf2graspit/Types.h>
 #include <urdf2graspit/Urdf2Graspit.h>
 #include <urdf2graspit/XMLFuncs.h>
-// #include <urdf2graspit/MarkerSelector.h>
-// #include <urdf2graspit/ContactFunctions.h>
-// #include <urdf2graspit/ContactsGenerator.h>
+
+#include <urdf2graspit/ConvertGraspitMesh.h>
 
 #include <string>
 #include <ros/ros.h>
@@ -45,10 +50,20 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
                           const std::string * contactsVGR,
                           const std::string& mesh_pathprepend, std::string& result)
 {
-    LinkPtr from_link;
-    getRobot().getLink(palmLinkName, from_link);
+    UrdfTraverserPtr trav = getTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser must be set");
+        return false;
+    }
+    LinkPtr from_link = trav->getLink(palmLinkName);
+    if (!from_link)
+    {
+        ROS_ERROR_STREAM("Could not find palm link "<<palmLinkName);
+        return false;
+    }
 
-    if (hasFixedJoints(from_link))
+    if (urdf_traverser::hasFixedJoints(*trav, palmLinkName))
     {
         ROS_ERROR_STREAM("Only URDF formats without fixed joints supported. "
                          << "You can remove fixed joints with function joinFixedLinks()");
@@ -78,15 +93,15 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
     for (std::vector<std::string>::const_iterator it = rootFingerJoints.begin(); it != rootFingerJoints.end(); ++it)
     {
         // ROS_INFO("Handling root finger %s",it->c_str());
-        JointPtr joint = getJoint(*it);
-        if (!joint.get())
+        JointPtr joint = trav->getJoint(*it);
+        if (!joint)
         {
             ROS_ERROR("Could not find joint %s", it->c_str());
             return false;
         }
         std::vector<JointPtr> chain;
         bool onlyActive = false;
-        if (!getDependencyOrderedJoints(chain, joint, false, onlyActive) || chain.empty())
+        if (!urdf_traverser::getDependencyOrderedJoints(*trav, chain, joint, false, onlyActive) || chain.empty())
         {
             ROS_ERROR("Could not get joint chain, joint %s", joint->name.c_str());
             return false;
@@ -163,13 +178,13 @@ void Urdf2GraspIt::toGlobalCoordinates(const EigenTransform& transform,
 }
 
 
-void Urdf2GraspIt::getGlobalCoordinates(const JointPtr& joint,
+void Urdf2GraspIt::getGlobalCoordinates(const JointConstPtr& joint,
                                         const EigenTransform& parentWorldTransform,
                                         Eigen::Vector3d& rotationAxis, Eigen::Vector3d& position) const
 {
-    Eigen::Vector3d rotAxis = getRotationAxis(joint);
+    Eigen::Vector3d rotAxis = urdf_traverser::getRotationAxis(joint);
     // ROS_INFO_STREAM("Orig rotation axis of joint "<<joint->name<<": "<<rotAxis);
-    EigenTransform jointTransform = getTransform(joint);
+    EigenTransform jointTransform = urdf_traverser::getTransform(joint);
     EigenTransform jointWorldTransform = parentWorldTransform * jointTransform;
     // ROS_INFO_STREAM("Joint transform: "<<jointTransform);
     // ROS_INFO_STREAM("Joint world transform: "<<jointWorldTransform);
@@ -193,21 +208,26 @@ void Urdf2GraspIt::getGlobalCoordinates(const JointPtr& joint,
     position = jointWorldTransform.translation();
 }
 
-bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPtr& joint,
+bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointConstPtr& joint,
                                const EigenTransform& parentWorldTransform,
                                const Eigen::Vector3d& parentX, const Eigen::Vector3d& parentZ,
                                const Eigen::Vector3d parentPos, bool asRootJoint) const
 {
     ROS_INFO_STREAM("======== Transforming joint " << joint->name << " to DH parameters");
 
-    LinkPtr childLink;
-    getRobot().getLink(joint->child_link_name, childLink);
-    if (!childLink.get())
+    UrdfTraverserConstPtr trav = readTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser must be set");
+        return false;
+    }
+
+    LinkConstPtr childLink = trav->readLink(joint->child_link_name);
+    if (!childLink)
     {
         ROS_ERROR("consistency, no child link");
         return false;
     }
-
 
     Eigen::Vector3d z, pos, x;
 
@@ -219,14 +239,14 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
         // previous transforms, as we'll set this one to be the origin
         jointWorldTransform.setIdentity();
 
-        z = getRotationAxis(joint);   // rotation axis is already in world coorinates
+        z = urdf_traverser::getRotationAxis(joint);   // rotation axis is already in world coorinates
         // ROS_INFO_STREAM("Rotation axis of joint "<<joint->name<<": "<<z);
         pos = Eigen::Vector3d(0, 0, 0);
         x = parentX;
     }
     else
     {
-        EigenTransform jointTransform = getTransform(joint);
+        EigenTransform jointTransform = urdf_traverser::getTransform(joint);
         jointWorldTransform = parentWorldTransform * jointTransform;
         //ROS_INFO_STREAM("Parent world transform: "<<parentWorldTransform);
         //ROS_INFO_STREAM("Joint transform: "<<jointTransform);
@@ -244,17 +264,16 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
         }
 
         param.dof_index = dhparameters.size();
-        param.joint = readParentJoint(joint);
+        param.joint = trav->readParentJoint(joint);
 
-        if (!param.joint.get())
+        if (!param.joint)
         {
             ROS_ERROR_STREAM("Consistency: Joint "<<joint->name
                 <<" has no parent, should have been added as root joint instead!");
             return false;
         }
-        LinkPtr paramChildLink;
-        getRobot().getLink(param.joint->child_link_name, paramChildLink);
-        if (!paramChildLink.get())
+        LinkConstPtr paramChildLink = trav->readLink(param.joint->child_link_name);
+        if (!paramChildLink)
         {
             ROS_ERROR("consistency, no child link");
             return false;
@@ -300,7 +319,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointPt
 
 
 
-bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const LinkPtr& from_link) const
+bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const LinkConstPtr& from_link) const
 {
     if (!isDHReady(from_link->name))
     {
@@ -326,9 +345,15 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const LinkPtr
 
 bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparams, const std::string& fromLinkName) const
 {
-    LinkPtr from_link;
-    getRobot().getLink(fromLinkName, from_link);
-    if (!from_link.get())
+    UrdfTraverserConstPtr trav = readTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser must be set");
+        return false;
+    }
+
+    LinkConstPtr from_link = trav->readLink(fromLinkName);
+    if (!from_link)
     {
         ROS_ERROR("Link %s does not exist", fromLinkName.c_str());
         return false;
@@ -375,7 +400,7 @@ bool Urdf2GraspIt::coordsConvert(const JointPtr& joint, const JointPtr& root_joi
         }
 
         EigenTransform jointTransform = EigenTransform::Identity();
-        if (i > 0) jointTransform = getTransform(iter_joint);
+        if (i > 0) jointTransform = urdf_traverser::getTransform(iter_joint);
 
         // ROS_INFO_STREAM("Dh trans for "<<iter_joint->name<<": "<<dhTrans);
         // ROS_INFO_STREAM("Joint trans for "<<iter_joint->name<<": "<<jointTransform);
@@ -417,6 +442,13 @@ bool Urdf2GraspIt::coordsConvert(const JointPtr& joint, const JointPtr& root_joi
 
 bool Urdf2GraspIt::linksToDHReferenceFrames(std::vector<DHParam>& dh)
 {
+    UrdfTraverserPtr trav = getTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser not set.");
+        return false;
+    }
+
     std::map<std::string,EigenTransform> transforms;
     if (!DHParam::getTransforms(dh, true, transforms))
     {
@@ -428,79 +460,20 @@ bool Urdf2GraspIt::linksToDHReferenceFrames(std::vector<DHParam>& dh)
     for (it=transforms.begin(); it!=transforms.end(); ++it)
     {
             
-        LinkPtr link=getLink(it->first);
-        if (!link.get())
+        LinkPtr link=trav->getLink(it->first);
+        if (!link)
         {
             ROS_ERROR("Link %s does not exist", it->first.c_str());
             return false;
         }
         bool preApply = true;
-        applyTransform(link, it->second, preApply);
+        urdf_traverser::applyTransform(link, it->second, preApply);
     }
     
     return true;
 }
 
 
-int Urdf2GraspIt::convertGraspItMesh(RecursionParamsPtr& p)
-{
-    // ROS_INFO("convert mesh for %s",link->name.c_str());
-    MeshConvertRecursionParams::Ptr param = architecture_binding_ns::dynamic_pointer_cast<MeshConvertRecursionParams>(p);
-    if (!param.get())
-    {
-        ROS_ERROR("Wrong recursion parameter type");
-        return -1;
-    }
-
-    LinkPtr link = param->link;
-
-    std::string linkMeshFile = urdf2inventor::helpers::getFilename(link->name.c_str()) + OUTPUT_EXTENSION;
-    std::string linkXML = urdf2graspit::xmlfuncs::getLinkDescXML(link, linkMeshFile, param->material);
-    // ROS_INFO("XML: %s",linkXML.c_str());
-
-    if (!param->resultMeshes.insert(std::make_pair(link->name, linkXML)).second)
-    {
-        ROS_ERROR("Could not insert the resulting mesh description file for link %s to the map", link->name.c_str());
-        return -1;
-    }
-
-    return 1;
-}
-
-bool Urdf2GraspIt::convertGraspItMeshes(const std::string& fromLinkName,
-                                 double scale_factor, const std::string& material,
-                                 const EigenTransform& addVisualTransform,
-                                 std::map<std::string, std::string>& meshDescXML)
-{
-    LinkPtr from_link;
-    getRobot().getLink(fromLinkName, from_link);
-    if (!from_link.get())
-    {
-        ROS_ERROR("Link %s does not exist", fromLinkName.c_str());
-        return false;
-    }
-
-    // do one call of convertGraspitMesh
-    LinkPtr parent;  // leave parent NULL
-    MeshConvertRecursionParams::Ptr meshParams(new MeshConvertRecursionParams(parent, from_link, 0,
-            scale_factor, material, addVisualTransform));
-
-    RecursionParamsPtr p(meshParams);
-    int cvt = convertGraspItMesh(p);
-    if (cvt < 0)
-    {
-        ROS_ERROR("Could not convert root mesh");
-        return false;
-    }
-
-    // go through entire tree
-    int ret = (cvt == 0) ||
-              (this->traverseTreeTopDown(from_link, boost::bind(&Urdf2GraspIt::convertGraspItMesh, this, _1), p) >= 0);
-
-    meshDescXML = meshParams->resultMeshes;
-
-    return ret;
-}
 
 
 void Urdf2GraspIt::scaleParams(std::vector<DHParam>& dh, double scale_factor) const
@@ -560,24 +533,31 @@ bool Urdf2GraspIt::checkConversionPrerequisites(const GraspItConversionParameter
         ROS_ERROR("Need to call prepareModelForDenavitHartenberg() before DH parameters can be calculated");
         return false;
     }
-    
+
+    UrdfTraverserConstPtr trav = readTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser not set.");
+        return false;
+    }
+
     // Can only convert if there are no active joints between the root
     // joint and the finger bases, and all fixed joints have been joined.
-    LinkConstPtr rootLink = readLink(param->rootLinkName);
-    if (!rootLink.get())
+    LinkConstPtr rootLink = trav->readLink(param->rootLinkName);
+    if (!rootLink)
     {
         ROS_ERROR_STREAM("No link named '"<<param->rootLinkName<<"' found in URDF.");
         return false;
     }
     for (std::vector<std::string>::iterator rIt=param->fingerRoots.begin(); rIt != param->fingerRoots.end(); ++rIt)
     {
-        JointConstPtr fingerRootJoint = readJoint(*rIt);
-        if (!fingerRootJoint.get())
+        JointConstPtr fingerRootJoint = trav->readJoint(*rIt);
+        if (!fingerRootJoint)
         {
             ROS_ERROR_STREAM("No joint named '"<<*rIt<<"' found in URDF.");
             return false;
         }
-        if (!isChildJointOf(rootLink, fingerRootJoint))
+        if (!urdf_traverser::isChildJointOf(rootLink, fingerRootJoint))
         {
             ROS_ERROR_STREAM("Link named '"<<*rIt<<"' is not direct child of root '"<<param->rootLinkName
                 <<". This is either the wrong link, or there are other active joints between the root (palm) link and the finger root links."
@@ -590,8 +570,8 @@ bool Urdf2GraspIt::checkConversionPrerequisites(const GraspItConversionParameter
 
 Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParametersPtr& cparams)
 {
-    GraspItConversionParametersPtr param = architecture_binding_ns::dynamic_pointer_cast<GraspItConversionParameters>(cparams);
-    if (!param.get())
+    GraspItConversionParametersPtr param = baselib_binding_ns::dynamic_pointer_cast<GraspItConversionParameters>(cparams);
+    if (!param)
     {
         ROS_ERROR("Conversion parameters not of right type");
         return GraspItConversionResultPtr();
@@ -638,8 +618,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParam
 
 Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::postConvert(const ConversionParametersPtr& cparams, ConversionResultPtr& _result)
 {
-    GraspItConversionResultPtr result = architecture_binding_ns::dynamic_pointer_cast<GraspItConversionResult>(_result);
-    if (!result.get())
+    GraspItConversionResultPtr result = baselib_binding_ns::dynamic_pointer_cast<GraspItConversionResult>(_result);
+    if (!result)
     {
         ROS_ERROR("postConvert: result not of right type");
         return GraspItConversionResultPtr();
@@ -647,8 +627,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::postConvert(const ConversionPara
  
     result->success=false;
 
-    GraspItConversionParametersPtr param = architecture_binding_ns::dynamic_pointer_cast<GraspItConversionParameters>(cparams);
-    if (!param.get())
+    GraspItConversionParametersPtr param = baselib_binding_ns::dynamic_pointer_cast<GraspItConversionParameters>(cparams);
+    if (!param)
     {
         ROS_ERROR("Conversion parameters not of right type");
         return result;
@@ -656,7 +636,16 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::postConvert(const ConversionPara
     
     ROS_INFO_STREAM("### Urdf2GraspIt::postConvert for robot "<<param->robotName);
 
-    if (!convertGraspItMeshes(param->rootLinkName, getScaleFactor(), param->material,
+    UrdfTraverserPtr trav = getTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser not set.");
+        return result;
+    }
+
+    if (!urdf2graspit::convertGraspItMeshes(*trav, param->rootLinkName, getScaleFactor(),
+        param->material,
+        OUTPUT_EXTENSION,
         param->addVisualTransform, result->meshXMLDesc))
     {
         ROS_ERROR("Could not convert meshes");
@@ -755,8 +744,7 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
         return failResult;
     }
 
-    ROS_INFO("### Converting files for robot %s, starting from link %s",
-        getRobot().getName().c_str(), palmLinkName.c_str());
+    ROS_INFO_STREAM("### Converting files starting from link " << palmLinkName);
     if (!prepareModelForDenavitHartenberg(palmLinkName))
     {
         ROS_ERROR("Could not prepare for DH conversion");
@@ -771,8 +759,16 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
         return failResult;
     }
 */
+
+    UrdfTraverserPtr trav = getTraverser();
+    if (!trav)
+    {
+        ROS_ERROR("Traverser must be set");
+        return failResult;
+    }
+
     ROS_INFO("### Converting files...");
-    ConversionParametersPtr params(new GraspItConversionParameters(getRobot().getName(),
+    ConversionParametersPtr params(new GraspItConversionParameters(trav->getModelName(),
             palmLinkName, material, fingerRootNames, addVisualTransform));
     ConversionResultPtr convResult = convert(params);
     if (!convResult || !convResult->success)
@@ -781,14 +777,14 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
         return convResult ? convResult : failResult;
     }
 
-    GraspItConversionResultPtr result = architecture_binding_ns::dynamic_pointer_cast<GraspItConversionResult>(convResult);
-    if (!result.get())
+    GraspItConversionResultPtr result = baselib_binding_ns::dynamic_pointer_cast<GraspItConversionResult>(convResult);
+    if (!result)
     {
         ROS_ERROR("postConvert: result not of right type");
         return convResult ? convResult : failResult;
     }
  
-    result->robotName = getRobot().getName();
+    result->robotName = trav->getModelName();
 
     // ROS_INFO_STREAM("Contacts generated: "<<result->contacts);
 

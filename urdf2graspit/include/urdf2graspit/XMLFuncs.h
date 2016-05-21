@@ -22,8 +22,8 @@
 
 #include <string>
 #include <vector>
+#include <urdf2graspit/Types.h>
 #include <urdf2graspit/DHParam.h>
-#include <architecture_binding/SharedPtr.h>
 #include <ros/ros.h>
 
 
@@ -38,13 +38,7 @@ namespace urdf2graspit
 {
 namespace xmlfuncs
 {
-
-typedef architecture_binding::shared_ptr<const urdf::Joint>::type JointConstPtr;
-typedef architecture_binding::shared_ptr<const urdf::Link>::type LinkConstPtr;
-typedef architecture_binding::shared_ptr<urdf::Joint>::type JointPtr;
-typedef architecture_binding::shared_ptr<urdf::Link>::type LinkPtr;
-typedef architecture_binding::shared_ptr<urdf::Inertial>::type InertialPtr;
-
+    
 /**
  * \brief A chain of links joined by joints, described in DH parameters.
  * \author Jennifer Buehler
@@ -52,6 +46,7 @@ typedef architecture_binding::shared_ptr<urdf::Inertial>::type InertialPtr;
  */
 class FingerChain
 {
+
 public:
     FingerChain(std::vector<DHParam>& p, std::vector<std::string>& lf, std::vector<std::string>& lt):
         prms(p), linkFileNames(lf), linkTypes(lt) {}

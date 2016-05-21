@@ -31,6 +31,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <baselib_binding/SharedPtr.h>
 #include <urdf2graspit/Urdf2GraspItBase.h>
 
 #include <urdf2graspit/DHParam.h>
@@ -64,10 +65,10 @@ class Urdf2GraspIt: public Urdf2GraspItBase
 {
 public:
     typedef urdf2graspit::ConversionResult GraspItConversionResult;
-    typedef architecture_binding::shared_ptr<GraspItConversionResult>::type GraspItConversionResultPtr;
+    typedef baselib_binding::shared_ptr<GraspItConversionResult>::type GraspItConversionResultPtr;
 
     typedef urdf2graspit::ConversionParameters GraspItConversionParameters;
-    typedef architecture_binding::shared_ptr<GraspItConversionParameters>::type GraspItConversionParametersPtr;
+    typedef baselib_binding::shared_ptr<GraspItConversionParameters>::type GraspItConversionParametersPtr;
 
 
     /**
@@ -75,9 +76,9 @@ public:
      * This can be specified with this scale factor.
      * \param _negateJointMoves negates (inverts) joint limits and velocity/effort specified in URDF
      */
-    explicit Urdf2GraspIt(float _scaleFactor = 1000, bool _negateJointMoves = false,
+    explicit Urdf2GraspIt(UrdfTraverserPtr& traverser, float _scaleFactor = 1000, bool _negateJointMoves = false,
             bool _addAxes=false, float _axesRadius = 0.003, float _axesLength=0.015):
-        Urdf2GraspItBase(_scaleFactor, _addAxes, _axesRadius, _axesLength),
+        Urdf2GraspItBase(traverser, _scaleFactor, _addAxes, _axesRadius, _axesLength),
         negateJointMoves(_negateJointMoves),
         isDHScaled(false),
         dhTransformed(false)
@@ -138,24 +139,6 @@ public:
      */
     bool toDenavitHartenberg(const std::string& fromLink);
 
-    /**
-     * Convert all meshes starting from fromLinkName into the GraspIt! inventor format, and store them in the given
-     * mesh files container.
-     * While converting, the mesh files can be scaled by the given factor.
-     * \param material the material to use in the converted format
-     * \param meshDescXML the resulting GraspIt! XML description files for the meshes, indexed by the link names
-     * \param addVisualTransform this transform will be post-multiplied on all links' **visuals** (not links!) local
-     *      transform (their "origin"). This can be used to correct transformation errors which may have been 
-     *      introduced in converting meshes from one format to the other, losing orientation information
-     *      (for example, .dae has an "up vector" definition which may have been ignored)
-     */
-    bool convertGraspItMeshes(const std::string& fromLinkName,
-                        double scale_factor, const std::string& material,
-                        const EigenTransform& addVisualTransform,
-                        std::map<std::string, std::string>& meshDescXML);
-
-protected:
-
 private:
 
     bool checkConversionPrerequisites(const GraspItConversionParametersPtr& param) const;
@@ -175,7 +158,7 @@ private:
      * or the origin for the first call
      * \param asRootJoint set to true for the first call of this function
      */
-    bool getDHParams(std::vector<DHParam>& dhparameters, const JointPtr& joint,
+    bool getDHParams(std::vector<DHParam>& dhparameters, const JointConstPtr& joint,
                      const EigenTransform& parentWorldTransform,
                      const Eigen::Vector3d& parentX, const Eigen::Vector3d& parentZ,
                      const Eigen::Vector3d parentPos, bool asRootJoint) const;
@@ -183,7 +166,7 @@ private:
     /**
      * Returns the Denavit-Hartenberg parameters starting from link from_link
      */
-    bool getDHParams(std::vector<DHParam>& dhparameters, const LinkPtr& from_link) const;
+    bool getDHParams(std::vector<DHParam>& dhparameters, const LinkConstPtr& from_link) const;
 
 
     /**
@@ -209,10 +192,6 @@ private:
      */
     bool linksToDHReferenceFrames(std::vector<DHParam>& dh);
 
-    /**
-     * Function to be called during recursion incurred in convertGraspItMeshes()
-     */
-    int convertGraspItMesh(RecursionParamsPtr& p);
 
     /**
      * returns minimum / maximum limits of this joint
@@ -279,7 +258,7 @@ private:
      * joint is parentWorldTransform.
      * Both rotation axis and joint position are returned in global coordinates.
      */
-    void getGlobalCoordinates(const JointPtr& joint,
+    void getGlobalCoordinates(const JointConstPtr& joint,
                               const EigenTransform& parentWorldTransform,
                               Eigen::Vector3d& rotationAxis, Eigen::Vector3d& position) const;
 
