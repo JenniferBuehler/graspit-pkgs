@@ -53,7 +53,7 @@ if (COMPILE_WITH_CATKIN)
 endif (COMPILE_WITH_CATKIN)
    
 # Configuration file for graspit
-set (GRASPIT_CONFIG_CMAKE grasp_planning_graspitConfig.cmake)
+set (GRASP_PLANNNIG_GRASPIT_CONFIG_CMAKE grasp_planning_graspitConfig.cmake)
 
 set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
 
@@ -299,15 +299,29 @@ endif (catkin_FOUND)
 
 ## Mark executables and/or libraries for installation
 install(TARGETS grasp_planning_graspit
+   EXPORT grasp_planning_graspit-targets
    ARCHIVE DESTINATION ${LIB_DESTINATION}
    LIBRARY DESTINATION ${LIB_DESTINATION}
    RUNTIME DESTINATION ${LIB_DESTINATION}
 )
 
 install(TARGETS grasp_planning
+   EXPORT grasp_planning-targets
    ARCHIVE DESTINATION ${BIN_DESTINATION}
    LIBRARY DESTINATION ${BIN_DESTINATION}
    RUNTIME DESTINATION ${BIN_DESTINATION}
+)
+
+install(EXPORT grasp_planning_graspit-targets
+    DESTINATION ${LIB_DESTINATION}/${PROJECT_NAME}
+)
+install(EXPORT grasp_planning-targets
+    DESTINATION ${LIB_DESTINATION}/${PROJECT_NAME}
+)
+
+install(FILES
+    cmake/${GRASP_PLANNNIG_GRASPIT_CONFIG_CMAKE}
+    DESTINATION ${LIB_DESTINATION}/${PROJECT_NAME}
 )
 
 if (BUILD_GRASPIT)

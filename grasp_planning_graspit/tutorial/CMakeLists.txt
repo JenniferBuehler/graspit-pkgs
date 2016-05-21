@@ -18,13 +18,11 @@ find_package (grasp_planning_graspit REQUIRED)
 #)
 
 include_directories(
-    ${GRASPIT_INCLUDE_DIRS} # will be empty if not find-packaged
-    ${GRASP_PLANNING_GRASPIT_INCLUDE_DIRS}
+    ${grasp_planning_graspit_INCLUDE_DIRS}
 )
 
 add_executable(simple_planning_tutorial src/simple_planning_tutorial.cpp)
 
 target_link_libraries(simple_planning_tutorial
-   ${GRASPIT_LIBRARY} # will be empty if not find-packaged
-   ${GRASP_PLANNING_GRASPIT_LIBRARIES}
+   ${grasp_planning_graspit_LIBRARIES}
 )
