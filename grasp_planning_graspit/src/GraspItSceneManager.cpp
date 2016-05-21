@@ -34,7 +34,7 @@
 #include <robot.h>
 #include <body.h>
 #include <grasp.h>
-#include <ivmgr_nogui.h>
+#include <ivmgrHeadless.h>
 
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/actions/SoWriteAction.h>

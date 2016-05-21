@@ -37,7 +37,7 @@ class GraspableBody;
 class Hand;
 class EGPlanner;
 class World;
-class IVmgrAbstract;
+class IVmgrBase;
 class SoSensor;
 class transf;
 class Robot;
@@ -755,7 +755,7 @@ private:
 
 protected:
     // internally needed object for the inventor stuff.
-    IVmgrAbstract * ivMgr;
+    IVmgrBase * ivMgr;
 
     //! Points to the main graspitWorld which is maintained by ivMgr.
     // This is just a convenience pointer.

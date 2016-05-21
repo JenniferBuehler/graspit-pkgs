@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <grasp_planning_graspit/GraspItSceneManagerNoGui.h>
+#include <grasp_planning_graspit/GraspItSceneManagerHeadless.h>
 #include <grasp_planning_graspit/GraspItSimpleDBManager.h>
 #include <grasp_planning_graspit/LogBinding.h>
 
@@ -76,7 +76,7 @@ int run(int argc, char **argv)
 
     PRINTMSG("Creating database");
     std::string name = "Database1";
-    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerNoGui());
+    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerHeadless());
 
     SHARED_PTR<GraspIt::GraspItSimpleDBManager> mgr(new GraspIt::GraspItSimpleDBManager(name, graspitMgr));
 

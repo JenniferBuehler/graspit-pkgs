@@ -48,11 +48,11 @@ namespace GraspIt
  * \author Jennifer Buehler
  * \date January 2016
  */
-class GraspItSceneManagerNoGui: public GraspItSceneManager
+class GraspItSceneManagerHeadless: public GraspItSceneManager
 {
 public:
-    GraspItSceneManagerNoGui();
-    virtual ~GraspItSceneManagerNoGui();
+    GraspItSceneManagerHeadless();
+    virtual ~GraspItSceneManagerHeadless();
 
     virtual bool isReady() const;
 
@@ -84,7 +84,7 @@ protected:
     bool isInventorReady() const;
 
 private:
-    GraspItSceneManagerNoGui(const GraspItSceneManagerNoGui& o) {}
+    GraspItSceneManagerHeadless(const GraspItSceneManagerHeadless& o) {}
 
     /**
      * Creates the SoIdleSensor object which will keep running from the Inventor thread and schedules it.
@@ -111,16 +111,16 @@ private:
     void setInventorReady(const bool flag);
 
     /**
-     * Method for thread to run the inventor manager main loop (IVmgrNoGui::beginMainLoop()).
-     * This thread callback also needs to be used to initialize the IVmgrNoGui, because initialisation
+     * Method for thread to run the inventor manager main loop (IVmgrHeadless::beginMainLoop()).
+     * This thread callback also needs to be used to initialize the IVmgrHeadless, because initialisation
      * and main loop have to be handled by the same thread.
      */
-    static void ivThreadLoop(GraspItSceneManagerNoGui * _this);
+    static void ivThreadLoop(GraspItSceneManagerHeadless * _this);
 
     // Thread which runs the inventor loop.
     THREAD * ivThread;
 
-    // flag set to true as soon as the Inventor environment managed by IVmgrNoGui is initialized.
+    // flag set to true as soon as the Inventor environment managed by IVmgrHeadless is initialized.
     bool ivReady;
     mutable MUTEX ivReadyMtx;
 

@@ -20,7 +20,7 @@
 */
 #endif   // DOXYGEN_SHOULD_SKIP_THIS
 
-#include <grasp_planning_graspit/GraspItSceneManagerNoGui.h>
+#include <grasp_planning_graspit/GraspItSceneManagerHeadless.h>
 #include <grasp_planning_graspit/EigenGraspPlanner.h>
 #include <grasp_planning_graspit/EigenGraspResult.h>
 #include <string>
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
 
     // Create the graspit world manager.
-    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerNoGui());
+    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerHeadless());
 
     // Load the graspit world
     graspitMgr->loadWorld(worldFilename);

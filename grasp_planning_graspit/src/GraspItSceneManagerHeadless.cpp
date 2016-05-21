@@ -19,7 +19,7 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#include <grasp_planning_graspit/GraspItSceneManagerNoGui.h>
+#include <grasp_planning_graspit/GraspItSceneManagerHeadless.h>
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/PrintHelpers.h>
 #include <grasp_planning_graspit/GraspItAccessor.h>
@@ -35,7 +35,7 @@
 #include <robot.h>
 #include <body.h>
 #include <grasp.h>
-#include <ivmgr_nogui.h>
+#include <ivmgrHeadless.h>
 
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/actions/SoWriteAction.h>
@@ -45,10 +45,10 @@
 #include <boost/filesystem.hpp>
 
 using GraspIt::GraspItSceneManager;
-using GraspIt::GraspItSceneManagerNoGui;
+using GraspIt::GraspItSceneManagerHeadless;
 using GraspIt::Log;
 
-GraspItSceneManagerNoGui::GraspItSceneManagerNoGui():
+GraspItSceneManagerHeadless::GraspItSceneManagerHeadless():
     ivThread(NULL),
     ivReady(false),
     mIdleSensor(NULL)
@@ -56,12 +56,12 @@ GraspItSceneManagerNoGui::GraspItSceneManagerNoGui():
     initialize();
 }
 
-GraspItSceneManagerNoGui::~GraspItSceneManagerNoGui()
+GraspItSceneManagerHeadless::~GraspItSceneManagerHeadless()
 {
     shutdown();
 }
 
-void GraspItSceneManagerNoGui::initializeIVmgr()
+void GraspItSceneManagerHeadless::initializeIVmgr()
 {
     // start the thread loop which will kick off a new thread to run the QT Application
     ivThread = new THREAD_CONSTR(ivThreadLoop, this);
@@ -71,17 +71,17 @@ void GraspItSceneManagerNoGui::initializeIVmgr()
 }
 
 
-void GraspItSceneManagerNoGui::destroyIVmgr()
+void GraspItSceneManagerHeadless::destroyIVmgr()
 {
-    PRINTMSG("GraspItSceneManagerNoGui::destroyIVmgr()");
+    PRINTMSG("GraspItSceneManagerHeadless::destroyIVmgr()");
     // have to quit ivMgr main loop first so that the thread
     // exits its loop
     if (ivMgr)
     {
-        IVmgrNoGui * _ivMgr = dynamic_cast<IVmgrNoGui*>(ivMgr);
+        IVmgrHeadless * _ivMgr = dynamic_cast<IVmgrHeadless*>(ivMgr);
         if (!_ivMgr)
         {
-            throw std::string("Inconsistency:: ivMgr should be of class IVmgrNoGui!");
+            throw std::string("Inconsistency:: ivMgr should be of class IVmgrHeadless!");
         }
         _ivMgr->exitMainLoop();
         waitForInventorState(false);
@@ -104,17 +104,17 @@ void GraspItSceneManagerNoGui::destroyIVmgr()
 
 
 
-World * GraspItSceneManagerNoGui::createGraspitWorld()
+World * GraspItSceneManagerHeadless::createGraspitWorld()
 {
     if (!ivMgr)
     {
         throw std::string("Cannot initialize world without ivMgr begin intialized");
     }
 
-    IVmgrNoGui * _ivMgr = dynamic_cast<IVmgrNoGui*>(ivMgr);
+    IVmgrHeadless * _ivMgr = dynamic_cast<IVmgrHeadless*>(ivMgr);
     if (!_ivMgr)
     {
-        throw std::string("Inconsistency:: ivMgr should be of class IVmgrNoGui!");
+        throw std::string("Inconsistency:: ivMgr should be of class IVmgrHeadless!");
     }
 
     PRINTMSG("Creating World");
@@ -124,12 +124,12 @@ World * GraspItSceneManagerNoGui::createGraspitWorld()
 
 
 
-void GraspItSceneManagerNoGui::ivThreadLoop(GraspItSceneManagerNoGui * _this)
+void GraspItSceneManagerHeadless::ivThreadLoop(GraspItSceneManagerHeadless * _this)
 {
     PRINTMSG("Enter INVENTOR thread loop");
 
-    IVmgrNoGui * ivMgrNoGui = new IVmgrNoGui("GraspIt");
-    _this->ivMgr = ivMgrNoGui;
+    IVmgrHeadless * ivMgrHeadless = new IVmgrHeadless("GraspIt");
+    _this->ivMgr = ivMgrHeadless;
 
     _this->createIdleSensor();
 
@@ -138,7 +138,7 @@ void GraspItSceneManagerNoGui::ivThreadLoop(GraspItSceneManagerNoGui * _this)
     _this->mIdleSensor->schedule();
 
     // begin the main loop of inventor
-    ivMgrNoGui->beginMainLoop();
+    ivMgrHeadless->beginMainLoop();
 
     _this->deleteIdleSensor();
 
@@ -148,35 +148,35 @@ void GraspItSceneManagerNoGui::ivThreadLoop(GraspItSceneManagerNoGui * _this)
 }
 
 
-bool GraspItSceneManagerNoGui::isReady() const
+bool GraspItSceneManagerHeadless::isReady() const
 {
     return isInventorReady();
 }
 
-void GraspItSceneManagerNoGui::waitUntilReady() const
+void GraspItSceneManagerHeadless::waitUntilReady() const
 {
     return waitForInventorState(true);
 }
 
-void GraspItSceneManagerNoGui::waitForInventorState(const bool value) const
+void GraspItSceneManagerHeadless::waitForInventorState(const bool value) const
 {
     while (isInventorReady() != value) SLEEP(0.1);
 }
 
-bool GraspItSceneManagerNoGui::isInventorReady() const
+bool GraspItSceneManagerHeadless::isInventorReady() const
 {
     UNIQUE_LOCK lck(ivReadyMtx);
     return ivReady;
 }
 
-void GraspItSceneManagerNoGui::setInventorReady(const bool flag)
+void GraspItSceneManagerHeadless::setInventorReady(const bool flag)
 {
     UNIQUE_LOCK lck(ivReadyMtx);
     ivReady = flag;
 }
 
 
-void GraspItSceneManagerNoGui::deleteIdleSensor()
+void GraspItSceneManagerHeadless::deleteIdleSensor()
 {
     if (mIdleSensor)
     {
@@ -186,7 +186,7 @@ void GraspItSceneManagerNoGui::deleteIdleSensor()
     }
 }
 
-void GraspItSceneManagerNoGui::createIdleSensor()
+void GraspItSceneManagerHeadless::createIdleSensor()
 {
     if (mIdleSensor)
     {
@@ -199,13 +199,13 @@ void GraspItSceneManagerNoGui::createIdleSensor()
 }
 
 
-void GraspItSceneManagerNoGui::sensorCB(void *data, SoSensor *)
+void GraspItSceneManagerHeadless::sensorCB(void *data, SoSensor *)
 {
     // PRINTMSG(" ### sensorCB ###");
-    GraspItSceneManagerNoGui* _this = dynamic_cast<GraspItSceneManagerNoGui*>(static_cast<GraspItSceneManagerNoGui*>(data));
+    GraspItSceneManagerHeadless* _this = dynamic_cast<GraspItSceneManagerHeadless*>(static_cast<GraspItSceneManagerHeadless*>(data));
     if (!_this)
     {
-        PRINTERROR("Could not cast GraspItSceneManagerNoGui");
+        PRINTERROR("Could not cast GraspItSceneManagerHeadless");
         return;
     }
 
@@ -220,7 +220,7 @@ void GraspItSceneManagerNoGui::sensorCB(void *data, SoSensor *)
 }
 
 
-bool GraspItSceneManagerNoGui::scheduleIdleEvent()
+bool GraspItSceneManagerHeadless::scheduleIdleEvent()
 {
     // PRINTMSG("Registering");
     if (!isInventorReady())

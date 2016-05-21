@@ -20,7 +20,7 @@
 */
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
 
-#include <grasp_planning_graspit/GraspItSceneManagerNoGui.h>
+#include <grasp_planning_graspit/GraspItSceneManagerHeadless.h>
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/EigenGraspPlanner.h>
 #include <grasp_planning_graspit/EigenGraspPlannerNoQt.h>
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
     PRINTMSG("Creating planner");
 
     std::string name = "EigenGraspPlanner1";  // TODO make parameter
-    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerNoGui());
+    SHARED_PTR<GraspIt::GraspItSceneManager> graspitMgr(new GraspIt::GraspItSceneManagerHeadless());
 
 #ifdef USE_EIGENGRASP_NOQT
     SHARED_PTR<GraspIt::EigenGraspPlannerNoQt> p(new GraspIt::EigenGraspPlannerNoQt(name, graspitMgr));
