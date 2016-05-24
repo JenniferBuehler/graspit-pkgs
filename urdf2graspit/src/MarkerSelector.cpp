@@ -181,9 +181,8 @@ void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
 
     if (!computeCorrectFaceNormal(pPickedPt, isFacesCCW(), marker.normal))
     {
-        ROS_INFO("No face normal correction possible, you didn't click on a triangle. Using default normal.");
+        ROS_WARN("No face normal correction possible. Using default normal.");
     }
-
 
     SoSeparator * _nodeSep = dynamic_cast<SoSeparator*>(linkNode);
     if (!_nodeSep)

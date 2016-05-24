@@ -500,11 +500,6 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
     }
 
     ROS_INFO_STREAM("Model inventor files loaded, now loading into viewer...");
-    // XXX TEST ME: for some mesh formats, it does not work if init() is called above,
-    // it has to be called here instead. The problem is the call of SoQt::init().
-    // If called at all, also subsequent mesh conversions fail. I think it's a problem
-    // with ivcon. It was so far found with the .obj meshes of the R2, not with the jaco
-    // STL meshes...
     markerSelector.init("Marker selector");
     markerSelector.loadModel(node);
     markerSelector.runViewer();
