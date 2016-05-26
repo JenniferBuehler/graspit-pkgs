@@ -38,16 +38,19 @@ public:
     // \param meshSubdirName the name of the directory where the mesh files will be stored is more flexible
     // than the rest of the structure encoded in this class.
     OutputStructure(const std::string& _meshSubdirName = "iv",
+                    const std::string& _texSubdirName = "iv/textures",
                     const std::string& _contactsFile = "contacts.vgr",
                     const std::string& _eigengraspFile = "eigen.xml"):
         robotName("default_robot_name"),
         meshSubdirName(_meshSubdirName),
+        texSubdirName(_texSubdirName),
         contactsFile(_contactsFile),
         eigengraspFile(_eigengraspFile) {}
 
     OutputStructure(const OutputStructure& o):
         robotName(o.robotName),
         meshSubdirName(o.meshSubdirName),
+        texSubdirName(o.texSubdirName),
         contactsFile(o.contactsFile),
         eigengraspFile(o.eigengraspFile) {}
 
@@ -67,6 +70,7 @@ public:
 
     // directory path relative to the root output directory
     void getMeshDirPath(std::vector<std::string>& structure) const;
+    void getTexDirPath(std::vector<std::string>& structure) const;
 
     // directory path relative to the root output directory
     std::string getRobotDirPath() const;
@@ -103,8 +107,13 @@ public:
      */
     std::string getContactsFilePath(const std::string& useName) const;
 
-    // directory path relative to the root output directory
+    // directory path relative to the root output directory where meshes
+    // are to be saved
     std::string getMeshDirPath() const;
+    
+    // directory path relative to the root output directory where textures
+    // are to be saved
+    std::string getTexDirPath() const;
 
     void setRobotName(const std::string& _robotName)
     {
@@ -123,10 +132,10 @@ public:
     std::string getEigenGraspFileRel() const;
 
     // relative path to mesh directory from the robot's root directory.
-    std::string getMeshDirRel() const
-    {
-        return meshSubdirName + "/";
-    }
+    std::string getMeshDirRel() const; 
+
+    // relative path to mesh directory from the robot's root directory.
+    std::string getTexDirRel() const; 
 
 private:
     // helper function to convert a path given in a vector to a string
@@ -135,6 +144,7 @@ private:
 
     std::string robotName;
     std::string meshSubdirName;
+    std::string texSubdirName;
     std::string contactsFile;
     std::string eigengraspFile;
 };

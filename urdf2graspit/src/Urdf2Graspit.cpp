@@ -583,7 +583,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParam
     GraspItConversionResultPtr failResult;
 
     std::string outputMeshDir =  getOutStructure().getMeshDirPath();
-    GraspItConversionResultPtr result(new GraspItConversionResult(OUTPUT_EXTENSION, outputMeshDir));
+    std::string outputTexDir =  getOutStructure().getTexDirPath();
+    GraspItConversionResultPtr result(new GraspItConversionResult(OUTPUT_EXTENSION, outputMeshDir, outputTexDir));
     result->success = false;
     result->robotName = param->robotName;
 
@@ -733,7 +734,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
 {
     
     std::string outputMeshDir =  getOutStructure().getMeshDirPath();
-    GraspItConversionResultPtr failResult(new GraspItConversionResult(OUTPUT_EXTENSION, outputMeshDir));
+    std::string outputTexDir =  getOutStructure().getMeshDirPath();
+    GraspItConversionResultPtr failResult(new GraspItConversionResult(OUTPUT_EXTENSION, outputMeshDir, outputTexDir));
     failResult->success = false;
 
     ROS_INFO_STREAM("### Loading from URDF file "<<urdfFilename<<"...");
@@ -769,7 +771,9 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
 
     ROS_INFO("### Converting files...");
     ConversionParametersPtr params(new GraspItConversionParameters(trav->getModelName(),
-            palmLinkName, material, fingerRootNames, addVisualTransform));
+            palmLinkName,
+            material,
+            fingerRootNames, addVisualTransform));
     ConversionResultPtr convResult = convert(params);
     if (!convResult || !convResult->success)
     {

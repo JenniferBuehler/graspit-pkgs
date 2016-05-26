@@ -471,7 +471,7 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
     MarkerSelector markerSelector(0.002);
     //markerSelector.init("Marker selector");
     SoNode * node = getAsInventor(palmLinkName,false, 
-        _displayAxes && !_axesFromDH, _axesRadius, _axesLength, addVisualTransform);
+        _displayAxes && !_axesFromDH, _axesRadius, _axesLength, addVisualTransform, NULL);
     if (!node)
     {
         ROS_ERROR("Could not get inventor node");

@@ -17,6 +17,7 @@
 **/
 
 #include <urdf2graspit/OutputStructure.h>
+#include <urdf_traverser/Helpers.h>
 
 #include <string>
 #include <vector>
@@ -87,6 +88,21 @@ std::string urdf2graspit::OutputStructure::getContactsFilePath(const std::string
 
 // ---------------
 
+std::string urdf2graspit::OutputStructure::getMeshDirRel() const
+{
+    std::string dir = meshSubdirName;
+    urdf_traverser::helpers::enforceDirectory(dir, false);
+    return dir;
+}
+
+std::string urdf2graspit::OutputStructure::getTexDirRel() const
+{
+    std::string dir = texSubdirName;
+    urdf_traverser::helpers::enforceDirectory(dir, false);
+    return dir;
+}
+
+
 
 void urdf2graspit::OutputStructure::getMeshDirPath(std::vector<std::string>& structure) const
 {
@@ -94,11 +110,23 @@ void urdf2graspit::OutputStructure::getMeshDirPath(std::vector<std::string>& str
     structure.push_back(meshSubdirName);
 }
 
+void urdf2graspit::OutputStructure::getTexDirPath(std::vector<std::string>& structure) const
+{
+    getRobotDirPath(structure);
+    structure.push_back(texSubdirName);
+}
+
 
 std::string urdf2graspit::OutputStructure::getMeshDirPath() const
 {
-    return getRobotDirPath() + meshSubdirName + "/";
+    return getRobotDirPath() + getMeshDirRel();
 }
+
+std::string urdf2graspit::OutputStructure::getTexDirPath() const
+{
+    return getRobotDirPath() + getTexDirRel();
+}
+
 
 
 std::string urdf2graspit::OutputStructure::toStringPath(const std::vector<std::string>& path) const
@@ -106,7 +134,7 @@ std::string urdf2graspit::OutputStructure::toStringPath(const std::vector<std::s
     std::string ret;
     for (std::vector<std::string>::const_iterator it = path.begin(); it != path.end(); ++it)
     {
-        ret += *it + "/";
+        ret += *it +  "/";
     }
     return ret;
 }

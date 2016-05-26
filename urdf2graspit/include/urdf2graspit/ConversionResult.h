@@ -35,8 +35,8 @@ public:
         const std::string& _rootLinkName,
         const std::string& material,
         const std::vector<std::string>& _fingerRoots,
-        const EigenTransform& _addVisualTransform):
-        urdf2inventor::ConversionParameters(_rootLinkName, material,_addVisualTransform),
+        const EigenTransform& addVisualTransform):
+        urdf2inventor::ConversionParameters(_rootLinkName, material, addVisualTransform),
         robotName(_robotName),
         fingerRoots(_fingerRoots){}
     ConversionParameters(const ConversionParameters& o):
@@ -61,8 +61,10 @@ class ConversionResult:
 public:
     typedef std::string MeshFormatT;
 
-    explicit ConversionResult(const std::string& _meshOutputExtension, const std::string& _meshOutputDirectoryName):
-        urdf2inventor::ConversionResult<MeshFormatT>(_meshOutputExtension, _meshOutputDirectoryName){}
+    explicit ConversionResult(const std::string& _meshOutputExtension,
+            const std::string& _meshOutputDirectoryName,
+            const std::string& _texOutputDirectoryName):
+        urdf2inventor::ConversionResult<MeshFormatT>(_meshOutputExtension, _meshOutputDirectoryName, _texOutputDirectoryName){}
     ConversionResult(const ConversionResult& o):
         urdf2inventor::ConversionResult<MeshFormatT>(o),
         robotXML(o.robotXML),

@@ -37,7 +37,7 @@ int convertGraspItMesh(urdf_traverser::RecursionParamsPtr& p)
 
     LinkPtr link = param->getLink();
 
-    std::string linkMeshFile = urdf_traverser::helpers::getFilename(link->name.c_str()) + param->out_extension;
+    std::string linkMeshFile = urdf_traverser::helpers::getFilename(link->name.c_str()) + param->extension;
     std::string linkXML = urdf2graspit::xmlfuncs::getLinkDescXML(link, linkMeshFile, param->material);
     // ROS_INFO("XML: %s",linkXML.c_str());
 
@@ -73,7 +73,10 @@ bool urdf2graspit::convertGraspItMeshes(
 
     typedef urdf2inventor::MeshConvertRecursionParams<std::string> MeshConvertRecursionParamsT;
     typename MeshConvertRecursionParamsT::Ptr meshParams(new MeshConvertRecursionParamsT(
-            scale_factor, material, file_extension, addVisualTransform));
+            scale_factor,
+            material,
+            file_extension,
+            addVisualTransform));
 
     urdf_traverser::RecursionParamsPtr p(meshParams);
 
