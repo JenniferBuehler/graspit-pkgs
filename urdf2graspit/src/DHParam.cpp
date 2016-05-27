@@ -341,14 +341,10 @@ bool DHParam::getDAndTheta(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& x
     // maybe adapt sign, as rotation is counter-clockwise around x
     Eigen::AngleAxisd corr(theta, zi_1);
     Eigen::Vector3d corrV = corr * xi_1;
-    if (!parallelAxis(xi, corrV))
-    {
-        ROS_ERROR("Consistency: rotation of xi-1 should have aligned with xi");
-        ROS_INFO_STREAM(xi << ", " << xi_1<<", corrV: "<<corrV);
-        return false;
-    }
-    if (!equalAxis(xi, corrV))
-    {
+    int corrEqPl = equalOrParallelAxis(xi, corrV);
+    if (corrEqPl != 2)
+    {   // correct alpha to be 
+        ROS_INFO_STREAM("DEBUG-INFO DHParams: Correcting theta: "<<xi<<", "<<corrV);
         theta = -theta;
     }
 

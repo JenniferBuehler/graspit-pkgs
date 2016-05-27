@@ -249,9 +249,10 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
         // ROS_INFO("Handling root finger %s",it->c_str());
 
         JointPtr root_joint = trav->getJoint(*it);
-        if (!root_joint.get())
+        if (!root_joint)
         {
-            ROS_ERROR("Could not find joint %s", it->c_str());
+            ROS_ERROR("Could not find joint %s for generating contact", it->c_str());
+            trav->printJointNames("");
             return false;
         }
         std::vector<JointPtr> chain;
