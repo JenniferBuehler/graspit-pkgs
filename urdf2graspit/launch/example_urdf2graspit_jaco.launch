@@ -8,6 +8,7 @@
 	<arg name="hand_root_link" default="6_hand_limb"/>
     <arg name="finger_joint_names" default="finger_joint_0 finger_joint_2 finger_joint_4"/>
     <arg name="scale_factor" default="1000"/>
+
 	<arg name="output_material" default="plastic"/>
     
     <include file="$(find urdf2graspit)/launch/urdf2graspit.launch">

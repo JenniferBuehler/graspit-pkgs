@@ -472,7 +472,7 @@ void EigenGraspPlanner::getGraspJointDOFs(const GraspPlanningState * s, std::vec
     // PRINTMSG("Grasp DOFs: ");
     for (int k = 0; k < numDOF; ++k)
     {
-        PRINTMSG(_dofs[k]);
+        // PRINTMSG(_dofs[k]);
         dofs.push_back(_dofs[k]);
     }
 }

@@ -20,7 +20,6 @@
     # negate the joint movement direction
     <arg name="negate_joint_movement" default="false"/>
     
-    # The output material to assign to the output GraspIt model.
 	<arg name="output_material" default="plastic"/>
 
 
