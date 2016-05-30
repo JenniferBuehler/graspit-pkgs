@@ -26,11 +26,12 @@
 #include <grasp_planning_graspit/EigenGraspResult.h>
 #include <grasp_planning_graspit/GraspItAccessor.h>
 
-#include <EGPlanner/search.h>
 #include <vector>
 #include <string>
 
 #define DEFAULT_MAX_PLANNING_STEPS 70000
+
+#include <EGPlanner/search.h>
 
 class GraspPlanningState;
 class GraspableBody;

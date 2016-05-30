@@ -21,10 +21,11 @@
 */
 
 
-#include <matvec3D.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <grasp_planning_graspit/GraspItTypes.h>
+
+class transf;
 
 namespace GraspIt
 {

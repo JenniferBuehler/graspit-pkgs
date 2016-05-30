@@ -53,6 +53,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include <EGPlanner/search.h>
 
 using GraspIt::EigenGraspPlannerNoQt;
 using GraspIt::Log;
@@ -524,6 +525,55 @@ void EigenGraspPlannerNoQt::getResults(std::vector<EigenGraspResult>& allGrasps)
     }
 }
 
+void EigenGraspPlannerNoQt::initSearchType(GraspPlanningState& graspPlanningState, const StateType& st)
+{
+    graspPlanningState.setPositionType(st);
+
+    GraspableBody * mObject = getCurrentGraspableBody();
+    if (!mObject)
+    {
+        PRINTERROR("Object is NULL!");
+        return;
+    }
+
+    switch (st)
+    {
+    case SPACE_AXIS_ANGLE:
+    case SPACE_COMPLETE:
+    case SPACE_ELLIPSOID:
+    {
+        graspPlanningState.setRefTran(mObject->getTran());
+        break;
+    }
+    case SPACE_APPROACH:
+    {
+        Hand * mHand = getCurrentHand();
+        if (!mHand)
+        {
+            PRINTERROR("Hand is NULL!");
+            return;
+        }
+        graspPlanningState.setRefTran(mHand->getTran());
+        break;
+    }
+    default:
+    {
+        PRINTERROR("Unsupported search type");
+    }
+    }
+
+    graspPlanningState.reset();
+
+    // force a reset of the planner
+    graspitEgPlannerMtx.lock();
+    if (graspitEgPlanner)
+    {
+        graspitEgPlanner->invalidateReset();
+    }  // if graspitEgPlanner is NULL, it will have to be created again in initPlannerType()
+    graspitEgPlannerMtx.unlock();
+}
+
+
 
 
 bool EigenGraspPlannerNoQt::initPlanner(const int maxPlanningSteps, const PlannerType& plannerType)
@@ -598,54 +648,6 @@ bool EigenGraspPlannerNoQt::initPlanner(const int maxPlanningSteps, const Planne
 }
 
 
-
-void EigenGraspPlannerNoQt::initSearchType(GraspPlanningState& graspPlanningState, const StateType& st)
-{
-    graspPlanningState.setPositionType(st);
-
-    GraspableBody * mObject = getCurrentGraspableBody();
-    if (!mObject)
-    {
-        PRINTERROR("Object is NULL!");
-        return;
-    }
-
-    switch (st)
-    {
-    case SPACE_AXIS_ANGLE:
-    case SPACE_COMPLETE:
-    case SPACE_ELLIPSOID:
-    {
-        graspPlanningState.setRefTran(mObject->getTran());
-        break;
-    }
-    case SPACE_APPROACH:
-    {
-        Hand * mHand = getCurrentHand();
-        if (!mHand)
-        {
-            PRINTERROR("Hand is NULL!");
-            return;
-        }
-        graspPlanningState.setRefTran(mHand->getTran());
-        break;
-    }
-    default:
-    {
-        PRINTERROR("Unsupported search type");
-    }
-    }
-
-    graspPlanningState.reset();
-
-    // force a reset of the planner
-    graspitEgPlannerMtx.lock();
-    if (graspitEgPlanner)
-    {
-        graspitEgPlanner->invalidateReset();
-    }  // if graspitEgPlanner is NULL, it will have to be created again in initPlannerType()
-    graspitEgPlannerMtx.unlock();
-}
 
 
 

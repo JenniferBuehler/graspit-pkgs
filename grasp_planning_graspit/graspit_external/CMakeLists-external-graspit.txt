@@ -1,0 +1,44 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(graspit_external NONE)
+
+# Downloads external graspit source
+
+# Variables to define by parent script (starred * are mandatory):
+# - GRASPIT_REPO_NAME*: Name of the repository (the main folder which will be created)_
+# - GRASPIT_GIT*: The graspit git repository.
+# - GRASPIT_INSTALL_DIR*: output directory for all *.lib, *.dll, *.a, *.so, *.pdb files.
+# - GRASPIT_BRANCH_NAME*: branch to be chosen for download step
+# - GRASPIT_DL_DIR*: Directory to download the sources into. In this directory, the
+#           subdirectoies "repo", "tmp" and "stamp" will be created.
+#           The subdirectory "repo" will contain the cloned repository after the download step. 
+# - GRASPIT_BUILD_DIR: Directory for the build files
+
+include(ExternalProject)
+
+message(STATUS "Pulling source '${GRASPIT_REPO_NAME}' from git ${GRASPIT_GIT}, branch ${GRASPIT_BRANCH_NAME}, downloading to ${GRASPIT_DL_DIR}, installing into ${GRASPIT_INSTALL_DIR}")
+
+ExternalProject_Add(
+    graspit_ext
+
+    GIT_REPOSITORY ${GRASPIT_GIT} 
+    GIT_TAG ${GRASPIT_BRANCH_NAME}
+ 
+    TMP_DIR ${GRASPIT_DL_DIR}/tmp
+    STAMP_DIR ${GRASPIT_DL_DIR}/stamp
+    DOWNLOAD_DIR ${GRASPIT_DL_DIR}/repo
+    SOURCE_DIR ${GRASPIT_DL_DIR}/repo/${GRASPIT_REPO_NAME}
+    BINARY_DIR ${GRASPIT_BUILD_DIR}
+    INSTALL_DIR ${GRASPIT_INSTALL_DIR} 
+
+    # unset CATKIN_DEVEL_PREFIX to enforce
+    # undefining the variable and prevent building with catkin 
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GRASPIT_INSTALL_DIR} -UCATKIN_DEVEL_PREFIX -DBUILD_SHARED_LIBS:BOOL=false -DBUILD_TESTS:BOOL=false
+   
+    CONFIGURE_COMMAND ""  #${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${GRASPIT_DL_DIR}/repo/${GRASPIT_REPO_NAME} WORKING_DIRECTORY ${GRASPIT_BUILD_DIR}
+    #UPDATE_COMMAND ""
+
+    BUILD_COMMAND "" # make
+    INSTALL_COMMAND "" # make install 
+    TEST_COMMAND ""
+)
+

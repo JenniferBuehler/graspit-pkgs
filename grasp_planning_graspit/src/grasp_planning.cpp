@@ -23,7 +23,6 @@
 #include <grasp_planning_graspit/GraspItSceneManagerHeadless.h>
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/EigenGraspPlanner.h>
-#include <grasp_planning_graspit/EigenGraspPlannerNoQt.h>
 #include <grasp_planning_graspit/EigenGraspResult.h>
 
 #include <string>
@@ -42,6 +41,11 @@
 // if this is defined, the EigenGraspPlannerNoQt implementation
 // is used. If not defined, EigenGraspPlannern implementation is used.
 // #define USE_EIGENGRASP_NOQT
+
+#ifdef USE_EIGENGRASP_NOQT
+// This needs to be changed to remove graspit include for StateType
+// #include <grasp_planning_graspit/EigenGraspPlannerNoQt.h>
+#endif  // USE_EIGENGRASP_NOQT
 
 
 /**
