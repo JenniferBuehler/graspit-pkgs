@@ -65,8 +65,8 @@
   <run_depend>liblapack-dev</run_depend>
   <run_depend>libqhull</run_depend>
   
-  <build_depend> graspit </build_depend>
-  <run_depend> graspit </run_depend>
+  <!--build_depend> graspit </build_depend>
+  <run_depend> graspit </run_depend-->
 
   <!-- this is required if not building graspit fork locally -->
   <!--run_depend>graspit</run_depend-->
