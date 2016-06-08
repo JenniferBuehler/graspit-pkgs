@@ -2,6 +2,12 @@
 Changelog for package grasp_planning_graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Removed direct Qt dependencies from urdf2graspit, as this is now in urdf2inventor
+* Now compiles with new graspit and new urdf2inventor
+* Contributors: Jennifer Buehler
+
 0.1.5 (2016-04-02)
 ------------------
 * Added pre-grasp state computation

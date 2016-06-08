@@ -2,6 +2,19 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Removed direct Qt dependencies from urdf2graspit, as this is now in urdf2inventor
+* Now working with new urdf2inventor, tested on jaco
+* Fixed some bugs in DH parameter computation
+* Can now be used to display local coordinate axes of DH parameters, useful for debugging
+* Allows to save the contacts file as different filename
+* Contact selection is now done in separate postprocessing step
+* Contacts can now be generated in a post-processing step.
+* Contacts can now be generated in a post-processing step. This commit includes the old code within ifndef 0 directives
+* urdf2graspit now depends on urdf2inventor
+* Contributors: Jennifer Buehler
+
 0.1.5 (2016-04-02)
 ------------------
 * Small fix: create mesh directory if the mesh filename implies more directories

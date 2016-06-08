@@ -2,6 +2,9 @@
 Changelog for package jaco_graspit_sample
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.5 (2016-04-02)
 ------------------
 * Added pre-grasp state computation
