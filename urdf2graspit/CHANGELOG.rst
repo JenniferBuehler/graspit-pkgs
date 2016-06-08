@@ -2,8 +2,8 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2016-06-08)
+------------------
 * Removed direct Qt dependencies from urdf2graspit, as this is now in urdf2inventor
 * Now working with new urdf2inventor, tested on jaco
 * Fixed some bugs in DH parameter computation

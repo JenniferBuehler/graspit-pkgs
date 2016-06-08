@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>grasp_planning_graspit</name>
-  <version>0.1.5</version>
+  <version>1.0.0</version>
   <description>
         The grasp_planning_graspit package
         This package.xml file is only required if the source is to be
