@@ -345,6 +345,161 @@ bool GraspItSceneManager::saveInventorWorld(const std::string& filename, bool cr
 }
 
 
+
+bool GraspItSceneManager::saveRobotAsInventor(const std::string& filename, const std::string& robotName,
+                                   const bool createDir, const bool forceWrite)
+{
+    if (forceWrite && fileExists(filename))
+    {
+        PRINTERROR("File " << filename << " already exists");
+        return false;
+    }
+    if (!isInitialized())
+    {
+        PRINTERROR("Not initialized");
+        return false;
+    }
+    UNIQUE_RECURSIVE_LOCK(graspitWorldMtx);
+    if (!graspitWorld)
+    {
+        PRINTERROR("Cannot load " << filename << " with no initialized graspitWorld");
+        return false;
+    }
+
+    // Check that no object with same name exists
+    Robot * existingRobot = getRobotNoCheck(robotName);
+    if (!existingRobot)
+    {
+        PRINTERROR("Robot with name " << robotName << " does not exist in world.");
+        return false;
+    }
+
+    try
+    {
+        if (createDir && !makeDirectoryIfNeeded(getFileDirectory(filename)))
+        {
+            PRINTERROR("Could not create directory for file " << filename);
+            return false;
+        }
+    }
+    catch (int e)
+    {
+        PRINTERROR("An exception ocurred when trying to create the directory. Exception number " << e);
+        return false;
+    }
+
+    SoOutput out;
+    if (!out.openFile(filename.c_str())) return false;
+    out.setBinary(false);
+    SoWriteAction write(&out);
+    write.apply(existingRobot->getIVRoot());
+    write.getOutput()->closeFile();
+
+    PRINTMSG("Saved robot IV to " << filename);
+    return true;
+}
+
+
+bool GraspItSceneManager::saveObjectAsInventor(const std::string& filename, const std::string& name,
+                                    const bool createDir, const bool forceWrite)
+{
+    if (name.empty())
+    {
+        PRINTERROR("Cannot save an object without a name");
+        return false;
+    }
+
+    if (forceWrite && fileExists(filename))
+    {
+        PRINTERROR("File " << filename << " already exists");
+        return false;
+    }
+    if (!isInitialized())
+    {
+        PRINTERROR("Not initialized");
+        return false;
+    }
+
+    UNIQUE_RECURSIVE_LOCK(graspitWorldMtx);
+    if (!graspitWorld)
+    {
+        PRINTERROR("Cannot load " << filename << " with no initialized graspitWorld");
+        return false;
+    }
+
+    // Check that no object with same name exists
+    Body * existingBody = getBodyNoCheck(name);
+
+    if (!existingBody)
+    {
+        PRINTERROR("Body with name " << name << " is not loaded in world.");
+        return false;
+    }
+
+    try
+    {
+        if (createDir && !makeDirectoryIfNeeded(getFileDirectory(filename)))
+        {
+            PRINTERROR("Could not create directory for file " << filename);
+            return false;
+        }
+    }
+    catch (int e)
+    {
+        PRINTERROR("An exception ocurred when trying to create the directory. Exception number " << e);
+        return false;
+    }
+
+    SoOutput out;
+    if (!out.openFile(filename.c_str())) return false;
+    out.setBinary(false);
+    SoWriteAction write(&out);
+    write.apply(existingBody->getIVRoot());
+    write.getOutput()->closeFile();
+
+    PRINTMSG("Saved object IV to " << filename);
+    return true;
+}
+
+
+std::vector<std::string> GraspItSceneManager::getRobotNames() const
+{
+    std::vector<std::string> names;
+    UNIQUE_RECURSIVE_LOCK(graspitWorldMtx);
+    int numR =  graspitWorld->getNumRobots();
+    for (int i = 0; i < numR; ++i)
+    {
+        const Robot * r = graspitWorld->getRobot(i);
+        names.push_back(r->getName().toStdString());
+    }
+    return names; 
+}
+
+std::vector<std::string> GraspItSceneManager::getObjectNames(bool graspable) const
+{
+    std::vector<std::string> names;
+    UNIQUE_RECURSIVE_LOCK(graspitWorldMtx);
+
+    int numB =  graspable ? graspitWorld->getNumGB() : graspitWorld->getNumBodies();
+    for (int i = 0; i < numB; ++i)
+    {
+        if (graspable)
+        {
+            GraspableBody * b = graspitWorld->getGB(i);
+            names.push_back(b->getName().toStdString());
+        } 
+        else
+        {
+            Body * b = graspitWorld->getBody(i);
+            names.push_back(b->getName().toStdString());
+        }
+    }
+    return names; 
+}
+
+
+
+
 int GraspItSceneManager::loadWorld(const std::string& filename)
 {
     if (!fileExists(filename))

@@ -614,7 +614,9 @@ bool EigenGraspPlanner::checkStateValidity(const GraspPlanningState * s) const
 
 
 bool EigenGraspPlanner::saveResultsAsWorldFiles(const std::string& inDirectory,
-        const std::string& fileNamePrefix, bool asGraspIt, bool asInventor, bool createDir)
+        const std::string& fileNamePrefix, bool asGraspIt,
+        bool asInventor, bool createDir,
+        bool saveSeparatePoseIV)
 {
     if (!asGraspIt && !asInventor)
     {
@@ -626,6 +628,24 @@ bool EigenGraspPlanner::saveResultsAsWorldFiles(const std::string& inDirectory,
     {
         PRINTERROR("Graspit scene manager not initialized.");
         return false;
+    }
+
+    // retrieve robot name if separate pose file should be saved
+    std::string robotName;
+    if (saveSeparatePoseIV)
+    {
+        std::vector<std::string> robs = getGraspItSceneManager()->getRobotNames();       
+        if (robs.empty())
+        {
+            PRINTERROR("No robots loaded");
+            return false;
+        }
+        if (robs.size()!=1)
+        {
+            PRINTERROR("Exactly 1 robot should have been loaded");
+            return false;
+        }
+        robotName=robs.front();
     }
 
     int numGrasps = results.size();
@@ -663,6 +683,11 @@ bool EigenGraspPlanner::saveResultsAsWorldFiles(const std::string& inDirectory,
         {
             PRINTERROR("GraspIt could not save world file " << i);
             return false;
+        }
+        bool forceWrite = createDir;  // only enforce if creating dir is also allowed
+        if (saveSeparatePoseIV && !getGraspItSceneManager()->saveRobotAsInventor(wFilename + "_pose.iv", robotName, createDir, forceWrite))
+        {
+            PRINTERROR("GraspIt could not save robot pose file " << i);
         }
     }
     return true;

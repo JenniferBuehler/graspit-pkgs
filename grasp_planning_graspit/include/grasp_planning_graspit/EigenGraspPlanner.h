@@ -168,10 +168,12 @@ public:
      * \param asGraspIt if true, the world files will be saved in the GraspIt world format
      * \param asInventor if true, the world files will be saved in the Inventor format.
      * Saving as Inventor is slower than as GraspIt.
+     * \param saveSeparatePoseIV if true, (additional) inventor files will be saved with the robot poses (without the object).
      * \return false if creating the directory or writing the world files failed.
      */
     bool saveResultsAsWorldFiles(const std::string& inDirectory, const std::string& fileNamePrefix,
-                                 bool asGraspIt = true, bool asInventor = false, bool createDir = true);
+                                 bool asGraspIt = true, bool asInventor = false, bool createDir = true,
+                                 bool saveSeparatePoseIV = false);
 
     /**
      * Returns the results of the grasp planning as EigenGraspResult objects.

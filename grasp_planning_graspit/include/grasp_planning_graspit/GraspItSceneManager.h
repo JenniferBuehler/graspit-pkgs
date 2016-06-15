@@ -152,6 +152,10 @@ public:
      */
     virtual void waitUntilReady() const = 0;
 
+    std::vector<std::string> getObjectNames(bool graspable) const;
+    std::vector<std::string> getRobotNames() const;
+
+
     /**
      * Loads graspitWorld from an XML file.
      * \retval 0 success
@@ -295,6 +299,18 @@ public:
      * \param createDir if true, the directory in which the file is to be saved is created if it does not exist.
      */
     bool saveInventorWorld(const std::string& filename, bool createDir = false);
+
+    /**
+     * Saves the robot as inventor file, if it was loaded in the world before.
+     */
+    bool saveRobotAsInventor(const std::string& filename, const std::string& robotName,
+                                   const bool createDir=false, const bool forceWrite=false);
+
+    /**
+     * Saves the object as inventor file, if it was loaded in the world before.
+     */
+    bool saveObjectAsInventor(const std::string& filename, const std::string& name,
+                              const bool createDir=false, const bool forceWrite=false);
 
     /**
      * returns true if a robot with this name is currently loaded in the world

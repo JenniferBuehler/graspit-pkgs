@@ -85,8 +85,9 @@ boost::program_options::options_description getOptions()
     ("help", "produce help message")
     ("dir", boost::program_options::value<std::string>(), "set output directory for resulting files")
     ("wld", boost::program_options::value<std::string>(), "filename for the world file")
-    ("rob", boost::program_options::value<std::string>(), "filename for the robot file -- OPTIONAL to parameter wld!")
-    ("obj", boost::program_options::value<std::string>(), "filename for the object file -- OPTIONAL to parameter wld!");
+    ("rob", boost::program_options::value<std::string>(), "filename for the robot file -- ALTERNATIVE to parameter wld!")
+    ("obj", boost::program_options::value<std::string>(), "filename for the object file -- ALTERNATIVE to parameter wld!")
+    ("save-separate", "if this flag is set, robot and object files will be saved separately in addition to the normal result.");
     return desc;
 }
 
@@ -100,8 +101,9 @@ boost::program_options::variables_map loadParams(int argc, char ** argv)
 }
 
 bool loadParams(int argc, char ** argv, std::string& worldFilename, std::string& robotFilename,
-                std::string& objectFilename, std::string& outputDirectory)
+                std::string& objectFilename, std::string& outputDirectory, bool& saveSeparate)
 {
+    saveSeparate = false;
     worldFilename.clear();
     robotFilename.clear();
     objectFilename.clear();
@@ -203,6 +205,11 @@ bool loadParams(int argc, char ** argv, std::string& worldFilename, std::string&
         PRINTMSG("Output dir is " << outputDirectory);
     }
 
+    if (vm.count("save-separate"))
+    {
+        saveSeparate=true;
+    }
+
     return true;
 }
 
@@ -218,8 +225,9 @@ int main(int argc, char **argv)
     std::string robotFilename;
     std::string objectFilename;
     std::string outputDirectory;
+    bool saveSeparate;
 
-    if (!loadParams(argc, argv, worldFilename, robotFilename, objectFilename, outputDirectory))
+    if (!loadParams(argc, argv, worldFilename, robotFilename, objectFilename, outputDirectory, saveSeparate))
     {
         return 1;
     }
@@ -235,10 +243,41 @@ int main(int argc, char **argv)
     SHARED_PTR<GraspIt::EigenGraspPlanner> p(new GraspIt::EigenGraspPlanner(name, graspitMgr));
 #endif
 
+    // TODO parameterize:
+    // Names for robot and object if not loaded from a world file.
+    // If loaded from a world file, will be overwritten.
+    std::string useRobotName="Robot1";
+    std::string useObjectName="Object1";
+
     if (!worldFilename.empty())
     {
         PRINTMSG("Loading world");
         graspitMgr->loadWorld(worldFilename);
+        std::vector<std::string> robs = graspitMgr->getRobotNames();       
+        std::vector<std::string> objs = graspitMgr->getObjectNames(true);
+        if (robs.empty())
+        {
+            PRINTERROR("No robots loaded");
+            return 1;
+        }
+        if (objs.empty())
+        {
+            PRINTERROR("No graspable objects loaded");
+            return 1;
+        }
+        if (robs.size()!=1)
+        {
+            PRINTERROR("Exactly 1 robot should have been loaded");
+            return 1;
+        }
+        if (objs.size()!=1)
+        {
+            PRINTERROR("Exactly 1 graspable object should have been loaded");
+            return 1;
+        }
+        useRobotName=robs.front();
+        useObjectName=objs.front();
+        PRINTMSG("Using robot "<<useRobotName<<" and object "<<useObjectName);
     }
     else
     {
@@ -249,22 +288,29 @@ int main(int argc, char **argv)
         robotTransform.setIdentity();
         objectTransform.setIdentity();
         // objectTransform.translate(Eigen::Vector3d(100,0,0));
-        std::string robotName("Robot1");  // TODO parameterize
-        std::string objectName("Object1");
+        std::string robotName(useRobotName); 
+        std::string objectName(useObjectName);
         if ((graspitMgr->loadRobot(robotFilename, robotName, robotTransform) != 0) ||
                 (graspitMgr->loadObject(objectFilename, objectName, true, objectTransform)))
         {
             PRINTERROR("Could not load robot or object");
             return 1;
         }
-
-        // in case one wants to view the initial world before planning, save it:
-        graspitMgr->saveGraspItWorld(outputDirectory + "/worlds/startWorld.xml");
-        graspitMgr->saveInventorWorld(outputDirectory + "/worlds/startWorld.iv");
     }
+    
+    // in case one wants to view the initial world before planning, save it:
+    graspitMgr->saveGraspItWorld(outputDirectory + "/startWorld.xml", true);
+    graspitMgr->saveInventorWorld(outputDirectory + "/startWorld.iv", true);
+    
+    bool createDir = true;
+    bool saveIV = true;
+    bool forceWrite = createDir;  // only enforce if creating dir is also allowed
 
-    // now save the world again as inventor file, to test
-    // p->saveIVWorld("test.iv");
+    if (saveSeparate)
+    {
+        graspitMgr->saveRobotAsInventor(outputDirectory + "/robotStartpose.iv", useRobotName, createDir, forceWrite);
+        graspitMgr->saveObjectAsInventor(outputDirectory + "/object.iv", useObjectName, createDir, forceWrite);
+    }
 
     int maxPlanningSteps = 50000;
     int repeatPlanning = 1;
@@ -274,13 +320,11 @@ int main(int argc, char **argv)
 
     PRINTMSG("Saving results as world files");
 
-    bool createDir = true;
-    bool saveIV = true;
     bool saveWorld = true;
 
     std::string resultsWorldDirectory = outputDirectory;
     std::string filenamePrefix = "world";
-    p->saveResultsAsWorldFiles(resultsWorldDirectory, filenamePrefix, saveWorld, saveIV, createDir);
+    p->saveResultsAsWorldFiles(resultsWorldDirectory, filenamePrefix, saveWorld, saveIV, createDir, saveSeparate);
 
     std::vector<GraspIt::EigenGraspResult> allGrasps;
     p->getResults(allGrasps);
