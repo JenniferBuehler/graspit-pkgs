@@ -87,6 +87,8 @@ boost::program_options::options_description getOptions()
     ("wld", boost::program_options::value<std::string>(), "filename for the world file")
     ("rob", boost::program_options::value<std::string>(), "filename for the robot file -- ALTERNATIVE to parameter wld!")
     ("obj", boost::program_options::value<std::string>(), "filename for the object file -- ALTERNATIVE to parameter wld!")
+    ("iter", boost::program_options::value<int>(), "Maximum number of iterations for the planning algorithm")
+    ("obj-pos", boost::program_options::value<std::vector<float> >()->multitoken(), "Position of the object relative to the robot: Specify one x, y and z value.")
     ("save-separate", "if this flag is set, robot and object files will be saved separately in addition to the normal result.");
     return desc;
 }
@@ -101,7 +103,8 @@ boost::program_options::variables_map loadParams(int argc, char ** argv)
 }
 
 bool loadParams(int argc, char ** argv, std::string& worldFilename, std::string& robotFilename,
-                std::string& objectFilename, std::string& outputDirectory, bool& saveSeparate)
+                std::string& objectFilename, std::string& outputDirectory, bool& saveSeparate, Eigen::Vector3d& objPos,
+                int& maxIterations)
 {
     saveSeparate = false;
     worldFilename.clear();
@@ -205,6 +208,28 @@ bool loadParams(int argc, char ** argv, std::string& worldFilename, std::string&
         PRINTMSG("Output dir is " << outputDirectory);
     }
 
+    if (vm.count("iter"))
+    {
+        maxIterations = vm["iter"].as<int>();
+        PRINTMSG("Number of iterations: " << maxIterations);
+        if (maxIterations < 35000)
+        {
+            PRINTWARN("Planning is not working well with max iterations < 35000");
+        }
+    }
+
+
+    if (vm.count("obj-pos"))
+    {
+        std::vector<float> vals=vm["obj-pos"].as<std::vector<float> >();
+        if (vals.size()!=3)
+        {
+            PRINTERROR("Must specify 3 values for --obj-pos: x, y and z (specified "<<vals.size()<<")");
+            PRINTMSG(desc);
+        }
+        objPos=Eigen::Vector3d(vals[0],vals[1],vals[2]);
+    }
+
     if (vm.count("save-separate"))
     {
         saveSeparate=true;
@@ -226,9 +251,12 @@ int main(int argc, char **argv)
     std::string objectFilename;
     std::string outputDirectory;
     bool saveSeparate;
+    Eigen::Vector3d objPos;
+    int maxPlanningSteps = 50000;
 
-    if (!loadParams(argc, argv, worldFilename, robotFilename, objectFilename, outputDirectory, saveSeparate))
+    if (!loadParams(argc, argv, worldFilename, robotFilename, objectFilename, outputDirectory, saveSeparate, objPos, maxPlanningSteps))
     {
+        PRINTERROR("Could not read arguments");
         return 1;
     }
 
@@ -287,6 +315,7 @@ int main(int argc, char **argv)
         GraspIt::EigenTransform objectTransform;
         robotTransform.setIdentity();
         objectTransform.setIdentity();
+        objectTransform.translate(objPos);
         // objectTransform.translate(Eigen::Vector3d(100,0,0));
         std::string robotName(useRobotName); 
         std::string objectName(useObjectName);
@@ -298,13 +327,14 @@ int main(int argc, char **argv)
         }
     }
     
-    // in case one wants to view the initial world before planning, save it:
-    graspitMgr->saveGraspItWorld(outputDirectory + "/startWorld.xml", true);
-    graspitMgr->saveInventorWorld(outputDirectory + "/startWorld.iv", true);
     
     bool createDir = true;
     bool saveIV = true;
     bool forceWrite = createDir;  // only enforce if creating dir is also allowed
+    
+    // in case one wants to view the initial world before planning, save it:
+    graspitMgr->saveGraspItWorld(outputDirectory + "/startWorld.xml", createDir);
+    graspitMgr->saveInventorWorld(outputDirectory + "/startWorld.iv", createDir);
 
     if (saveSeparate)
     {
@@ -312,7 +342,6 @@ int main(int argc, char **argv)
         graspitMgr->saveObjectAsInventor(outputDirectory + "/object.iv", useObjectName, createDir, forceWrite);
     }
 
-    int maxPlanningSteps = 50000;
     int repeatPlanning = 1;
     int keepMaxPlanningResults = 3;
     bool finishWithAutograsp = false;

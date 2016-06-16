@@ -349,7 +349,7 @@ bool GraspItSceneManager::saveInventorWorld(const std::string& filename, bool cr
 bool GraspItSceneManager::saveRobotAsInventor(const std::string& filename, const std::string& robotName,
                                    const bool createDir, const bool forceWrite)
 {
-    if (forceWrite && fileExists(filename))
+    if (!forceWrite && fileExists(filename))
     {
         PRINTERROR("File " << filename << " already exists");
         return false;
@@ -409,7 +409,7 @@ bool GraspItSceneManager::saveObjectAsInventor(const std::string& filename, cons
         return false;
     }
 
-    if (forceWrite && fileExists(filename))
+    if (!forceWrite && fileExists(filename))
     {
         PRINTERROR("File " << filename << " already exists");
         return false;
