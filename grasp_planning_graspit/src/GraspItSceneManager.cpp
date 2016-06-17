@@ -39,14 +39,10 @@
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/actions/SoWriteAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
-#include <Inventor/sensors/SoIdleSensor.h>
 
 #include <boost/filesystem.hpp>
 
 using GraspIt::GraspItSceneManager;
-using GraspIt::Log;
-
-
 
 bool fileExists(const std::string& filename)
 {
@@ -1247,8 +1243,6 @@ int GraspItSceneManager::setGraspableObject(const std::string& robotName, const 
     hand->getGrasp()->setObjectNoUpdate(gObject);
     return 0;
 }
-
-
 
 
 GraspableBody * GraspItSceneManager::getCurrentGraspableBody()

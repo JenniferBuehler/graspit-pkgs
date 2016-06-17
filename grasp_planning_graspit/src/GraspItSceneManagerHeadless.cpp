@@ -24,25 +24,13 @@
 #include <grasp_planning_graspit/PrintHelpers.h>
 
 #include <string>
-#include <vector>
-#include <map>
 #include <exception>
 
-#include <QWidget>
-
-#include <world.h>
-#include <robot.h>
-#include <body.h>
-#include <grasp.h>
 #include <ivmgrHeadless.h>
 
 #include <Inventor/sensors/SoIdleSensor.h>
 
-#include <boost/filesystem.hpp>
-
-using GraspIt::GraspItSceneManager;
 using GraspIt::GraspItSceneManagerHeadless;
-using GraspIt::Log;
 
 GraspItSceneManagerHeadless::GraspItSceneManagerHeadless():
     ivThread(NULL),
