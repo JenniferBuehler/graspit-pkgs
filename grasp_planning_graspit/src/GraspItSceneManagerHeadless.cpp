@@ -22,7 +22,6 @@
 #include <grasp_planning_graspit/GraspItSceneManagerHeadless.h>
 #include <grasp_planning_graspit/LogBinding.h>
 #include <grasp_planning_graspit/PrintHelpers.h>
-#include <grasp_planning_graspit/GraspItAccessor.h>
 
 #include <string>
 #include <vector>
@@ -37,9 +36,6 @@
 #include <grasp.h>
 #include <ivmgrHeadless.h>
 
-#include <Inventor/Qt/SoQt.h>
-#include <Inventor/actions/SoWriteAction.h>
-#include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/sensors/SoIdleSensor.h>
 
 #include <boost/filesystem.hpp>
