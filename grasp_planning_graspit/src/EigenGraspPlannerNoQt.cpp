@@ -43,7 +43,6 @@
 // #include <timeTest.h>
 // #include <guidedPlanner.h>
 // #include <loopPlanner.h>
-#include <ivmgrHeadless.h>
 
 #include <QWidget>
 #include <Inventor/Qt/SoQt.h>
