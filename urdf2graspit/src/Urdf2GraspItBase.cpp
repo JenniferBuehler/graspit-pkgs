@@ -37,7 +37,7 @@ bool Urdf2GraspItBase::prepareModelForDenavitHartenberg(const std::string& fromL
     ROS_INFO("### Joining fixed links..");
     if (!joinFixedLinks(fromLink))
     {
-        ROS_ERROR("Could not joint fixed links");
+        ROS_ERROR("Could not join fixed links");
         return false;
     }
     
