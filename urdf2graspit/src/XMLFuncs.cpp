@@ -90,21 +90,22 @@ std::string getHeader(const std::string& robottype, const std::string& palm_xml_
     return str.str();
 }
 
-std::string getEigenGraspValues(const std::vector<DHParam>& dhparams, bool negateJointValues)
+/**
+ * \param fact number between 0 and 1 to set the eigen value default to this proportion between min and max value of the joint (0 for min, 1 for max)
+ */
+std::string getEigenValue(const std::vector<DHParam>& dhparams, float fact)
 {
-    float minAmpl =
-    float maxAmpl = 
     std::stringstream str;
     str << "<EG>" << std::endl;
     str << "<EigenValue value=\"0.5\"/> <!--EigenValue is not used in the code at this stage -->" << std::endl;
-    str<<"<Limits min=\""<<minAmpl<<"\" max=\""<<maxAmpl<<"\"/>"<<std::endl;
+    // str<<"<!--<Limits min=\"0.0\" max=\"2.5\"/>-->"<<std::endl;
     str << "<DimVals ";
-    int i = 0;
-    for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it, ++i)
+    unsigned int i = 0;
+    for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it)
     {
-        float minValue, maxValue;
-        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false);
+        float num = fact;
         str << " d" << i << "=\"" << num << "\"";
+        ++i;
     }
     str << "/>" << std::endl;
     str << "</EG>" << std::endl;
@@ -115,19 +116,9 @@ std::string urdf2graspit::xmlfuncs::getEigenGraspXML(const std::vector<DHParam>&
 {
     std::stringstream str;
     str << "<?xml version=\"1.0\" ?>" << std::endl;
-
-   // print all joint names so it's easier to edit the EigenGrasp file.
-    unsigned int i=0;
-    for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it, ++i)
-    {
-        float minValue, maxValue;
-        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false);
-        str << "<!-- d" << i <<": "<<it->joint->name<<", min="<<minValue<<", max="<<maxValue<<" -->" << std::endl;
-    }
-
     str << "<EigenGrasps dimensions=\"" << dhparams.size() << "\">" << std::endl;
 
-    str << getEigenGraspValues(dhparams, negateJointValues);
+    str << getEigenValue(dhparams, 1);
 
     str << "<ORIGIN>" << std::endl;
     str << "<EigenValue value=\"0.5\"/> " << std::endl;
