@@ -56,8 +56,8 @@ std::ostream& operator<<(std::ostream& o, const FingerChain& p)
 }
 
 
-
-void getJointLimits(const urdf::Joint& j, float& min, float& max, bool negateJointValues)
+// \param scale scale min/max values to degrees for revolute joints, and to mm for prismatic joints 
+void getJointLimits(const urdf::Joint& j, float& min, float& max, bool negateJointValues, bool scale=true)
 {
     min = j.limits->lower;
     max = j.limits->upper;
@@ -65,6 +65,18 @@ void getJointLimits(const urdf::Joint& j, float& min, float& max, bool negateJoi
     {
         min = -min;
         max = -max;
+    }
+    if (!scale) return;
+    bool revolute = j.type == urdf::Joint::REVOLUTE;
+    if (revolute)
+    {
+        min *= RAD_TO_DEG;
+        max *= RAD_TO_DEG;
+    }
+    else
+    {   // convert from meter units to mm
+        min *= 1000;
+        max *= 1000;
     }
 }
 
@@ -116,11 +128,7 @@ std::string urdf2graspit::xmlfuncs::getEigenGraspXML(const std::vector<DHParam>&
     for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it)
     {
         float minValue, maxValue;
-        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues);
-        // XXX check again if this needs to be converted to degrees, but looks like
-        // it doesn't need to
-        // minValue *= RAD_TO_DEG;
-        // maxValue *= RAD_TO_DEG;
+        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, true);
         float num = (maxValue - minValue) / 2;
         str << " d" << i << "=\"" << num << "\"";
         ++i;
@@ -155,23 +163,25 @@ std::string getChainJointSpec(const DHParam& dh, bool negateJointValues)
 
     bool revolute = dh.joint->type == urdf::Joint::REVOLUTE;
     float minValue, maxValue;
-    getJointLimits(*(dh.joint), minValue, maxValue, negateJointValues);
-    minValue *= RAD_TO_DEG;
-    maxValue *= RAD_TO_DEG;
+    getJointLimits(*(dh.joint), minValue, maxValue, negateJointValues, true);
     std::stringstream ret;
     ret << "<joint type=" << (revolute ? "'Revolute'" : "'Prismatic'") << ">" << std::endl;
 
-    if (isRevolutingJoint(dh.joint))
+    // for some reason, referenced DOF for revolute joints has to be in <theta>, not <d> as
+    // specified in documentation (http://www.cs.columbia.edu/~cmatei/graspit/html-manual/graspit-manual_4.html)
+    // Instead, prismatic joints are specified in <d>
+    if (isRevolutingJoint(dh.joint))  
         ret << "<theta> d" << dh.dof_index << "+"
             << dh.theta*RAD_TO_DEG << "</theta>" << std::endl;
     else ret << "<theta>" << dh.theta*RAD_TO_DEG << "</theta>" << std::endl;
 
-    ret << "<d>" << dh.d << "</d>" << std::endl;
-    ret << "<a>" << dh.r << "</a>" << std::endl;
-
     if (isPrismaticJoint(dh.joint))
-        ret << "<alpha>d" << dh.dof_index << "+" << dh.alpha*RAD_TO_DEG << "</alpha>" << std::endl;
-    else ret << "<alpha>" << dh.alpha*RAD_TO_DEG << "</alpha>" << std::endl;
+         ret << "<d> d" <<dh.dof_index <<"+" << dh.d << "</d>" << std::endl;
+    else ret << "<d>" << dh.d << "</d>" << std::endl;
+    
+    ret << "<a>" << dh.r << "</a>" << std::endl;
+    ret << "<alpha>" << dh.alpha*RAD_TO_DEG << "</alpha>" << std::endl;
+    
     ret << "<minValue>" << minValue << "</minValue>" << std::endl;
     ret << "<maxValue>" << maxValue << "</maxValue>" << std::endl;
     ret << "<viscousFriction>5.0e+7</viscousFriction>" << std::endl;
@@ -287,13 +297,9 @@ std::string urdf2graspit::xmlfuncs::getWorldFileTemplate(
     for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it)
     {
         float min, max;
-        getJointLimits(*(it->joint), min, max, negateJointValues);
-        // XXX check again if this needs to be converted to degrees, but
-        // but it looks like it doesn't need to...
-        // min *= RAD_TO_DEG;
-        // max *= RAD_TO_DEG;
+        getJointLimits(*(it->joint), min, max, negateJointValues, false);
         // str<<(0.5*max + 0.5*min)<<" ";
-        str << min << " ";
+         str << min << " ";
     }
     str << "</dofValues>" << std::endl;
 

@@ -97,7 +97,8 @@ boost::program_options::variables_map loadParams(int argc, char ** argv)
 {
     boost::program_options::options_description optDesc = getOptions();
     boost::program_options::variables_map vm;
-    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, optDesc), vm);
+    boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(optDesc).style(
+        boost::program_options::command_line_style::unix_style ^ boost::program_options::command_line_style::allow_short).run(), vm);
     boost::program_options::notify(vm);
     return vm;
 }
@@ -227,6 +228,7 @@ bool loadParams(int argc, char ** argv, std::string& worldFilename, std::string&
             PRINTERROR("Must specify 3 values for --obj-pos: x, y and z (specified "<<vals.size()<<")");
             PRINTMSG(desc);
         }
+        PRINTMSG("Using initial object pose "<<vals[0]<<", "<<vals[1]<<", "<<vals[2]);
         objPos=Eigen::Vector3d(vals[0],vals[1],vals[2]);
     }
 

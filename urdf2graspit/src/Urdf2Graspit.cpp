@@ -704,6 +704,17 @@ void Urdf2GraspIt::getLimits(const urdf::Joint& j, float& min, float& max)
         min = -min;
         max = -max;
     }
+    bool revolute = j.type == urdf::Joint::REVOLUTE;
+    if (revolute)
+    {
+        min *= RAD_TO_DEG;
+        max *= RAD_TO_DEG;
+    }
+    else
+    {   // convert from meter units to mm
+        min *= 1000;
+        max *= 1000;
+    }
 }
 
 void Urdf2GraspIt::getJointMoves(const urdf::Joint& j, float& velocity, float& effort)

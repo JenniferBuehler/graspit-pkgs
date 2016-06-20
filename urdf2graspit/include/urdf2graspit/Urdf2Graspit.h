@@ -194,7 +194,8 @@ private:
 
 
     /**
-     * returns minimum / maximum limits of this joint
+     * returns minimum / maximum limits of this joint. For revolute
+     * Joints values in degrees are returned, for prismatic values in mm.
      */
     void getLimits(const urdf::Joint& j, float& min, float& max);
 
