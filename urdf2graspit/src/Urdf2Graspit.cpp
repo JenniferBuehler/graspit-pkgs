@@ -74,7 +74,7 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
 
     str << "<?xml version=\"1.0\" ?>" << std::endl;
     str << "<robot type=\"Hand\">" << std::endl;
-    str << "<palm>" << palmLinkName << ".xml</palm>" << std::endl;
+    str << "\t<palm>" << palmLinkName << ".xml</palm>" << std::endl;
 
     float def_kp = 1e+9;
     float def_kd = 1e+7;
@@ -158,8 +158,8 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
         str << chainStr;
     }
 
-    if (eigenXML) str << "<eigenGrasps>" << *eigenXML << "</eigenGrasps>" << std::endl;
-    if (contactsVGR) str << "<virtualContacts>" << *contactsVGR << "</virtualContacts>" << std::endl;
+    if (eigenXML) str << "\t<eigenGrasps>" << *eigenXML << "</eigenGrasps>" << std::endl;
+    if (contactsVGR) str << "\t<virtualContacts>" << *contactsVGR << "</virtualContacts>" << std::endl;
 
     str << "</robot>" << std::endl;
 
