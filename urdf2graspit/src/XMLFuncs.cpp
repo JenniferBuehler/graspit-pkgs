@@ -55,25 +55,24 @@ std::ostream& operator<<(std::ostream& o, const FingerChain& p)
     return o;
 }
 
-
-// \param scale scale min/max values to degrees for revolute joints, and to mm for prismatic joints 
-void getJointLimits(const urdf::Joint& j, float& min, float& max, bool negateJointValues, bool scale=true)
+void getJointLimits(const urdf::Joint& j, float& min, float& max, bool negateAndSwapMinMax, bool scaleRevolute=false, bool scalePrismatic=true)
 {
     min = j.limits->lower;
     max = j.limits->upper;
-    if (negateJointValues)
+    if (negateAndSwapMinMax)
     {
-        min = -min;
-        max = -max;
+        float minTmp = min;
+        min = -max;
+        max = -minTmp;
     }
-    if (!scale) return;
     bool revolute = j.type == urdf::Joint::REVOLUTE;
-    if (revolute)
+    if (revolute && scaleRevolute)
     {
         min *= RAD_TO_DEG;
         max *= RAD_TO_DEG;
     }
-    else
+
+    if (!revolute && scalePrismatic)
     {   // convert from meter units to mm
         min *= 1000;
         max *= 1000;
@@ -89,13 +88,13 @@ std::string getEigenGraspValues(const std::vector<DHParam>& dhparams, bool negat
     float minAmpl = 0;
     float maxAmpl = 0;
     str<<"\t\t<!--Limits min=\""<<minAmpl<<"\" max=\""<<maxAmpl<<"\"/-->"<<std::endl;
-    str << "\t\t<DimVals ";
+    str << "\t\t<DimVals";
     int i = 0;
     for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it, ++i)
     {
         float minValue, maxValue;
-        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false);
-        float num = (maxValue - minValue) / 2;
+        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false, false);
+        float num = (minValue + maxValue) / 2;
         str << " d" << i << "=\"" << num << "\"";
     }
     str << "/>" << std::endl;
@@ -113,7 +112,7 @@ std::string urdf2graspit::xmlfuncs::getEigenGraspXML(const std::vector<DHParam>&
     for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it, ++i)
     {
         float minValue, maxValue;
-        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false);
+        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false, false);
         str << "<!-- d" << i <<": "<<it->joint->name<<", min="<<minValue<<", max="<<maxValue<<" -->" << std::endl;
     }
 
@@ -129,10 +128,9 @@ std::string urdf2graspit::xmlfuncs::getEigenGraspXML(const std::vector<DHParam>&
     for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it, ++i)
     {
         float minValue, maxValue;
-        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, true);
-        float num = (maxValue - minValue) / 2;
+        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false, true);
+        float num = (minValue + maxValue) / 2;
         str << " d" << i << "=\"" << num << "\"";
-        ++i;
     }
     str << "/>" << std::endl;
     str << "\t</ORIGIN>" << std::endl;
@@ -162,7 +160,7 @@ std::string getChainJointSpec(const DHParam& dh, bool negateJointValues)
 
     bool revolute = dh.joint->type == urdf::Joint::REVOLUTE;
     float minValue, maxValue;
-    getJointLimits(*(dh.joint), minValue, maxValue, negateJointValues, true);
+    getJointLimits(*(dh.joint), minValue, maxValue, negateJointValues, true, true);
     std::stringstream ret;
     ret << "\t\t<joint type=" << (revolute ? "'Revolute'" : "'Prismatic'") << ">" << std::endl;
 
@@ -296,11 +294,10 @@ std::string urdf2graspit::xmlfuncs::getWorldFileTemplate(
     for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it)
     {
         float min, max;
-        getJointLimits(*(it->joint), min, max, negateJointValues, false);
-        // str<<(0.5*max + 0.5*min)<<" ";
-         str << min << " ";
+        getJointLimits(*(it->joint), min, max, negateJointValues, false, false);
+        str<<((max + min) * 0.5)<<" ";
     }
-    str << "\t\t</dofValues>" << std::endl;
+    str << "</dofValues>" << std::endl;
 
     str << "\t\t<transform>" << std::endl;
     str << "\t\t\t<fullTransform>(+1 0 0 0)[0 0 0]</fullTransform>" << std::endl;

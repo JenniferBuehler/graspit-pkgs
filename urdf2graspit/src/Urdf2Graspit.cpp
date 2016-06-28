@@ -84,7 +84,7 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
         // ROS_INFO_STREAM("PRM Joint: "<<*it);
         float minValue, maxValue;
         getLimits(*(it->joint), minValue, maxValue);
-        float draggerScale = fabs(maxValue - minValue);
+        float draggerScale = 20; // fabs(maxValue - minValue);
         float velocity, effort;
         getJointMoves(*(it->joint), velocity, effort);
         str << urdf2graspit::xmlfuncs::getDOF(velocity, effort, def_kp, def_kd, draggerScale, "r") << std::endl;
