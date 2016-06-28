@@ -38,7 +38,7 @@
 
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/actions/SoWriteAction.h>
-#include <Inventor/actions/SoGetBoundingBoxAction.h>
+// #include <Inventor/actions/SoGetBoundingBoxAction.h>
 
 #include <boost/filesystem.hpp>
 
@@ -229,6 +229,17 @@ void GraspItSceneManager::processIdleEvent()
 
 
 
+/*
+Old method to get camera parameters. Is now done in new GraspitCore class.
+
+ **
+ * Computes camera parameters to set for watching the current scene.
+ * This is needed for writing a world file with meaningful camera parameters.
+ *
+ * Will set the camera at twice the scene's diameter (diameter of whole bounding box) distance
+ * away from the scene center along the x axis. It look at the scene along the x axis.
+ * The focal distance is also the distance from the camera to the scene center to keep things simple.
+ *
 void GraspItSceneManager::getCameraParameters(Eigen::Vector3d & camPos, Eigen::Quaterniond& camQuat, double & fd) const
 {
     if (!isInitialized())
@@ -263,7 +274,7 @@ void GraspItSceneManager::getCameraParameters(Eigen::Vector3d & camPos, Eigen::Q
     camQuat = Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(-1, 0, 0));
     fd = diamLen;
 }
-
+*/
 
 bool GraspItSceneManager::saveGraspItWorld(const std::string& filename, bool createDir)
 {
@@ -287,18 +298,16 @@ bool GraspItSceneManager::saveGraspItWorld(const std::string& filename, bool cre
         return false;
     }
 
+/* Old code using obsolete getCameraParameters(). This is now done in GraspitCore.
     // set the camera so that the world file can be written with some correct camera parameters
     // if no camera parameters are set, the world file can't be opened with the original simulatur GUI.
     Eigen::Vector3d camPos;
     Eigen::Quaterniond camQuat;
     double fd;
     getCameraParameters(camPos, camQuat, fd);
-
-    PRINTERROR("TODO: Find a way to set camera parameters in world?");
-    // XXX this is not really threadsafe? Though core is only accessed in constructor
-    // and destructor (exitPlanner()) otherwise...
     // core->setCamera(camPos.x(), camPos.y(), camPos.z(),
     //                camQuat.x(), camQuat.y(), camQuat.z(), camQuat.w(), fd);
+*/
 
     if (graspitWorld->save(filename.c_str()) == FAILURE)
     {

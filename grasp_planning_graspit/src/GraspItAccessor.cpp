@@ -188,8 +188,3 @@ int GraspItAccessor::addBody(Body* body, const EigenTransform& worldTransform)
 {
     return graspItInterface->addBody(body, worldTransform);
 }
-
-void GraspItAccessor::getCameraParameters(Eigen::Vector3d & camPos, Eigen::Quaterniond& camQuat, double & fd) const
-{
-    return graspItInterface->getCameraParameters(camPos, camQuat, fd);
-}

@@ -280,11 +280,6 @@ protected:
      */
     int addBody(Body* body, const EigenTransform& worldTransform);
 
-    /**
-     * Calls  protected GraspItSceneManager::getCameraParameters()
-     */
-    void getCameraParameters(Eigen::Vector3d & camPos, Eigen::Quaterniond& camQuat, double & fd) const;
-
 private:
     /**
      * should never be used to stay safe. Subclasses should declare their copy constructor private.

@@ -626,19 +626,6 @@ protected:
      */
     int addBody(Body* body, const EigenTransform& worldTransform);
 
-
-
-    /**
-     * Computes camera parameters to set for watching the current scene.
-     * This is needed for writing a world file with meaningful camera parameters.
-     *
-     * Will set the camera at twice the scene's diameter (diameter of whole bounding box) distance
-     * away from the scene center along the x axis. It look at the scene along the x axis.
-     * The focal distance is also the distance from the camera to the scene center to keep things simple.
-     */
-    void getCameraParameters(Eigen::Vector3d & camPos, Eigen::Quaterniond& camQuat, double & fd) const;
-
-
     /**
      * Schedules a new "Idle Event" which will be called in the next iteration of the scene manager thread.
      *
