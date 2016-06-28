@@ -34,7 +34,7 @@
 #include <robot.h>
 #include <body.h>
 #include <grasp.h>
-#include <ivmgrBase.h>
+#include <graspitCore.h>
 
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/actions/SoWriteAction.h>
@@ -81,7 +81,7 @@ bool makeDirectoryIfNeeded(const std::string& dPath)
 
 GraspItSceneManager::GraspItSceneManager():
     graspitWorld(NULL),
-    ivMgr(NULL),
+    core(NULL),
     initialized(false),
     fakeQObjectParent(NULL)
 {
@@ -92,7 +92,7 @@ GraspItSceneManager::~GraspItSceneManager()
 {
     PRINTMSG("GraspItSceneManager destructor");
 
-    if (ivMgr)
+    if (core)
     {
         PRINTERROR("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
         throw std::string("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
@@ -113,16 +113,16 @@ void GraspItSceneManager::initialize()
         return;
     }
 
-    initializeIVmgr();
-    if (!ivMgr)
+    initializeCore();
+    if (!core)
     {
-        throw std::string("Cannot initialize world without ivMgr begin intialized");
+        throw std::string("Cannot initialize world without core begin intialized");
     }
 
     fakeQObjectParent = new QObject();
 
     UNIQUE_RECURSIVE_LOCK lock(graspitWorldMtx);
-    graspitWorld = createGraspitWorld();
+    graspitWorld = createNewGraspitWorld();
     if (!graspitWorld)
     {
         PRINTERROR("Graspit world was initialized to NULL");
@@ -156,10 +156,10 @@ void GraspItSceneManager::shutdown()
     }
     registeredAccessorsMtx.unlock();
 
-    // destroy ivMgr
-    destroyIVmgr();
+    // destroy core
+    destroyCore();
 
-    if (ivMgr)
+    if (core)
     {
         PRINTERROR("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
         throw std::string("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
@@ -294,10 +294,11 @@ bool GraspItSceneManager::saveGraspItWorld(const std::string& filename, bool cre
     double fd;
     getCameraParameters(camPos, camQuat, fd);
 
-    // XXX this is not really threadsafe? Though ivMgr is only accessed in constructor
+    PRINTERROR("TODO: Find a way to set camera parameters in world?");
+    // XXX this is not really threadsafe? Though core is only accessed in constructor
     // and destructor (exitPlanner()) otherwise...
-    ivMgr->setCamera(camPos.x(), camPos.y(), camPos.z(),
-                     camQuat.x(), camQuat.y(), camQuat.z(), camQuat.w(), fd);
+    // core->setCamera(camPos.x(), camPos.y(), camPos.z(),
+    //                camQuat.x(), camQuat.y(), camQuat.z(), camQuat.w(), fd);
 
     if (graspitWorld->save(filename.c_str()) == FAILURE)
     {

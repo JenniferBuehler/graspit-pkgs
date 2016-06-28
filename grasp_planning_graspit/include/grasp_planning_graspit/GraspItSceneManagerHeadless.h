@@ -59,11 +59,11 @@ public:
     virtual void waitUntilReady() const;
 
 protected:
-    virtual void initializeIVmgr();
+    virtual void initializeCore();
 
-    virtual void destroyIVmgr();
+    virtual void destroyCore();
 
-    virtual World * createGraspitWorld();
+    virtual World * createNewGraspitWorld();
 
     virtual bool eventThreadRunsQt() const
     {
@@ -111,8 +111,8 @@ private:
     void setInventorReady(const bool flag);
 
     /**
-     * Method for thread to run the inventor manager main loop (IVmgrHeadless::beginMainLoop()).
-     * This thread callback also needs to be used to initialize the IVmgrHeadless, because initialisation
+     * Method for thread to run the inventor manager main loop (CoreHeadless::beginMainLoop()).
+     * This thread callback also needs to be used to initialize the CoreHeadless, because initialisation
      * and main loop have to be handled by the same thread.
      */
     static void ivThreadLoop(GraspItSceneManagerHeadless * _this);
@@ -120,7 +120,7 @@ private:
     // Thread which runs the inventor loop.
     THREAD * ivThread;
 
-    // flag set to true as soon as the Inventor environment managed by IVmgrHeadless is initialized.
+    // flag set to true as soon as the Inventor environment managed by CoreHeadless is initialized.
     bool ivReady;
     mutable MUTEX ivReadyMtx;
 

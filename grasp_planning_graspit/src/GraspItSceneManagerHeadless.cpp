@@ -26,7 +26,7 @@
 #include <string>
 #include <exception>
 
-#include <ivmgrHeadless.h>
+#include <graspitCore.h>
 
 #include <Inventor/sensors/SoIdleSensor.h>
 
@@ -45,7 +45,7 @@ GraspItSceneManagerHeadless::~GraspItSceneManagerHeadless()
     shutdown();
 }
 
-void GraspItSceneManagerHeadless::initializeIVmgr()
+void GraspItSceneManagerHeadless::initializeCore()
 {
     // start the thread loop which will kick off a new thread to run the QT Application
     ivThread = new THREAD_CONSTR(ivThreadLoop, this);
@@ -55,22 +55,23 @@ void GraspItSceneManagerHeadless::initializeIVmgr()
 }
 
 
-void GraspItSceneManagerHeadless::destroyIVmgr()
+void GraspItSceneManagerHeadless::destroyCore()
 {
-    PRINTMSG("GraspItSceneManagerHeadless::destroyIVmgr()");
-    // have to quit ivMgr main loop first so that the thread
+    PRINTMSG("GraspItSceneManagerHeadless::destroyCore()");
+    // have to quit core main loop first so that the thread
     // exits its loop
-    if (ivMgr)
+    /*if (core)
     {
-        IVmgrHeadless * _ivMgr = dynamic_cast<IVmgrHeadless*>(ivMgr);
-        if (!_ivMgr)
+        GraspitCore * _core = dynamic_cast<GraspitCore*>(core);
+        if (!_core)
         {
-            throw std::string("Inconsistency:: ivMgr should be of class IVmgrHeadless!");
+            throw std::string("Inconsistency:: core should be of class GraspitCore!");
         }
-        _ivMgr->exitMainLoop();
+        _core->exitMainLoop();
         waitForInventorState(false);
-    }
-    // PRINTMSG("Done in destroyIVmgr()");
+    }*/
+    core->exitMainLoop();
+    // PRINTMSG("Done in destroyCore()");
     if (ivThread)
     {
         PRINTMSG("Now exit Inventor thread.");
@@ -78,32 +79,26 @@ void GraspItSceneManagerHeadless::destroyIVmgr()
         delete ivThread;
         ivThread = NULL;
     }
-    if (ivMgr)
+    if (core)
     {
-        delete ivMgr;
-        ivMgr = NULL;
+        delete core;
+        core = NULL;
     }
 }
 
 
 
 
-World * GraspItSceneManagerHeadless::createGraspitWorld()
+World * GraspItSceneManagerHeadless::createNewGraspitWorld()
 {
-    if (!ivMgr)
+    if (!core)
     {
-        throw std::string("Cannot initialize world without ivMgr begin intialized");
+        throw std::string("Cannot initialize world without core begin intialized");
     }
 
-    IVmgrHeadless * _ivMgr = dynamic_cast<IVmgrHeadless*>(ivMgr);
-    if (!_ivMgr)
-    {
-        throw std::string("Inconsistency:: ivMgr should be of class IVmgrHeadless!");
-    }
-
-    PRINTMSG("Creating World");
-    _ivMgr->createNewWorld("GraspItWorld");
-    return _ivMgr->getWorld();
+    PRINTMSG("Creating new graspit world");
+    core->emptyWorld("GraspItWorld");
+    return core->getWorld();
 }
 
 
@@ -111,9 +106,15 @@ World * GraspItSceneManagerHeadless::createGraspitWorld()
 void GraspItSceneManagerHeadless::ivThreadLoop(GraspItSceneManagerHeadless * _this)
 {
     PRINTMSG("Enter INVENTOR thread loop");
-
-    IVmgrHeadless * ivMgrHeadless = new IVmgrHeadless("GraspIt");
-    _this->ivMgr = ivMgrHeadless;
+    std::string name("GraspIt");
+    std::string hArg("--headless");
+    char * args[2];
+    args[0]=const_cast<char*>(name.c_str());
+    args[1]=const_cast<char*>(hArg.c_str());
+    PRINTMSG("Starting with args "<<args[0]<<", "<<args[1]);
+    GraspitCore * coreHeadless = new GraspitCore(2,args);
+    PRINTMSG("Created.");
+    _this->core = coreHeadless;
 
     _this->createIdleSensor();
 
@@ -122,7 +123,7 @@ void GraspItSceneManagerHeadless::ivThreadLoop(GraspItSceneManagerHeadless * _th
     _this->mIdleSensor->schedule();
 
     // begin the main loop of inventor
-    ivMgrHeadless->beginMainLoop();
+    coreHeadless->startMainLoop();
 
     _this->deleteIdleSensor();
 
