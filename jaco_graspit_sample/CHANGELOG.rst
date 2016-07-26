@@ -2,6 +2,9 @@
 Changelog for package jaco_graspit_sample
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.0 (2016-06-08)
 ------------------
 

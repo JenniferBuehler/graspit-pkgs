@@ -2,6 +2,19 @@
 Changelog for package grasp_planning_graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* New version to work with new update on graspit fork
+* Removed camera parameters setting as this is done in GraspitCore now
+* EGPlanner working with new graspit headless branch
+* Updated command line parsing in grasp_planning.cpp and adjusted some parameters for prismatic joints in urdf2graspit
+* removed more unneeded includes
+* removed unneeded includes
+* removed unneeded includes of ivmgrHeadless.h
+* Added option to change object position and max number of iterations as command line argument in grasp_planning.cpp
+* Now can save planning results without objects -only pose- as well
+* Contributors: Jennifer Buehler
+
 1.0.0 (2016-06-08)
 ------------------
 * Removed direct Qt dependencies from urdf2graspit, as this is now in urdf2inventor

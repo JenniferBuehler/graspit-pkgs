@@ -2,6 +2,9 @@
 Changelog for package grasp_planning_graspit_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.0 (2016-06-08)
 ------------------
 * Now compiles with new graspit and new urdf2inventor

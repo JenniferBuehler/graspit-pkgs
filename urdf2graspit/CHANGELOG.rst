@@ -2,6 +2,15 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* minor fix in generating eigen.xml
+* Indented xml
+* Jenkins fix
+* Updated command line parsing in grasp_planning.cpp and adjusted some parameters for prismatic joints in urdf2graspit
+* Fix minor print bug for fixing joints
+* Contributors: Jennifer Buehler
+
 1.0.0 (2016-06-08)
 ------------------
 * Removed direct Qt dependencies from urdf2graspit, as this is now in urdf2inventor
