@@ -2,8 +2,8 @@
 Changelog for package grasp_planning_graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2016-07-26)
+------------------
 * New version to work with new update on graspit fork
 * Removed camera parameters setting as this is done in GraspitCore now
 * EGPlanner working with new graspit headless branch

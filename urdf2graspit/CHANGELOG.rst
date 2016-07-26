@@ -2,8 +2,8 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2016-07-26)
+------------------
 * minor fix in generating eigen.xml
 * Indented xml
 * Jenkins fix
