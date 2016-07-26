@@ -55,25 +55,24 @@ std::ostream& operator<<(std::ostream& o, const FingerChain& p)
     return o;
 }
 
-
-// \param scale scale min/max values to degrees for revolute joints, and to mm for prismatic joints 
-void getJointLimits(const urdf::Joint& j, float& min, float& max, bool negateJointValues, bool scale=true)
+void getJointLimits(const urdf::Joint& j, float& min, float& max, bool negateAndSwapMinMax, bool scaleRevolute=false, bool scalePrismatic=true)
 {
     min = j.limits->lower;
     max = j.limits->upper;
-    if (negateJointValues)
+    if (negateAndSwapMinMax)
     {
-        min = -min;
-        max = -max;
+        float minTmp = min;
+        min = -max;
+        max = -minTmp;
     }
-    if (!scale) return;
     bool revolute = j.type == urdf::Joint::REVOLUTE;
-    if (revolute)
+    if (revolute && scaleRevolute)
     {
         min *= RAD_TO_DEG;
         max *= RAD_TO_DEG;
     }
-    else
+
+    if (!revolute && scalePrismatic)
     {   // convert from meter units to mm
         min *= 1000;
         max *= 1000;
@@ -81,34 +80,25 @@ void getJointLimits(const urdf::Joint& j, float& min, float& max, bool negateJoi
 }
 
 
-std::string getHeader(const std::string& robottype, const std::string& palm_xml_file)
+std::string getEigenGraspValues(const std::vector<DHParam>& dhparams, bool negateJointValues)
 {
     std::stringstream str;
-    str << "<?xml version='1.0'?>" << std::endl;
-    str << "<robot type='" << robottype << "'>" << std::endl;
-    str << "<palm>" << palm_xml_file << "</palm>";
-    return str.str();
-}
-
-/**
- * \param fact number between 0 and 1 to set the eigen value default to this proportion between min and max value of the joint (0 for min, 1 for max)
- */
-std::string getEigenValue(const std::vector<DHParam>& dhparams, float fact)
-{
-    std::stringstream str;
-    str << "<EG>" << std::endl;
-    str << "<EigenValue value=\"0.5\"/> <!--EigenValue is not used in the code at this stage -->" << std::endl;
-    // str<<"<!--<Limits min=\"0.0\" max=\"2.5\"/>-->"<<std::endl;
-    str << "<DimVals ";
-    unsigned int i = 0;
-    for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it)
+    str << "\t<EG>" << std::endl;
+    str << "\t\t<EigenValue value=\"0.5\"/> <!--EigenValue is not used in the code at this stage -->" << std::endl;
+    float minAmpl = 0;
+    float maxAmpl = 0;
+    str<<"\t\t<!--Limits min=\""<<minAmpl<<"\" max=\""<<maxAmpl<<"\"/-->"<<std::endl;
+    str << "\t\t<DimVals";
+    int i = 0;
+    for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it, ++i)
     {
-        float num = fact;
+        float minValue, maxValue;
+        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false, false);
+        float num = (minValue + maxValue) / 2;
         str << " d" << i << "=\"" << num << "\"";
-        ++i;
     }
     str << "/>" << std::endl;
-    str << "</EG>" << std::endl;
+    str << "\t</EG>" << std::endl;
     return str.str();
 }
 
@@ -116,27 +106,34 @@ std::string urdf2graspit::xmlfuncs::getEigenGraspXML(const std::vector<DHParam>&
 {
     std::stringstream str;
     str << "<?xml version=\"1.0\" ?>" << std::endl;
-    str << "<EigenGrasps dimensions=\"" << dhparams.size() << "\">" << std::endl;
 
-    str << getEigenValue(dhparams, 1);
-
-    str << "<ORIGIN>" << std::endl;
-    str << "<EigenValue value=\"0.5\"/> " << std::endl;
-    str << "<DimVals";
-
-    int i = 0;
-    for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it)
+   // print all joint names so it's easier to edit the EigenGrasp file.
+    unsigned int i=0;
+    for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it, ++i)
     {
         float minValue, maxValue;
-        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, true);
-        float num = (maxValue - minValue) / 2;
+        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false, false);
+        str << "<!-- d" << i <<": "<<it->joint->name<<", min="<<minValue<<", max="<<maxValue<<" -->" << std::endl;
+    }
+
+    str << "<EigenGrasps dimensions=\"" << dhparams.size() << "\">" << std::endl;
+
+    str << getEigenGraspValues(dhparams, negateJointValues);
+
+    str << "\t<ORIGIN>" << std::endl;
+    str << "\t\t<EigenValue value=\"0.5\"/> " << std::endl;
+    str << "\t\t<DimVals";
+
+    i = 0;
+    for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it, ++i)
+    {
+        float minValue, maxValue;
+        getJointLimits(*(it->joint), minValue, maxValue, negateJointValues, false, true);
+        float num = (minValue + maxValue) / 2;
         str << " d" << i << "=\"" << num << "\"";
-        ++i;
     }
     str << "/>" << std::endl;
-
-    str << "<!-- if empty, defaults to all zeros-->" << std::endl;
-    str << "</ORIGIN>" << std::endl;
+    str << "\t</ORIGIN>" << std::endl;
     str << "</EigenGrasps>" << std::endl;
     return str.str();
 }
@@ -163,29 +160,29 @@ std::string getChainJointSpec(const DHParam& dh, bool negateJointValues)
 
     bool revolute = dh.joint->type == urdf::Joint::REVOLUTE;
     float minValue, maxValue;
-    getJointLimits(*(dh.joint), minValue, maxValue, negateJointValues, true);
+    getJointLimits(*(dh.joint), minValue, maxValue, negateJointValues, true, true);
     std::stringstream ret;
-    ret << "<joint type=" << (revolute ? "'Revolute'" : "'Prismatic'") << ">" << std::endl;
+    ret << "\t\t<joint type=" << (revolute ? "'Revolute'" : "'Prismatic'") << ">" << std::endl;
 
     // for some reason, referenced DOF for revolute joints has to be in <theta>, not <d> as
     // specified in documentation (http://www.cs.columbia.edu/~cmatei/graspit/html-manual/graspit-manual_4.html)
     // Instead, prismatic joints are specified in <d>
     if (isRevolutingJoint(dh.joint))  
-        ret << "<theta> d" << dh.dof_index << "+"
+        ret << "\t\t\t<theta> d" << dh.dof_index << "+"
             << dh.theta*RAD_TO_DEG << "</theta>" << std::endl;
-    else ret << "<theta>" << dh.theta*RAD_TO_DEG << "</theta>" << std::endl;
+    else ret << "\t\t\t<theta>" << dh.theta*RAD_TO_DEG << "</theta>" << std::endl;
 
     if (isPrismaticJoint(dh.joint))
-         ret << "<d> d" <<dh.dof_index <<"+" << dh.d << "</d>" << std::endl;
-    else ret << "<d>" << dh.d << "</d>" << std::endl;
+         ret << "\t\t\t<d> d" <<dh.dof_index <<"+" << dh.d << "</d>" << std::endl;
+    else ret << "\t\t\t<d>" << dh.d << "</d>" << std::endl;
     
-    ret << "<a>" << dh.r << "</a>" << std::endl;
-    ret << "<alpha>" << dh.alpha*RAD_TO_DEG << "</alpha>" << std::endl;
+    ret << "\t\t\t<a>" << dh.r << "</a>" << std::endl;
+    ret << "\t\t\t<alpha>" << dh.alpha*RAD_TO_DEG << "</alpha>" << std::endl;
     
-    ret << "<minValue>" << minValue << "</minValue>" << std::endl;
-    ret << "<maxValue>" << maxValue << "</maxValue>" << std::endl;
-    ret << "<viscousFriction>5.0e+7</viscousFriction>" << std::endl;
-    ret << "</joint>" << std::endl;
+    ret << "\t\t\t<minValue>" << minValue << "</minValue>" << std::endl;
+    ret << "\t\t\t<maxValue>" << maxValue << "</maxValue>" << std::endl;
+    ret << "\t\t\t<viscousFriction>5.0e+7</viscousFriction>" << std::endl;
+    ret << "\t\t</joint>" << std::endl;
     return ret.str();
 }
 
@@ -198,16 +195,16 @@ std::string urdf2graspit::xmlfuncs::getFingerChain(const FingerChain& c, const E
     // XXX for some reason, graspit wants the inverse of the rotation
     Eigen::Quaterniond corrPalmRotation = palmRotation.inverse();
     Eigen::Quaterniond::Matrix3 m = corrPalmRotation.toRotationMatrix();
-    str << "<chain> " << std::endl;
-    str << "<transform> " << std::endl;
-    str << "<translation>" << palmTranslation.x() << " "
+    str << "\t<chain> " << std::endl;
+    str << "\t\t<transform> " << std::endl;
+    str << "\t\t\t<translation>" << palmTranslation.x() << " "
         << palmTranslation.y() << " " << palmTranslation.z() << "</translation>" << std::endl;
-    str << "<rotationMatrix>"
+    str << "\t\t\t<rotationMatrix>"
         << m(0, 0) << " " << m(0, 1) << " " << m(0, 2) << " "
         << m(1, 0) << " " << m(1, 1) << " " << m(1, 2) << " "
         << m(2, 0) << " " << m(2, 1) << " " << m(2, 2) << " "
         << "</rotationMatrix> " << std::endl;
-    str << "</transform>" << std::endl;
+    str << "\t\t</transform>" << std::endl;
     for (std::vector<DHParam>::const_iterator it = c.prms.begin(); it != c.prms.end(); ++it)
     {
         std::string j = getChainJointSpec(*it, negateJointValues);
@@ -217,10 +214,10 @@ std::string urdf2graspit::xmlfuncs::getFingerChain(const FingerChain& c, const E
     std::vector<std::string>::const_iterator t = c.linkTypes.begin();
     for (std::vector<std::string>::const_iterator it = c.linkFileNames.begin(); it != c.linkFileNames.end(); ++it)
     {
-        str << "<link dynamicJointType='" << *t << "'>" << *it << "</link>" << std::endl;
+        str << "\t\t<link dynamicJointType='" << *t << "'>" << *it << "</link>" << std::endl;
         ++t;
     }
-    str << "</chain>" << std::endl;
+    str << "\t</chain>" << std::endl;
     return str.str();
 }
 
@@ -229,14 +226,14 @@ std::string urdf2graspit::xmlfuncs::getDOF(float defaultVel, float maxEffort, fl
         float kd, float draggerScale, const std::string& type)
 {
     std::stringstream ret;
-    ret << "<dof type='" << type << "'>" << std::endl;
-    ret << "<defaultVelocity>" << defaultVel << "</defaultVelocity>" << std::endl;
-    ret << "<maxEffort>" << maxEffort << "</maxEffort>" << std::endl;
-    ret << "<Kp>" << kp << "</Kp>" << std::endl;
-    ret << "<Kd>" << kd << "</Kd>" << std::endl;
-    ret << "<draggerScale>" << draggerScale << "</draggerScale>" << std::endl;
+    ret << "\t<dof type='" << type << "'>" << std::endl;
+    ret << "\t\t<defaultVelocity>" << defaultVel << "</defaultVelocity>" << std::endl;
+    ret << "\t\t<maxEffort>" << maxEffort << "</maxEffort>" << std::endl;
+    ret << "\t\t<Kp>" << kp << "</Kp>" << std::endl;
+    ret << "\t\t<Kd>" << kd << "</Kd>" << std::endl;
+    ret << "\t\t<draggerScale>" << draggerScale << "</draggerScale>" << std::endl;
     // ret<<"<breakAwayTorque>0.5</breakAwayTorque>"<<std::endl;
-    ret << "</dof>" << std::endl;
+    ret << "\t</dof>" << std::endl;
     return ret.str();
 }
 
@@ -251,16 +248,16 @@ std::string urdf2graspit::xmlfuncs::getLinkDescXML(
     std::stringstream str;
     str << "<?xml version=\"1.0\" ?>" << std::endl;
     str << "<root>" << std::endl;
-    str << "<material>" << material << "</material>" << std::endl;
+    str << "\t<material>" << material << "</material>" << std::endl;
     float msc = 1000;
-    str << "<mass>" << i->mass*msc << "</mass>" << std::endl;  // mass in grams
-    str << "<cog>" << i->origin.position.x << " " << i->origin.position.y
+    str << "\t<mass>" << i->mass*msc << "</mass>" << std::endl;  // mass in grams
+    str << "\t<cog>" << i->origin.position.x << " " << i->origin.position.y
         << " " << i->origin.position.z << "</cog>" << std::endl;
-    str << "<inertia_matrix>"
+    str << "\t<inertia_matrix>"
         << i->ixx*msc << " " << i->ixy*msc << " " << i->ixz*msc << " "
         << i->ixy*msc << " " << " " << i->iyy*msc << " " << i->iyz*msc << " "
         << i->ixz*msc << " " << " " << i->iyz*msc << " " << i->izz*msc << "</inertia_matrix>" << std::endl;
-    str << "<geometryFile>" << linkMeshFile << "</geometryFile>" << std::endl;
+    str << "\t<geometryFile>" << linkMeshFile << "</geometryFile>" << std::endl;
     str << "</root>" << std::endl;
     return str.str();
 }
@@ -281,37 +278,36 @@ std::string urdf2graspit::xmlfuncs::getWorldFileTemplate(
     str << "<world>" << std::endl;
 
     if (!includeCube) str << "<!--" << std::endl;
-    str << "<graspableBody>" << std::endl;
-    str << "<filename>models/objects/small_cube.xml</filename>" << std::endl;
-    str << "<transform>" << std::endl;
-    str << "<fullTransform>(+1 0 0 0)[+100 +0 +0]</fullTransform>" << std::endl;
-    str << "</transform>" << std::endl;
-    str << "</graspableBody>" << std::endl;
+    str << "\t<graspableBody>" << std::endl;
+    str << "\t\t<filename>models/objects/small_cube.xml</filename>" << std::endl;
+    str << "\t\t<transform>" << std::endl;
+    str << "\t\t\t<fullTransform>(+1 0 0 0)[+100 +0 +0]</fullTransform>" << std::endl;
+    str << "\t\t</transform>" << std::endl;
+    str << "\t</graspableBody>" << std::endl;
     if (!includeCube) str << "-->" << std::endl;
 
-    str << "<robot>" << std::endl;
-    str << "<filename>" << robotFileRelToGraspitRoot << "</filename>" << std::endl;
+    str << "\t<robot>" << std::endl;
+    str << "\t\t<filename>" << robotFileRelToGraspitRoot << "</filename>" << std::endl;
 
 
-    str << "<dofValues>";
+    str << "\t\t<dofValues>";
     for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it)
     {
         float min, max;
-        getJointLimits(*(it->joint), min, max, negateJointValues, false);
-        // str<<(0.5*max + 0.5*min)<<" ";
-         str << min << " ";
+        getJointLimits(*(it->joint), min, max, negateJointValues, false, false);
+        str<<((max + min) * 0.5)<<" ";
     }
     str << "</dofValues>" << std::endl;
 
-    str << "<transform>" << std::endl;
-    str << "<fullTransform>(+1 0 0 0)[0 0 0]</fullTransform>" << std::endl;
-    str << "</transform>" << std::endl;
-    str << "</robot>" << std::endl;
-    str << "<camera>" << std::endl;
-    str << "<position>+0 +0 +500</position>" << std::endl;
-    str << "<orientation>0 0 0 1</orientation>" << std::endl;
-    str << "<focalDistance>+500</focalDistance>" << std::endl;
-    str << "</camera>" << std::endl;
+    str << "\t\t<transform>" << std::endl;
+    str << "\t\t\t<fullTransform>(+1 0 0 0)[0 0 0]</fullTransform>" << std::endl;
+    str << "\t\t</transform>" << std::endl;
+    str << "\t</robot>" << std::endl;
+    str << "\t<camera>" << std::endl;
+    str << "\t\t<position>+0 +0 +500</position>" << std::endl;
+    str << "\t\t<orientation>0 0 0 1</orientation>" << std::endl;
+    str << "\t\t<focalDistance>+500</focalDistance>" << std::endl;
+    str << "\t</camera>" << std::endl;
 
     str << "</world>" << std::endl;
     str << "" << std::endl;
