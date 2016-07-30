@@ -122,9 +122,10 @@ int main(int argc, char** argv)
     bool urdfAxes = true;
     float axRad=0.0015;
     float axLen=0.015;
+    bool facesCCW=true;
     if (!contGen.generateContactsWithViewer(roots,
         palmLinkName, coefficient, dh_parameters, addAxes,
-        urdfAxes, axRad, axLen, addVisualTrans))
+        urdfAxes, axRad, axLen, addVisualTrans, facesCCW))
     {
         ROS_ERROR("Could not generate contacts");
         return 0;

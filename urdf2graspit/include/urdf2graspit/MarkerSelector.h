@@ -93,7 +93,7 @@ public:
      * \param _marker_size the size of the points displayed where marker is put
      * \param _faces_ccw faces are to be treated as counter-clockwise. Needed for normal calculations.
      */
-    explicit MarkerSelector(float _marker_size, bool _faces_ccw = true):
+    explicit MarkerSelector(float _marker_size, bool _faces_ccw):
         urdf_viewer::InventorViewer(_faces_ccw),
         marker_size(_marker_size) {}
 

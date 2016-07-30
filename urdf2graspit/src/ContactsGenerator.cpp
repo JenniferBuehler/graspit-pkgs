@@ -446,7 +446,8 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
         const std::vector<DHParam>& dh,
         bool _displayAxes, bool _axesFromDH,
         float _axesRadius, float _axesLength,
-        const EigenTransform& addVisualTransform)
+        const EigenTransform& addVisualTransform,
+        bool facesCCW)
 {
     UrdfTraverserPtr trav = getTraverser();
     if (!trav)
@@ -469,7 +470,7 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
     }
 
     bool success = true;
-    MarkerSelector markerSelector(0.002);
+    MarkerSelector markerSelector(_axesRadius, facesCCW);
     //markerSelector.init("Marker selector");
     SoNode * node = getAsInventor(palmLinkName,false, 
         _displayAxes && !_axesFromDH, _axesRadius, _axesLength, addVisualTransform, NULL);

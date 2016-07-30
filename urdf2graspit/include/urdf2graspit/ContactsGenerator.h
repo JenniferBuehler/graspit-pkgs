@@ -95,6 +95,7 @@ public:
      *      transform (their "origin"). This can be used to correct transformation errors which may have been 
      *      introduced in converting meshes from one format to the other, losing orientation information
      *      (for example, .dae has an "up vector" definition which may have been ignored)
+     * \param facesCCW the faces in the model are ordered counter-clockwise (true should be default)
      */
     bool generateContactsWithViewer(const std::vector<std::string>& fingerRoots,
                                     const std::string& palmLinkName,
@@ -102,7 +103,8 @@ public:
                                     const std::vector<DHParam>& dh,
                                     bool _displayAxes, bool _axesFromDH,
                                     float _axesRadius, float _axesLength,
-                                    const EigenTransform& addVisualTransform);
+                                    const EigenTransform& addVisualTransform,
+                                    bool facesCCW);
 
     /**
      * Writes the file for the contacts. Will only work after generateContacts() has been called.

@@ -32,7 +32,8 @@ int main(int argc, char *argv[])
     std::string inputFile = argv[1];
     std::string outputFile = argv[2];
 
-    MarkerSelector m(0.02);
+    bool facesCCW=true;
+    MarkerSelector m(0.02,facesCCW);
     m.init("WindowName");
     if (!m.loadModel(inputFile)) return 1;
     m.runViewer();

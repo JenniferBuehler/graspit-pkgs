@@ -26,6 +26,7 @@
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/SoPickedPoint.h>
 
+#include <Inventor/nodes/SoMatrixTransform.h>
 #include <Inventor/nodes/SoEventCallback.h>
 #include <Inventor/nodes/SoCone.h>
 #include <Inventor/nodes/SoSphere.h>
@@ -162,27 +163,103 @@ SoNode * MarkerSelector::getLinkDesc(const SoPath * path, std::string& linkName,
 }*/
 
 
+/**
+ * Gets the transform along the path from \e fromIdx to \e toIdx
+ */
+bool getTransform(const SoPath* p, unsigned int fromIdx, unsigned int toIdx, SbMatrix& transform)
+{
+    transform.makeIdentity();
+
+    if ((toIdx >= p->getLength()) || (toIdx <0))
+    {
+        ROS_ERROR_STREAM("Cannot compute transform for end index out of bounds ("<<toIdx<<")");
+        return false;
+    }
+    if ((fromIdx >= p->getLength()) || (fromIdx <0))
+    {
+        ROS_ERROR_STREAM("Cannot compute transform for start index out of bounds ("<<fromIdx<<")");
+        return false;
+    }
+
+    for (int i = fromIdx; i <= toIdx;  ++i)
+    {
+        SoNode * n = p->getNode(i);
+        std::string name = n->getName().getString();
+        ROS_INFO("Path[%i]: %s, type %s",i,name.c_str(),n->getTypeId().getName().getString());
+        SoSeparator * nSep = dynamic_cast<SoSeparator*>(n);
+        if (!nSep)
+        {
+            ROS_INFO("Node not a separator");
+        }
+        else
+        {
+            ROS_INFO_STREAM("Separator childern: "<<nSep->getNumChildren());
+            for (int c=0; c<nSep->getNumChildren(); ++c)
+            {
+                SoNode * child = nSep->getChild(c);
+                if (!child)
+                {
+                    ROS_ERROR("No child");
+                }
+                ROS_INFO_STREAM("Child: "<<child->getTypeId().getName().getString());
+                SoTransformation * trNode = dynamic_cast<SoTransformation*>(child);
+                if (trNode)
+                {
+                    SoTransform * tNode = dynamic_cast<SoTransform*>(child);
+                    if (!tNode)
+                    {
+                        ROS_ERROR_STREAM("Transformation node was found in MarkerSelector::getTransform() "
+                                <<"(type "<<child->getTypeId().getName().getString()
+                                <<") which still needs to be implemented (line "<<__LINE__<<")");
+                        continue;
+                    }
+                    transform.setTransform(tNode->translation.getValue(), tNode->rotation.getValue(), 
+                            tNode->scaleFactor.getValue(), tNode->scaleOrientation.getValue(), tNode->center.getValue());
+                }
+            }
+        }
+
+    }
+}
+
 void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
 {
     SoPath *pPickPath = pPickedPt->getPath();
     Marker marker;
-    SoNode * linkNode = getLinkDesc(pPickPath, marker.linkName, marker.visualNum);
+    int linkIdx;
+    SoNode * linkNode = getLinkDesc(pPickPath, marker.linkName, marker.visualNum, linkIdx);
     if (!linkNode)
     {
         ROS_ERROR("Error getting link desc");
         return;
     }
+
     float x, y, z;
     pPickedPt->getObjectPoint(linkNode).getValue(x, y, z);
     // pPickedPt->getObjectNormal(linkNode).getValue(nx,ny,nz);
-    // ROS_INFO("Object point %f %f %f\n",x,y,z);
+    ROS_INFO_STREAM("Clicked object point "<<","<<x<<","<<y<<","<<z);
 
     marker.setCoords(x, y, z);
 
-    if (!computeCorrectFaceNormal(pPickedPt, isFacesCCW(), marker.normal))
+    int shapeIdx;
+    if (!computeCorrectFaceNormal(pPickedPt, isFacesCCW(), marker.normal, shapeIdx))
     {
         ROS_WARN("No face normal correction possible. Using default normal.");
     }
+    
+    ROS_INFO_STREAM("Index of link in path: "<<linkIdx<<" / "<<(pPickPath->getLength()-1)<<" and shape in path: "<<shapeIdx);
+
+    // get the transform from the link to the shape form: we have to consider this transform for the normal as well. 
+    SbMatrix transform;
+    if (!getTransform(pPickPath, linkIdx, shapeIdx, transform))
+    {
+        ROS_WARN("Cannot get tranform between link and geometry node, normals may be off.");
+    }
+        
+    urdf2inventor::EigenTransform nodeTransform=urdf2inventor::getEigenTransform(transform);
+    // XXX TODO strangely, only the rotation part of nodeTransform makes sense, the whole
+    // Matrix messes it up (squishes some cylinders). Have to look into this.
+    nodeTransform=urdf2inventor::EigenTransform(nodeTransform.rotation());
 
     SoSeparator * _nodeSep = dynamic_cast<SoSeparator*>(linkNode);
     if (!_nodeSep)
@@ -192,8 +269,20 @@ void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
     }
     else 
     {
+        Eigen::Vector3d transCoords = marker.coords;
         // ROS_INFO_STREAM("Adding marker "<<marker);
-        urdf2inventor::addSphere(_nodeSep, marker.coords, marker_size, 1, 0, 0);
+        //urdf2inventor::addSphere(_nodeSep, marker.coords, marker_size, 1, 0, 0);
+        // compute rotation from z to normal
+        Eigen::Vector3d zAxis(0,0,1);
+        urdf2inventor::EigenTransform toZ(Eigen::Quaterniond::FromTwoVectors(zAxis,marker.normal));
+        urdf2inventor::EigenTransform cylTrans;
+        cylTrans.setIdentity();
+        cylTrans.translate(transCoords);
+        cylTrans=cylTrans*nodeTransform*toZ;
+        float radius = marker_size;
+        float height = radius*2;
+        urdf2inventor::addCylinder(_nodeSep, cylTrans, radius, height, 1, 0, 0);
     }
+    marker.normal = nodeTransform * marker.normal;
     markers.push_back(marker);
 }
