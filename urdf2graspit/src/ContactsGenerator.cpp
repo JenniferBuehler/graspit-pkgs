@@ -422,7 +422,7 @@ SoNode * ContactsGenerator::getAxesAsInventor(
         {
             transform = urdf_traverser::getTransform(joint);
         }
-        allVisuals = urdf2inventor::addSubNode(childNode, allVisuals, transform);
+        urdf2inventor::addSubNode(childNode, allVisuals, transform);
     }
 
     return allVisuals;
@@ -472,8 +472,13 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
     SoNode * node = getAsInventor(palmLinkName,false, 
         _displayAxes && !_axesFromDH, _axesRadius, _axesLength, addVisualTransform, NULL);
 
+    Eigen::Vector3d minBB, maxBB;
+    urdf2inventor::getBoundingBox(node,minBB,maxBB);
+    Eigen::Vector3d diagonal = maxBB-minBB;
+    float markerFactor = 0.002; //factor of diagonal length to define the markers radius
+
     bool success = true;
-    MarkerSelector markerSelector(_axesRadius, facesCCW);
+    MarkerSelector markerSelector(diagonal.norm()*markerFactor, facesCCW);
     //markerSelector.init("Marker selector");
     if (!node)
     {

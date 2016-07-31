@@ -139,31 +139,6 @@ bool MarkerSelector::writeToFile(const std::string& content, const std::string& 
 
 
 /**
- * string which is used for sscanf to extract following information form an SoNode:
- * the name of the link, and the nubmer of the visual. This sscanf should get first an int (visual number), then a string (link name).
- * it should fail for all nodes except those which contain the visual mesh.
- */
-/*#define VISUAL_SCANF "_visual_%i_%s"
-SoNode * MarkerSelector::getLinkDesc(const SoPath * path, std::string& linkName, int& visualNum)
-{
-    for (unsigned int i = path->getLength() - 1; i >= 0;  --i)
-    {
-        SoNode * n = path->getNode(i);
-        std::string name = n->getName().getString();
-        // ROS_INFO("Pick path len %s\n",name.c_str());
-        char ln[1000];
-        int num;
-        if (sscanf(name.c_str(), VISUAL_SCANF, &num, ln) < 2) continue;
-        // ROS_INFO("num: %i rest: %s\n",num,ln);
-        linkName = ln;
-        visualNum = num;
-        return n;
-    }
-    return NULL;
-}*/
-
-
-/**
  * Gets the transform along the path from \e fromIdx to \e toIdx
  */
 bool getTransform(const SoPath* p, unsigned int fromIdx, unsigned int toIdx, urdf2inventor::EigenTransform& transform)
@@ -247,15 +222,69 @@ bool getTransform(const SoPath* p, unsigned int fromIdx, unsigned int toIdx, urd
     return true;
 }
 
+
+/**
+ * string which is used for sscanf to extract following information form an SoNode:
+ * the name of the link, and the nubmer of the visual. This sscanf should get first an int (visual number), then a string (link name).
+ * it should fail for all nodes except those which contain the visual mesh.
+ */
+#define VISUAL_SCANF "_visual_%i_%s"
+
+/**
+ * string used for sscanf to find a marker along with its number
+ */
+#define MARKER_SCANF "contact_marker_%i_%s"
+
+
 void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
 {
     SoPath *pPickPath = pPickedPt->getPath();
-    Marker marker;
+
+    // First, see if a marker was clidked.
+    int mId, mPos;
+    std::string mLinkName;
+    SoNode * markerNode = getIntStr(MARKER_SCANF, pPickPath, mLinkName, mId, mPos);
+    if (markerNode)
+    {
+        ROS_INFO_STREAM("Marker "<<mId<<", name "<<mLinkName<<" clicked! Removing...");
+        MarkerNodeMap::iterator mpIt=markerParentNodes.find(mId);
+        if (mpIt==markerParentNodes.end())
+        {
+            ROS_ERROR("Marker was not found in the existing map, it should have been!");
+            return;
+        }
+        bool markerRemoved=false;
+        for (std::vector<Marker>::iterator mIt=markers.begin(); mIt!=markers.end(); ++mIt)
+        {
+            if (mIt->markerID==mId)
+            {
+                markerRemoved=true;
+                markers.erase(mIt);
+                break;
+            }
+        }
+        if (!markerRemoved)
+        {
+            ROS_ERROR("Could not find marker in the list. Will not remove it.");
+            return;
+        }
+        SoSeparator * _mSep = dynamic_cast<SoSeparator*>(mpIt->second);
+        if (!_mSep)
+        {
+            ROS_ERROR("Marker parent node is not a separator, can't remove it");
+            return;
+        }
+        _mSep->removeChild(markerNode);
+        return;
+    }
+
+    mId=markerParentNodes.size();
+    Marker marker(mId);
     int linkIdx;
-    SoNode * linkNode = getLinkDesc(pPickPath, marker.linkName, marker.visualNum, linkIdx);
+    SoNode * linkNode = getIntStr(VISUAL_SCANF, pPickPath, marker.linkName, marker.visualNum, linkIdx);
     if (!linkNode)
     {
-        ROS_ERROR("Error getting link desc");
+        ROS_INFO("No link or marker was clicked.");
         return;
     }
 
@@ -299,8 +328,12 @@ void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
         cylTrans.translate(marker.coords);
         cylTrans=cylTrans*link2VertexTransform*toZ;
         float radius = marker_size;
-        float height = radius*2;
-        urdf2inventor::addCylinder(_nodeSep, cylTrans, radius, height, 1, 0, 0);
+        float height = radius*4;
+        std::stringstream str;
+        str<<"contact_marker_"<<mId<<"_"<<marker.linkName;
+        ROS_INFO_STREAM("Adding a new marker named "<<str.str());
+        urdf2inventor::addCylinder(_nodeSep, cylTrans, radius, height, 1, 0, 0, 0, str.str().c_str());
+        markerParentNodes.insert(std::make_pair(mId,_nodeSep));
     }
 
     marker.normal = link2VertexTransform.rotation() * marker.normal;

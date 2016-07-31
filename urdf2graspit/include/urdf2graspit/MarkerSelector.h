@@ -49,12 +49,13 @@ public:
     class Marker
     {
     public:
-        Marker() {}
+        Marker(int id): markerID(id) {}
         Marker(const Marker& m):
             linkName(m.linkName),
             visualNum(m.visualNum),
             coords(m.coords),
-            normal(m.normal) {}
+            normal(m.normal),
+            markerID(m.markerID) {}
 
         ~Marker() {}
 
@@ -85,9 +86,13 @@ public:
         std::string linkName;
         // name of the visual the marker is on
         int visualNum;
+
+        // a globally unique ID for this marker
+        int markerID;
     };
 
     typedef std::map<std::string, std::vector<Marker> > MarkerMap;
+
 
     /**
      * \param _marker_size the size of the points displayed where marker is put
@@ -129,6 +134,12 @@ private:
     static bool writeToFile(const std::string& content, const std::string& filename);
     
     std::vector<Marker> markers;
+    
+    // map for all the nodes associated to the marker cylinder nodes, sorted by ID
+    typedef std::map<int, SoNode*> MarkerNodeMap;
+
+    MarkerNodeMap markerParentNodes;
+
     // the size of the points displayed where marker is put
     float marker_size;
 };
