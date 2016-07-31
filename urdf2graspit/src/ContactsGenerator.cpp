@@ -39,7 +39,7 @@
 
 using urdf2graspit::ContactsGenerator;
 using urdf2graspit::markerselector::MarkerSelector;
-
+using urdf2inventor::EigenTransform;
 
 bool ContactsGenerator::transformToDHReferenceFrames(const std::vector<DHParam>& dh)
 {
@@ -468,12 +468,13 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
         ROS_ERROR("Could not prepare for DH parameter compatible URDF model.");
         return false;
     }
+    
+    SoNode * node = getAsInventor(palmLinkName,false, 
+        _displayAxes && !_axesFromDH, _axesRadius, _axesLength, addVisualTransform, NULL);
 
     bool success = true;
     MarkerSelector markerSelector(_axesRadius, facesCCW);
     //markerSelector.init("Marker selector");
-    SoNode * node = getAsInventor(palmLinkName,false, 
-        _displayAxes && !_axesFromDH, _axesRadius, _axesLength, addVisualTransform, NULL);
     if (!node)
     {
         ROS_ERROR("Could not get inventor node");
@@ -507,9 +508,20 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
     markerSelector.runViewer();
 
     MarkerSelector::MarkerMap markers = markerSelector.getMarkers();
-
     // ROS_INFO("Number of contacts: %lu",markers.size());
     // ROS_INFO("Markers: %s",markerSelector.toString().c_str());
+
+    // if there was a visual transform (addVisualTransform) we also need
+    // to correct the normals which are now in visual coordinate space
+    for (MarkerSelector::MarkerMap::iterator lit=markers.begin(); lit!=markers.end(); ++lit)
+    {
+        for (std::vector<MarkerSelector::Marker>::iterator mit=lit->second.begin(); mit!=lit->second.end(); ++mit)
+        {
+            MarkerSelector::Marker& m = *mit;
+            m.coords = addVisualTransform*m.coords;
+            m.normal = addVisualTransform*m.normal;
+        }
+    }
 
     if (!generateContacts(fingerRoots, palmLinkName, standard_coefficient, markers, dh))
     {

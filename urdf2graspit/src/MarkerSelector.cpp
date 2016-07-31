@@ -166,9 +166,10 @@ SoNode * MarkerSelector::getLinkDesc(const SoPath * path, std::string& linkName,
 /**
  * Gets the transform along the path from \e fromIdx to \e toIdx
  */
-bool getTransform(const SoPath* p, unsigned int fromIdx, unsigned int toIdx, SbMatrix& transform)
+bool getTransform(const SoPath* p, unsigned int fromIdx, unsigned int toIdx, urdf2inventor::EigenTransform& transform)
 {
-    transform.makeIdentity();
+    SbMatrix sbTransform;
+    sbTransform.makeIdentity();
 
     if ((toIdx >= p->getLength()) || (toIdx <0))
     {
@@ -185,41 +186,65 @@ bool getTransform(const SoPath* p, unsigned int fromIdx, unsigned int toIdx, SbM
     {
         SoNode * n = p->getNode(i);
         std::string name = n->getName().getString();
-        ROS_INFO("Path[%i]: %s, type %s",i,name.c_str(),n->getTypeId().getName().getString());
+        //ROS_INFO("Path[%i]: %s, type %s",i,name.c_str(),n->getTypeId().getName().getString());
         SoSeparator * nSep = dynamic_cast<SoSeparator*>(n);
-        if (!nSep)
+        if (!nSep) continue; // only separators may have children which are transforms
+        for (int c=0; c<nSep->getNumChildren(); ++c)
         {
-            ROS_INFO("Node not a separator");
-        }
-        else
-        {
-            ROS_INFO_STREAM("Separator childern: "<<nSep->getNumChildren());
-            for (int c=0; c<nSep->getNumChildren(); ++c)
+            SoNode * child = nSep->getChild(c);
+            if (!child) continue;
+            //ROS_INFO_STREAM("Child: "<<child->getTypeId().getName().getString());
+            SoTransformation * trNode = dynamic_cast<SoTransformation*>(child);
+            if (trNode)
             {
-                SoNode * child = nSep->getChild(c);
-                if (!child)
+                SoTransform * tNode = dynamic_cast<SoTransform*>(child);
+                if (!tNode)
                 {
-                    ROS_ERROR("No child");
+                    ROS_ERROR_STREAM("Transformation node was found in MarkerSelector::getTransform() "
+                            <<"(type "<<child->getTypeId().getName().getString()
+                            <<") which still needs to be implemented (line "<<__LINE__<<")");
+                    continue;
                 }
-                ROS_INFO_STREAM("Child: "<<child->getTypeId().getName().getString());
-                SoTransformation * trNode = dynamic_cast<SoTransformation*>(child);
-                if (trNode)
-                {
-                    SoTransform * tNode = dynamic_cast<SoTransform*>(child);
-                    if (!tNode)
-                    {
-                        ROS_ERROR_STREAM("Transformation node was found in MarkerSelector::getTransform() "
-                                <<"(type "<<child->getTypeId().getName().getString()
-                                <<") which still needs to be implemented (line "<<__LINE__<<")");
-                        continue;
-                    }
-                    transform.setTransform(tNode->translation.getValue(), tNode->rotation.getValue(), 
-                            tNode->scaleFactor.getValue(), tNode->scaleOrientation.getValue(), tNode->center.getValue());
-                }
+                SbMatrix tmpMat;
+                
+                /*float x,y,z,w;
+                tNode->center.getValue().getValue(x,y,z);
+                ROS_INFO_STREAM("Center " <<x<<","<<y<<","<<z);
+                tNode->scaleFactor.getValue().getValue(x,y,z);
+                ROS_INFO_STREAM("ScaleFactor " <<x<<","<<y<<","<<z);
+                tNode->scaleOrientation.getValue().getValue(x,y,z,w);
+                ROS_INFO_STREAM("ScaleOri " <<x<<","<<y<<","<<z<<","<<w);
+                tNode->rotation.getValue().getValue(x,y,z,w);
+                ROS_INFO_STREAM("Rot " <<x<<","<<y<<","<<z<<","<<w);
+                tmpMat.makeIdentity();
+                tmpMat.setTranslate(tNode->translation.getValue());
+                sbTransform.multRight(tmpMat);
+                tmpMat.makeIdentity();
+                tmpMat.setRotate(tNode->rotation.getValue());
+                sbTransform.multRight(tmpMat);*/
+
+                tmpMat.setTransform(tNode->translation.getValue(), tNode->rotation.getValue(), 
+                        tNode->scaleFactor.getValue());//, tNode->scaleOrientation.getValue(), tNode->center.getValue());
+                sbTransform.multRight(tmpMat);
             }
         }
-
     }
+    
+    urdf2inventor::EigenTransform egTransform=urdf2inventor::getEigenTransform(sbTransform);
+
+    // for some reason I haven't gotten to the bottom of yet, the matrix is *not* the same when
+    // we build it again from scratch, even if there is no shearing in the original sbTransform.
+    // i.e. even if *only* a rotation was explicitly set for sbTransform above, and we do an
+    // additional  
+    //      egTransform=urdf2inventor::EigenTransform(egTransform.rotation());
+    // the matrix vary still! For now, work around this by only using translation and rotation.
+    // XXX TODO this has to be done properly at some stage.
+    //ROS_INFO_STREAM(std::endl<<urdf2inventor::printMatrix(egTransform));
+    transform.setIdentity();
+    transform.translate(egTransform.translation());
+    transform=transform*urdf2inventor::EigenTransform(egTransform.rotation());
+    //ROS_INFO_STREAM(std::endl<<urdf2inventor::printMatrix(transform));
+    return true;
 }
 
 void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
@@ -237,7 +262,7 @@ void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
     float x, y, z;
     pPickedPt->getObjectPoint(linkNode).getValue(x, y, z);
     // pPickedPt->getObjectNormal(linkNode).getValue(nx,ny,nz);
-    ROS_INFO_STREAM("Clicked object point "<<","<<x<<","<<y<<","<<z);
+    ROS_INFO_STREAM("Clicked link "<<marker.linkName<<", point "<<","<<x<<","<<y<<","<<z);
 
     marker.setCoords(x, y, z);
 
@@ -247,20 +272,15 @@ void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
         ROS_WARN("No face normal correction possible. Using default normal.");
     }
     
-    ROS_INFO_STREAM("Index of link in path: "<<linkIdx<<" / "<<(pPickPath->getLength()-1)<<" and shape in path: "<<shapeIdx);
 
     // get the transform from the link to the shape form: we have to consider this transform for the normal as well. 
-    SbMatrix transform;
-    if (!getTransform(pPickPath, linkIdx, shapeIdx, transform))
+    // ROS_INFO_STREAM("Index of link in path: "<<linkIdx<<" / "<<(pPickPath->getLength()-1)<<" and shape in path: "<<shapeIdx);
+    urdf2inventor::EigenTransform link2VertexTransform;
+    if (!getTransform(pPickPath, linkIdx, shapeIdx, link2VertexTransform))
     {
         ROS_WARN("Cannot get tranform between link and geometry node, normals may be off.");
     }
         
-    urdf2inventor::EigenTransform nodeTransform=urdf2inventor::getEigenTransform(transform);
-    // XXX TODO strangely, only the rotation part of nodeTransform makes sense, the whole
-    // Matrix messes it up (squishes some cylinders). Have to look into this.
-    nodeTransform=urdf2inventor::EigenTransform(nodeTransform.rotation());
-
     SoSeparator * _nodeSep = dynamic_cast<SoSeparator*>(linkNode);
     if (!_nodeSep)
     {
@@ -269,7 +289,6 @@ void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
     }
     else 
     {
-        Eigen::Vector3d transCoords = marker.coords;
         // ROS_INFO_STREAM("Adding marker "<<marker);
         //urdf2inventor::addSphere(_nodeSep, marker.coords, marker_size, 1, 0, 0);
         // compute rotation from z to normal
@@ -277,12 +296,13 @@ void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
         urdf2inventor::EigenTransform toZ(Eigen::Quaterniond::FromTwoVectors(zAxis,marker.normal));
         urdf2inventor::EigenTransform cylTrans;
         cylTrans.setIdentity();
-        cylTrans.translate(transCoords);
-        cylTrans=cylTrans*nodeTransform*toZ;
+        cylTrans.translate(marker.coords);
+        cylTrans=cylTrans*link2VertexTransform*toZ;
         float radius = marker_size;
         float height = radius*2;
         urdf2inventor::addCylinder(_nodeSep, cylTrans, radius, height, 1, 0, 0);
     }
-    marker.normal = nodeTransform * marker.normal;
+
+    marker.normal = link2VertexTransform.rotation() * marker.normal;
     markers.push_back(marker);
 }
