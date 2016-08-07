@@ -38,8 +38,9 @@
   <build_depend>baselib_binding</build_depend>
   <build_depend>roslint</build_depend>
 
-  <!-- libsimage-dev is required for urdf2graspit when textures are needed -->
-  <build_depend>libsimage-dev</build_depend>
+  <!-- libsimage-dev is required for urdf2graspit when textures are needed, though
+       this may not need to be included in package.xml -->
+  <!--build_depend>libsimage-dev</build_depend-->
 
   <run_depend>roscpp</run_depend>
   <run_depend>urdf</run_depend>
