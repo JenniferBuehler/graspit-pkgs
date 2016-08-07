@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>grasp_planning_graspit_msgs</name>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
   <description>
     Messages for grasp planning with graspit. Some of the messages
     are later to be merged with ros-interactive-manipulation/graspit_simulator/graspit_ros_planning_msgs
