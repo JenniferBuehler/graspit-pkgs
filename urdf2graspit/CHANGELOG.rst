@@ -2,8 +2,8 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2016-08-07)
+------------------
 * Fix cylinder and box orientations
 * Contact generation bug fixed
 * Corrected urdf2graspit contact generation to place cylinder at right spot in Baxter

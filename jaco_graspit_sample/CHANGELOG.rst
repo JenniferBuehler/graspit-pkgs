@@ -2,8 +2,8 @@
 Changelog for package jaco_graspit_sample
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2016-08-07)
+------------------
 * Fix cylinder and box orientations
 * Corrected urdf2graspit contact generation to place cylinder at right spot in Baxter
 * Contributors: Jennifer Buehler
