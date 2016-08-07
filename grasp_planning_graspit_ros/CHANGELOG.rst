@@ -2,6 +2,9 @@
 Changelog for package grasp_planning_graspit_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.0 (2016-07-26)
 ------------------
 
