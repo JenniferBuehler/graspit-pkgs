@@ -1,7 +1,7 @@
 <launch>
     <arg name="robot_name" default="jaco_robot"/>
     <arg name="robot_file" default="$(find jaco_graspit_sample)/models/robots/jaco_robot/jaco_robot.xml" />
-    <arg name="finger_names" default="finger_joint_0 finger_joint_2 finger_joint_4"/>
+    <arg name="finger_names" default="jaco_finger_joint_0 jaco_finger_joint_2 jaco_finger_joint_4"/>
 
    	<node name="add_model_client_robot" pkg="grasp_planning_graspit_ros" type="add_model_client" respawn="false" output="screen" args="$(arg robot_name) $(arg robot_file) true $(arg finger_names)"/>
 </launch>
