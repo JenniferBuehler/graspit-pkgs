@@ -250,13 +250,25 @@ std::string urdf2graspit::xmlfuncs::getLinkDescXML(
     str << "<root>" << std::endl;
     str << "\t<material>" << material << "</material>" << std::endl;
     float msc = 1000;
-    str << "\t<mass>" << i->mass*msc << "</mass>" << std::endl;  // mass in grams
-    str << "\t<cog>" << i->origin.position.x << " " << i->origin.position.y
-        << " " << i->origin.position.z << "</cog>" << std::endl;
-    str << "\t<inertia_matrix>"
-        << i->ixx*msc << " " << i->ixy*msc << " " << i->ixz*msc << " "
-        << i->ixy*msc << " " << " " << i->iyy*msc << " " << i->iyz*msc << " "
-        << i->ixz*msc << " " << " " << i->iyz*msc << " " << i->izz*msc << "</inertia_matrix>" << std::endl;
+    if (i)
+    {
+      str << "\t<mass>" << i->mass*msc << "</mass>" << std::endl;  // mass in grams
+      str << "\t<cog>" << i->origin.position.x << " " << i->origin.position.y
+          << " " << i->origin.position.z << "</cog>" << std::endl;
+      str << "\t<inertia_matrix>"
+          << i->ixx*msc << " " << i->ixy*msc << " " << i->ixz*msc << " "
+          << i->ixy*msc << " " << " " << i->iyy*msc << " " << i->iyz*msc << " "
+          << i->ixz*msc << " " << " " << i->iyz*msc << " " << i->izz*msc << "</inertia_matrix>" << std::endl;
+    }
+    else
+    {
+      str << "\t<mass>0</mass>" << std::endl;  // mass in grams
+      str << "\t<cog>0 0 0 </cog>" << std::endl;
+      str << "\t<inertia_matrix>"
+          <<"1 0 0"
+          <<"0 1 0"
+          <<"0 0 1</inertia_matrix>" << std::endl;
+    }
     str << "\t<geometryFile>" << linkMeshFile << "</geometryFile>" << std::endl;
     str << "</root>" << std::endl;
     return str.str();
