@@ -262,11 +262,13 @@ std::string urdf2graspit::xmlfuncs::getLinkDescXML(
     }
     else
     {
-      str << "\t<mass>0</mass>" << std::endl;  // mass in grams
+      ROS_WARN_STREAM("No inertial for link "<<link->name<<", setting to mass=1");
+      // setting mass of 1 because a mass of 0 causes problems in graspit 
+      str << "\t<mass>1</mass>" << std::endl;  // mass in grams
       str << "\t<cog>0 0 0 </cog>" << std::endl;
       str << "\t<inertia_matrix>"
-          <<"1 0 0"
-          <<"0 1 0"
+          <<"1 0 0 "
+          <<"0 1 0 "
           <<"0 0 1</inertia_matrix>" << std::endl;
     }
     str << "\t<geometryFile>" << linkMeshFile << "</geometryFile>" << std::endl;
