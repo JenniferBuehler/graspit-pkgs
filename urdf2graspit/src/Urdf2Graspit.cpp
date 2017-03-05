@@ -180,7 +180,8 @@ void Urdf2GraspIt::toGlobalCoordinates(const EigenTransform& transform,
 
 void Urdf2GraspIt::getGlobalCoordinates(const JointConstPtr& joint,
                                         const EigenTransform& parentWorldTransform,
-                                        Eigen::Vector3d& rotationAxis, Eigen::Vector3d& position) const
+                                        Eigen::Vector3d& rotationAxis,
+                                        Eigen::Vector3d& position) const
 {
     Eigen::Vector3d rotAxis = urdf_traverser::getRotationAxis(joint);
     // ROS_INFO_STREAM("Orig rotation axis of joint "<<joint->name<<": "<<rotAxis);
@@ -189,15 +190,18 @@ void Urdf2GraspIt::getGlobalCoordinates(const JointConstPtr& joint,
     // ROS_INFO_STREAM("Joint transform: "<<jointTransform);
     // ROS_INFO_STREAM("Joint world transform: "<<jointWorldTransform);
 
-    /** OLD code which was actually wrong (I think?) 
+#if 0
+    // OLD code which was actually wrong (I think?) 
     EigenTransform wtInv = jointWorldTransform.inverse();
     // ROS_INFO_STREAM("Inverse joint world transform: "<<wtInv);
     // ROS_INFO_STREAM("Rot axis: "<<rotAxis);
     rotationAxis = wtInv.rotation() * rotAxis;
-    */
-
+    
+#else
     // transform the rotation axis in world coordinate frame
     rotationAxis = jointWorldTransform.rotation() * rotAxis;
+#endif
+
     // ROS_INFO_STREAM("Transformed rotation axis of joint "<<joint->name<<": "<<rotationAxis);
     // rotationAxis.normalize();
     if ((rotationAxis.norm()-1.0) > 1e-03)
@@ -208,10 +212,13 @@ void Urdf2GraspIt::getGlobalCoordinates(const JointConstPtr& joint,
     position = jointWorldTransform.translation();
 }
 
-bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointConstPtr& joint,
+bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
+                               const JointConstPtr& joint,
                                const EigenTransform& parentWorldTransform,
-                               const Eigen::Vector3d& parentX, const Eigen::Vector3d& parentZ,
-                               const Eigen::Vector3d parentPos, bool asRootJoint) const
+                               const Eigen::Vector3d& parentX,
+                               const Eigen::Vector3d& parentZ,
+                               const Eigen::Vector3d parentPos,
+                               bool asRootJoint) const
 {
     ROS_INFO_STREAM("======== Transforming joint " << joint->name << " to DH parameters");
 
@@ -253,8 +260,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointCo
         //ROS_INFO_STREAM("Joint world transform: "<<jointWorldTransform);
 
         getGlobalCoordinates(joint, parentWorldTransform, z, pos);
-        // ROS_INFO_STREAM("Rotation axis of joint "<<joint->name<<": "<<z);
-        //ROS_INFO_STREAM("GLOBAL: "<<z<<", pos = "<<pos);
+        // ROS_INFO_STREAM("Global rotation axis of joint "<<joint->name<<": "<<z<<", pos "<<pos);
 
         DHParam param;
         if (!DHParam::toDenavitHartenberg(param, parentZ, parentX, parentPos, z, pos, x))
@@ -280,7 +286,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const JointCo
         }
         param.childLink = paramChildLink;
         dhparameters.push_back(param);
-        //ROS_INFO_STREAM("DH for Joint "<<param.joint->name<<" parent axes: z="<<z<<", x="<<x<<", pos="<<pos<<": "<<param);
+        ROS_INFO_STREAM("DH for Joint "<<param.joint->name<<" parent axes: z="<<z<<", x="<<x<<", pos="<<pos<<": "<<param);
     }
         
 
@@ -440,7 +446,7 @@ bool Urdf2GraspIt::coordsConvert(const JointPtr& joint, const JointPtr& root_joi
 */
 
 
-bool Urdf2GraspIt::linksToDHReferenceFrames(std::vector<DHParam>& dh)
+bool Urdf2GraspIt::linksToDHReferenceFrames(const std::vector<DHParam>& dh)
 {
     UrdfTraverserPtr trav = getTraverser();
     if (!trav)
@@ -763,15 +769,6 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
         ROS_ERROR("Could not prepare for DH conversion");
         return failResult;
     }
-      
-/*    ROS_INFO("### Generating contacts...");
-    float coefficient = 0.2;
-    if (!generateContactsWithViewer(fingerRootNames, palmLinkName, coefficient))
-    {
-        ROS_ERROR("Could not generate contacts");
-        return failResult;
-    }
-*/
 
     UrdfTraverserPtr trav = getTraverser();
     if (!trav)

@@ -19,6 +19,8 @@
 #include <urdf2graspit/Urdf2GraspItBase.h>
 #include <urdf2inventor/Helpers.h>
 
+#include <urdf_viewer/InventorViewer.h>
+
 #include <string>
 #include <ros/ros.h>
 #include <ros/package.h>
@@ -29,6 +31,28 @@
 
 using urdf2graspit::Urdf2GraspItBase;
 
+void Urdf2GraspItBase::testVisualizeURDF(const std::string& fromLink)
+{
+    ROS_INFO("Visualize hand - looks right so far? Close window to continue.");
+    bool displayAxes = true;
+    float axRad = 0.001;
+    float axLen = 0.015;
+    Urdf2Inventor::EigenTransform addVisualTrans = Urdf2Inventor::EigenTransform::Identity();
+    SoNode * node = getAsInventor(fromLink, false, displayAxes,
+                                  axRad, axLen, addVisualTrans, NULL);
+    if (!node)
+    {
+      ROS_ERROR("Could not get inventor node");
+    }
+    else
+    {
+      urdf_viewer::InventorViewer view;
+      view.init("Test - close me to continue");
+      ROS_INFO_STREAM("Model converted, now loading into viewer...");
+      view.loadModel(node);
+      view.runViewer();
+    }
+}
     
 bool Urdf2GraspItBase::prepareModelForDenavitHartenberg(const std::string& fromLink)
 {
@@ -49,6 +73,9 @@ bool Urdf2GraspItBase::prepareModelForDenavitHartenberg(const std::string& fromL
         return false;
     }
     dhReadyFrom=fromLink;
+    
+    // testVisualizeURDF(fromLink);
+    
     return true;
 }
 
@@ -58,5 +85,3 @@ bool Urdf2GraspItBase::isDHReady(const std::string& fromLink) const
     // simply using \e dhReadyFrom
     return dhReadyFrom == fromLink;
 }
-
-

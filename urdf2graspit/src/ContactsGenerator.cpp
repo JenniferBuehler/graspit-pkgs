@@ -93,7 +93,6 @@ void ContactsGenerator::applyTransformToContacts(LinkPtr& link, const EigenTrans
     }
 }
 
-
 void ContactsGenerator::scaleContacts(double scale_factor)
 {
     if (isContactsScaled) return;
@@ -357,7 +356,6 @@ std::string ContactsGenerator::getContactsFileContent(const std::string& robotNa
 }
 
 
-
 SoNode * ContactsGenerator::getAxesAsInventor(
         const LinkPtr& from_link, 
         const std::vector<DHParam>& dh,
@@ -469,7 +467,7 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
         return false;
     }
     
-    SoNode * node = getAsInventor(palmLinkName,false, 
+    SoNode * node = getAsInventor(palmLinkName, false, 
         _displayAxes && !_axesFromDH, _axesRadius, _axesLength, addVisualTransform, NULL);
 
     Eigen::Vector3d minBB, maxBB;

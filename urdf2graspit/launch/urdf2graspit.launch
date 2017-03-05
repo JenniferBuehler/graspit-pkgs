@@ -1,7 +1,7 @@
 <launch>
     # the input urdf file
     <arg name="urdf_file"/>
-	
+    
     # The directory onto which to write the output files
     # Output files will be saved into the standard GraspIt! directory
     # structure within this directory.
@@ -9,7 +9,7 @@
      
     # the root link for the hand (or the arm) which is the start of the chain which should be
     # converted to the GraspIt format.
-	<arg name="hand_root_link"/>
+    <arg name="hand_root_link"/>
 
     # names of all finger joints, separated by white spaces
     <arg name="finger_joint_names"/>
@@ -20,8 +20,9 @@
     # negate the joint movement direction
     <arg name="negate_joint_movement" default="false"/>
     
-	<arg name="output_material" default="plastic"/>
+    <arg name="output_material" default="plastic"/>
 
+    <arg name="launch_prefix" default=""/>
 
     # An axis and angle (degrees) can be specified which will transform *all*
     # visuals (not links, but their visuals!) within their local coordinate system.
@@ -33,14 +34,17 @@
     <arg name="visual_corr_axis_z" default="0"/>
     <arg name="visual_corr_axis_angle" default="0"/>
 
-	<node name="urdf2graspit_node" pkg="urdf2graspit" type="urdf2graspit_node" respawn="false"  args="$(arg urdf_file) $(arg output_directory) $(arg hand_root_link) $(arg finger_joint_names)" output="screen">
-		<param name="output_material" value="$(arg output_material)"/>
-		<param name="scale_factor" value="$(arg scale_factor)"/>
-        <param name="negate_joint_movement" value="$(arg negate_joint_movement)"/>
+    <node name="urdf2graspit_node" pkg="urdf2graspit" type="urdf2graspit_node" respawn="false"
+      args="$(arg urdf_file) $(arg output_directory) $(arg hand_root_link) $(arg finger_joint_names)"
+      output="screen" launch-prefix="$(arg launch_prefix)">
 
-        <param name="visual_corr_axis_x" value="$(arg visual_corr_axis_x)"/>
-        <param name="visual_corr_axis_y" value="$(arg visual_corr_axis_y)"/>
-        <param name="visual_corr_axis_z" value="$(arg visual_corr_axis_z)"/>
-        <param name="visual_corr_axis_angle" value="$(arg visual_corr_axis_angle)"/>
-	</node>
+      <param name="output_material" value="$(arg output_material)"/>
+      <param name="scale_factor" value="$(arg scale_factor)"/>
+      <param name="negate_joint_movement" value="$(arg negate_joint_movement)"/>
+
+      <param name="visual_corr_axis_x" value="$(arg visual_corr_axis_x)"/>
+      <param name="visual_corr_axis_y" value="$(arg visual_corr_axis_y)"/>
+      <param name="visual_corr_axis_z" value="$(arg visual_corr_axis_z)"/>
+      <param name="visual_corr_axis_angle" value="$(arg visual_corr_axis_angle)"/>
+    </node>
 </launch>

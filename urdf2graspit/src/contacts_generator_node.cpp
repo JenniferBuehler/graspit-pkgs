@@ -68,6 +68,11 @@ int main(int argc, char** argv)
     priv.param<bool>("negate_joint_movement", negateJointMoves, negateJointMoves);
     ROS_INFO("negate_joint_movement: <%d>", negateJointMoves);
 
+    // if this is true, the DH axes are displayed. Otherwise, the URDF axes are displayed.
+    bool displayDHAxes=false;
+    priv.param<bool>("display_dh_axes", displayDHAxes, displayDHAxes);
+    ROS_INFO("negate_joint_movement: <%d>", displayDHAxes);
+
     // An axis and angle (degrees) can be specified which will transform *all*
     // visuals (not links, but their visuals!) within their local coordinate system.
     // This can be used to correct transformation errors which may have been 
@@ -89,7 +94,7 @@ int main(int argc, char** argv)
     ROS_INFO("### Getting DH parameters...");
     
     urdf2inventor::Urdf2Inventor::UrdfTraverserPtr traverser_conv(new urdf_traverser::UrdfTraverser());
-    urdf2graspit::Urdf2GraspIt converter(traverser_conv, scaleFactor,negateJointMoves, false);
+    urdf2graspit::Urdf2GraspIt converter(traverser_conv, scaleFactor, negateJointMoves);
     
     if (!converter.loadModelFromFile(urdf_filename))
     {
@@ -119,13 +124,12 @@ int main(int argc, char** argv)
     }
     float coefficient = 0.2;
     bool addAxes = true;
-    bool urdfAxes = true;
     float axRad=0.0015;
     float axLen=0.015;
     bool facesCCW=true;
     if (!contGen.generateContactsWithViewer(roots,
         palmLinkName, coefficient, dh_parameters, addAxes,
-        urdfAxes, axRad, axLen, addVisualTrans, facesCCW))
+        displayDHAxes, axRad, axLen, addVisualTrans, facesCCW))
     {
         ROS_ERROR("Could not generate contacts");
         return 0;

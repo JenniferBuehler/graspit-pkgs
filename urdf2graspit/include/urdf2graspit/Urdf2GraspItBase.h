@@ -54,9 +54,8 @@ public:
     typedef urdf2inventor::Urdf2Inventor::UrdfTraverserPtr UrdfTraverserPtr;
 
     explicit Urdf2GraspItBase(UrdfTraverserPtr& traverser,
-            float _scaleFactor = 1000,
-            bool _addAxes=false, float _axesRadius = 0.003, float _axesLength=0.015):
-        urdf2inventor::Urdf2Inventor(traverser, _scaleFactor, _addAxes, _axesRadius, _axesLength),
+            float _scaleFactor = 1000):
+        urdf2inventor::Urdf2Inventor(traverser, _scaleFactor),
         outStructure("iv")
     {
     }
@@ -81,7 +80,7 @@ public:
     {
         return outStructure;
     }
-    
+
 protected:
     /**
      * Checks whether the loaded URDF model is ready for Denavit-Hartenberg representation.
@@ -91,6 +90,9 @@ protected:
      * higher in the hierarchy as well, which is a feature to be added in a future version.
      */
     bool isDHReady(const std::string& fromLink) const;
+
+    // starts URDF viewer to visualize modified URDF, can be used for testing
+    void testVisualizeURDF(const std::string& fromLink);
 
 private:
 

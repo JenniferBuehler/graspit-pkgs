@@ -76,9 +76,8 @@ public:
      * This can be specified with this scale factor.
      * \param _negateJointMoves negates (inverts) joint limits and velocity/effort specified in URDF
      */
-    explicit Urdf2GraspIt(UrdfTraverserPtr& traverser, float _scaleFactor = 1000, bool _negateJointMoves = false,
-            bool _addAxes=false, float _axesRadius = 0.003, float _axesLength=0.015):
-        Urdf2GraspItBase(traverser, _scaleFactor, _addAxes, _axesRadius, _axesLength),
+    explicit Urdf2GraspIt(UrdfTraverserPtr& traverser, float _scaleFactor = 1000, bool _negateJointMoves = false):
+        Urdf2GraspItBase(traverser, _scaleFactor),
         negateJointMoves(_negateJointMoves),
         isDHScaled(false),
         dhTransformed(false)
@@ -105,7 +104,7 @@ public:
      * \param fingerRootNames the roots of all fingers in the hand (the names of the joints which are the first in each finger)
      * \param material the material to use in the converted format
      * \param addVisualTransform this transform will be post-multiplied on all links' **visuals** (not links!) local
-     *      transform (their "origin"). This can be used to correct transformation errors which may have been 
+     *      transform (their "origin"). This can be used to correct transformation errors which may have been
      *      introduced in converting meshes from one format to the other, losing orientation information
      *      (for example, .dae has an "up vector" definition which may have been ignored)
      */
@@ -178,7 +177,7 @@ private:
      * Prints the DH parameters
      */
     void printParams(const std::vector<DHParam>& dh) const;
-  
+
     /**
      * Transforms all link's visuals, collisions and intertials according to the DH parameters.
      * This is needed because the sequence of DH transforms is not equal to the sequence of URDF joint transforms.
@@ -190,7 +189,7 @@ private:
      * Hence, we have to find for each joint the transform from the joint reference frame to the DH reference frame, and transform
      * the visuals/collisions/intertials by it.
      */
-    bool linksToDHReferenceFrames(std::vector<DHParam>& dh);
+    bool linksToDHReferenceFrames(const std::vector<DHParam>& dh);
 
 
     /**

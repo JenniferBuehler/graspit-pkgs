@@ -46,7 +46,7 @@ namespace urdf2graspit
 
 /**
  * \brief Provides methods to generate contacts for GraspIt! including an interative viewer.
- * 
+ *
  * \date March 2016
  * \author Jennifer Buehler
  */
@@ -85,14 +85,14 @@ public:
      * Starts a viewer in which the user may select contact points to be defined for the hand. The function generateContacts()
      * is then called so that contacts are defined for the model.
      *
-     * \param _displayAxes add the local coordinate system axes of the links to the inventor nodes to display. 
+     * \param _displayAxes add the local coordinate system axes of the links to the inventor nodes to display.
      *      z axis is displayed blue, y axis green, x axis red.
      * \param _axesFromDH if true, then \e _displayAxes will display the DH reference frame axes,
      *      otherwise it will be the link reference frames in URDF.
-     * \param _axesRadius radius of the axes, if \e _addAxes is true 
+     * \param _axesRadius radius of the axes, if \e _addAxes is true
      * \param _axesLength length of the axes, if \e _addAxes is true
      * \param addVisualTransform this transform will be post-multiplied on all links' **visuals** (not links!) local
-     *      transform (their "origin"). This can be used to correct transformation errors which may have been 
+     *      transform (their "origin"). This can be used to correct transformation errors which may have been
      *      introduced in converting meshes from one format to the other, losing orientation information
      *      (for example, .dae has an "up vector" definition which may have been ignored)
      * \param facesCCW the faces in the model are ordered counter-clockwise (true should be default)
@@ -153,13 +153,13 @@ protected:
     typedef baselib_binding::shared_ptr<Contact>::type ContactPtr;
 
     bool transformToDHReferenceFrames(const std::vector<DHParam>& dh);
-    
+
     void applyTransformToContacts(LinkPtr& link, const EigenTransform& trans, bool preMult);
 
 
     static bool getDHParam(const std::string jointName, const std::vector<DHParam>& dh, DHParam& jointDH);
 
-    SoNode * getAxesAsInventor(const LinkPtr& from_link, 
+    SoNode * getAxesAsInventor(const LinkPtr& from_link,
             const std::vector<DHParam>& dh,
             float _axesRadius, float _axesLength,
             bool linkIsRoot);
@@ -167,7 +167,7 @@ private:
 
     /**
      * scales the contacts by given factor
-     */ 
+     */
     void scaleContacts(double scale_factor);
 
     // Helper function for generateContacts()
@@ -176,7 +176,7 @@ private:
                                        const float coefficient,
                                        const std::vector<markerselector::MarkerSelector::Marker>& markers);
     bool isContactsScaled;
- 
+
     std::vector<ContactPtr> contacts;
     std::map<std::string, std::vector<ContactPtr> > linkContacts;
 };

@@ -243,7 +243,8 @@ double linesDistance(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
 
 
 bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
-                           const Eigen::Vector3d& pi_1, const Eigen::Vector3d& pi, double& r, double& alpha,
+                           const Eigen::Vector3d& pi_1, const Eigen::Vector3d& pi,
+                           double& r, double& alpha,
                            Eigen::Vector3d& commonNormal, Eigen::Vector3d& nOriginOnZi_1)
 {
     // ROS_INFO_STREAM("getRAndAlpha for "<<zi_1<<", "<<zi);
@@ -282,7 +283,7 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
 
     if (parallel)
     {
-        // ROS_INFO("DHParam: Parallel case for getRAndAlpha");
+        ROS_INFO("DEBUG-INFO DHParam: Parallel case for getRAndAlpha");
         // Re-set nOriginOnZi_1:
         // TODO: Should we consider this case?
         // a) if joint is revolute, set to pi_1 (so that parameter d in the end will be calculated to 0)
@@ -291,7 +292,7 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
         alpha = 0;
         if (zAxEqPl != 2)
         {   // correct alpha to be 
-            ROS_INFO_STREAM("DEBUG-INFO DHParams: Correcting alpha for "<<zi<<" as it's not equal to  "<<zi_1);
+            ROS_INFO_STREAM("DEBUG-INFO DHParam: Correcting alpha for "<<zi<<" as it's not equal to  "<<zi_1);
             alpha = M_PI;
         }
         return true;
@@ -302,10 +303,12 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
     Eigen::AngleAxisd corr(alpha, commonNormal);
     Eigen::Vector3d corrV = corr * zi_1;
     int corrEqPl = equalOrParallelAxis(zi, corrV);
-    // if (!equalAxis(zi, corrV))
     if (corrEqPl != 2)
-    {   // correct alpha to be 
-        ROS_INFO_STREAM("DEBUG-INFO DHParams: Correcting alpha: "<<zi<<", "<<corrV);
+    { 
+        // correct alpha so that it causes a counter-clockwise
+        // rotation around x
+        ROS_INFO_STREAM("DEBUG-INFO DHParams: Correcting alpha (is "
+                        <<alpha<<"): "<<zi<<", "<<corrV);
         alpha = -alpha;
     }
     
@@ -507,7 +510,8 @@ DHParam::EigenTransform DHParam::getTransform(const DHParam::JointConstPtr& join
 }
 
 
-bool DHParam::getTransforms(const std::vector<DHParam>& dh, const bool dh2urdf, std::map<std::string,EigenTransform>& transforms)
+bool DHParam::getTransforms(const std::vector<DHParam>& dh, const bool dh2urdf,
+                            std::map<std::string,EigenTransform>& transforms)
 {
     // starting from the root of a chain, these are the current
     // reference frame transforms in the chain,

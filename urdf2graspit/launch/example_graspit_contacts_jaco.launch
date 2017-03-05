@@ -1,7 +1,7 @@
 <launch>
     # the input urdf file
     <arg name="urdf_file" default="$(find jaco_description)/urdf/jaco_robot.urdf"/>
-	
+    
     # the directory onto which to write the output files
     <arg name="output_directory"/>
 
@@ -9,19 +9,23 @@
     # set to empty string, the default filename is used.
     <arg name="filename" default=""/>
  
-	<arg name="hand_root_link" default="jaco_6_hand_limb"/>
+    <arg name="hand_root_link" default="jaco_6_hand_limb"/>
 
     <arg name="finger_joint_names" default="jaco_finger_joint_0 jaco_finger_joint_2 jaco_finger_joint_4"/>
 
     <arg name="scale_factor" default="1000"/>
     
+    # if this is true, the DH axes are displayed. Otherwise, the URDF axes are displayed.
+    <arg name="display_dh_axes" default="true"/>
+    
     <include file="$(find urdf2graspit)/launch/graspit_contacts_generator.launch">
-		<arg name="urdf_file" value="$(arg urdf_file)"/>
-		<arg name="output_directory" value="$(arg output_directory)"/>
-		<arg name="filename" value="$(arg filename)"/>
-		<arg name="hand_root_link" value="$(arg hand_root_link)"/>
-		<arg name="finger_joint_names" value="$(arg finger_joint_names)"/>
-		<arg name="scale_factor" value="$(arg scale_factor)"/>
+        <arg name="urdf_file" value="$(arg urdf_file)"/>
+        <arg name="output_directory" value="$(arg output_directory)"/>
+        <arg name="filename" value="$(arg filename)"/>
+        <arg name="hand_root_link" value="$(arg hand_root_link)"/>
+        <arg name="finger_joint_names" value="$(arg finger_joint_names)"/>
+        <arg name="scale_factor" value="$(arg scale_factor)"/>
         <arg name="negate_joint_movement" value="true"/>
-	</include>
+        <arg name="display_dh_axes" value="$(arg display_dh_axes)"/>
+    </include>
 </launch>
