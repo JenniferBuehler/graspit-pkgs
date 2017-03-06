@@ -150,17 +150,20 @@ private:
      * This is a recursive function, so it will solve for the requested joint and then call itself on sub-branches
      * \param parentWorldTransform the parent of this joint has this world transform.
      * \param parentX the x-axis as determined by the call of this function for this joint's parent,
-     * or the root x axis for the first call
-     * \param parentZ the z-axis (rotation axis) as determined by the call of this function for this joint's parent,
-     * or the root z axis for the first call
+     * or the root/global x axis for the first call (e.g. 1,0,0)
+     * \param parentZ the z-axis (rotation axis) as determined by the call
+     * of this function for this joint's parent. If \e asRootJoint=true, the value will be ignored.
      * \param parentPos position of parent  as determined by the call of this function for this joint's parent,
      * or the origin for the first call
      * \param asRootJoint set to true for the first call of this function
+     * \param parentWorldTransformDH resulting transformation in DH space at the end of the chain.
+     *  This parameter is used in the recursion and should be the identity for root joints (\e asRootJoint = true).
      */
     bool getDHParams(std::vector<DHParam>& dhparameters, const JointConstPtr& joint,
                      const EigenTransform& parentWorldTransform,
                      const Eigen::Vector3d& parentX, const Eigen::Vector3d& parentZ,
-                     const Eigen::Vector3d parentPos, bool asRootJoint) const;
+                     const Eigen::Vector3d& parentPos, bool asRootJoint,
+                     EigenTransform& parentWorldTransformDH) const;
 
     /**
      * Returns the Denavit-Hartenberg parameters starting from link from_link

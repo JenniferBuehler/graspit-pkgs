@@ -217,10 +217,12 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
                                const EigenTransform& parentWorldTransform,
                                const Eigen::Vector3d& parentX,
                                const Eigen::Vector3d& parentZ,
-                               const Eigen::Vector3d parentPos,
-                               bool asRootJoint) const
+                               const Eigen::Vector3d& parentPos,
+                               bool asRootJoint,
+                               EigenTransform& parentWorldTransformDH) const
 {
-    ROS_INFO_STREAM("======== Transforming joint " << joint->name << " to DH parameters");
+    ROS_INFO_STREAM("======== Transforming joint " << joint->name << " to DH parameters.");
+    // ROS_INFO_STREAM("       Parent axes: " << parentX << ", "<<parentZ<<", position "<<parentPos);
 
     UrdfTraverserConstPtr trav = readTraverser();
     if (!trav)
@@ -245,20 +247,26 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
         // if this is the root joint, we won't consider the joint's
         // previous transforms, as we'll set this one to be the origin
         jointWorldTransform.setIdentity();
+        parentWorldTransformDH.setIdentity();
 
         z = urdf_traverser::getRotationAxis(joint);   // rotation axis is already in world coorinates
         // ROS_INFO_STREAM("Rotation axis of joint "<<joint->name<<": "<<z);
         pos = Eigen::Vector3d(0, 0, 0);
         x = parentX;
+        // ROS_INFO_STREAM("Axes for root joint "<<joint->name<<": z="<<z<<", x="<<x<<", pos="<<pos);
+        // ROS_INFO_STREAM("Joint world transform: "<<parentWorldTransform * urdf_traverser::getTransform(joint));
     }
     else
     {
         EigenTransform jointTransform = urdf_traverser::getTransform(joint);
         jointWorldTransform = parentWorldTransform * jointTransform;
-        //ROS_INFO_STREAM("Parent world transform: "<<parentWorldTransform);
-        //ROS_INFO_STREAM("Joint transform: "<<jointTransform);
-        //ROS_INFO_STREAM("Joint world transform: "<<jointWorldTransform);
+        // ROS_INFO_STREAM("Parent world transform: "<<parentWorldTransform);
+        // ROS_INFO_STREAM("Joint transform: "<<jointTransform);
+        // ROS_INFO_STREAM("Joint world transform: "<<jointWorldTransform);
 
+        // the global rotation axis of the joint is going to be the
+        // new global z-axis of the DH joint transform.
+        // the position is the global position of the joint.
         getGlobalCoordinates(joint, parentWorldTransform, z, pos);
         // ROS_INFO_STREAM("Global rotation axis of joint "<<joint->name<<": "<<z<<", pos "<<pos);
 
@@ -268,6 +276,22 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
             ROS_ERROR("could not obtain dh params");
             return false;
         }
+
+        // The global pose of the DH joint may be different to the global pose 
+        // of the URDF joint. Calculate the pose of the DH joint in world coordinates
+        // and apply it to \e pos, so that the recursion can take this into account.
+        // ROS_INFO_STREAM("Translating  "<<parentPos<<" ( target: "<<pos<<" ) using transform = "<<parentWorldTransformDH);
+
+        Eigen::Vector3d z(0,0,1);
+        parentWorldTransformDH.translate(z*param.d);
+        parentWorldTransformDH.rotate(Eigen::AngleAxisd(param.theta,z));
+        Eigen::Vector3d x(1,0,0); 
+        parentWorldTransformDH.translate(x*param.r);
+        parentWorldTransformDH.rotate(Eigen::AngleAxisd(param.alpha,x));
+
+        Eigen::Vector3d pi_new = parentWorldTransformDH * parentPos;
+        // ROS_INFO_STREAM("PI_NEW: "<<pi_new<<" ( vs URDF space "<<pos<<" )");
+        pos = pi_new;
 
         param.dof_index = dhparameters.size();
         param.joint = trav->readParentJoint(joint);
@@ -286,7 +310,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
         }
         param.childLink = paramChildLink;
         dhparameters.push_back(param);
-        ROS_INFO_STREAM("DH for Joint "<<param.joint->name<<" parent axes: z="<<z<<", x="<<x<<", pos="<<pos<<": "<<param);
+        // ROS_INFO_STREAM("DH for Joint "<<param.joint->name<<" parent axes: z="<<z<<", x="<<x<<", pos="<<pos<<": "<<param);
     }
         
 
@@ -308,7 +332,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
         param.alpha = 0;
 
         dhparameters.push_back(param);
-        //ROS_INFO_STREAM("DH for Joint "<<param.joint->name<<", parent axes: z="<<z<<", x="<<x<<", pos="<<pos<<": "<<param);
+        // ROS_INFO_STREAM("DH for Joint "<<param.joint->name<<", parent axes: z="<<z<<", x="<<x<<", pos="<<pos<<": "<<param);
         return true;
     }
     
@@ -317,7 +341,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
     for (std::vector<JointPtr>::const_iterator pj = childLink->child_joints.begin();
             pj != childLink->child_joints.end(); pj++)
     {
-        if (!getDHParams(dhparameters, *pj, jointWorldTransform, x, z, pos, false)) return false;
+        if (!getDHParams(dhparameters, *pj, jointWorldTransform, x, z, pos, false, parentWorldTransformDH)) return false;
     }
 
     return true;
@@ -332,8 +356,7 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const LinkCon
         ROS_ERROR("Need to call prepareModelForDenavitHartenberg() before DH parameters can be calculated");
         return false;
     }
-    EigenTransform root_transform;
-    root_transform.setIdentity();
+    EigenTransform root_transform = EigenTransform::Identity();
     Eigen::Vector3d x(1, 0, 0);
     Eigen::Vector3d z(0, 0, 1);
     Eigen::Vector3d pos(0, 0, 0);
@@ -341,7 +364,8 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters, const LinkCon
     for (std::vector<JointPtr>::const_iterator pj = from_link->child_joints.begin();
             pj != from_link->child_joints.end(); pj++)
     {
-        if (!getDHParams(dhparameters, *pj, root_transform, x, z, pos, true)) return false;
+      EigenTransform fullDHTrans = EigenTransform::Identity();
+      if (!getDHParams(dhparameters, *pj, root_transform, x, z, pos, true, fullDHTrans)) return false;
     }
 
     return true;

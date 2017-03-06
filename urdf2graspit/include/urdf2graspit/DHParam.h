@@ -30,7 +30,7 @@ namespace urdf2graspit
 
 /**
  * \brief Class providing functions for conversion from urdf to a model described by denavit-hartenberg parameters
- * 
+ *
  * DH Parameters given in this class transform from a reference frame (i) to (i+1).
  * The URDF joint is located at frame (i).
  *
@@ -92,11 +92,19 @@ public:
     }
 
     /**
-     * computes denavit hartenberg parameters out of a few world coordinates:
-     * - frame (i-1): zi_1, xi_i pi_1 are z axis (rotation axis), x axis (obtained
-     *      from previous calls to this function for joints earlier in the chain, or any for root joint)
-     *      and pi_1 is the world position of the frame.
-     * - frame i: zi and pi is z-axis and position of frame i.
+     * Computes Denavit Hartenberg parameters.
+     * \param zi_1 z axis (rotation axis) in frame i-1
+     * \param xi_1 x axis (rotation axis) in frame i-1, obtained
+     *      from previous calls to this function for joints earlier in the chain
+     *      or any axis for root joint.
+     * \param pi_1 world position (global coordinates) in frame i-1, obtained
+     *      from previous calls to this function for joints earlier in the chain
+     *      (when returned as parameter \e pi),
+     *      or for the root joint this is the position of the joint as given
+     *      in URDF space (global coordinates).
+     * \param zi z-axis of frame i.
+     * \param pi position of the joint in frame i.
+     *    This will be the global pose of the joint in URDF space.
      * \param xi the new x-axis of frame i will be returned in this paramter.
      */
     static bool toDenavitHartenberg(DHParam& param,
@@ -125,17 +133,23 @@ public:
 
 private:
     /**
-     * Calcuates DH-Paramters r and alpha between to frames i-1 and i. r is
-     * the distance between them along the common normal. alpha is the angle
-     * between both z-axises. At the same time, returns the origin of the common normal
-     * between frames i-1 and i, and its direction (normalized, but can be re-scaled
-     * to length between frames by multiplying with r).
+     * Calcuates DH-Paramters r and alpha between to frames i-1 and i.
+     * \param xi the common normal between frames i-1 and i (must be normalized,
+     * so it could be re-scaled to the length between frames by multiplying with r).
+     * \param alpha the angle between both z-axises.
      * \param pi_1 and p_i position in world coordinates of frames i-1 and i
      * \param zi_1 and z_i z-axises of both frames i-1 and i
      */
-    static bool getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
+/*
+     * \param r the distance between them along the common normal \e xi.
+     static bool getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
                              const Eigen::Vector3d& pi_1, const Eigen::Vector3d& pi, double& r, double& alpha,
-                             Eigen::Vector3d& commonNormal, Eigen::Vector3d& nOriginOnZi_1);
+                             Eigen::Vector3d& commonNormal, Eigen::Vector3d& nOriginOnZi_1);*/
+      static bool getAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
+                           const Eigen::Vector3d& pi_1, const Eigen::Vector3d& pi,
+                           const Eigen::Vector3d& xi,
+                           double& alpha);
+
 
 
     /**
@@ -150,8 +164,9 @@ private:
     /**
      * gets the common normal between zi_1 (through pi_1) and zi (through pi).
      * \param nOriginOnZi_1 returns the point on zi_1 which is shortest from zi
-     *      (this is intersection point if they intersect, or pi_1 if they are parallel)
+     *      (this is intersection point if they intersect, or pi_1 if they are \e parallel)
      * \param shortestDistance the length of the common normal, or also the shortest distance between the lines.
+     * \param parallel returns true if zi_1 and zi are parallel
      */
     static bool getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi, const Eigen::Vector3d& pi_1,
                                 const Eigen::Vector3d& pi, Eigen::Vector3d& commonNormal,

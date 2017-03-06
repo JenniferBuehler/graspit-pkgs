@@ -107,8 +107,8 @@ bool intersectLinePlane(const Eigen::Vector3d& linePoint, const Eigen::Vector3d&
 
 /**
  * returns distance between two lines (squared) L1=pi_1 + m1* zi_1 and L2=pi + m2 * zi.
- * In case the lines are skew (or intersect), parameter paralllel is false, and the
- * function also returns closest points cli_1 and cli (in parallel case, those will be the same points).
+ * In case the lines are skew (or intersect), parameter parallel is false, and the
+ * function also returns closest points cli_1 and cli (in intersection case, those will be the same points).
  * In case they are parallel, any two closest points along the lines are returned.
  */
 double squaredLinesDistance(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
@@ -241,13 +241,13 @@ double linesDistance(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
 #endif
 
 
-
+#if 0
 bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
                            const Eigen::Vector3d& pi_1, const Eigen::Vector3d& pi,
                            double& r, double& alpha,
                            Eigen::Vector3d& commonNormal, Eigen::Vector3d& nOriginOnZi_1)
 {
-    // ROS_INFO_STREAM("getRAndAlpha for "<<zi_1<<", "<<zi);
+    ROS_INFO_STREAM("getRAndAlpha for "<<zi_1<<", "<<zi);
 
     bool parallel = false;
     if (!getCommonNormal(zi_1, zi, pi_1, pi, commonNormal, nOriginOnZi_1, r, parallel))
@@ -256,6 +256,8 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
         alpha = 0;
         return false;
     }
+
+    ROS_INFO_STREAM("Common normal: "<<commonNormal);
 
     if (std::fabs(zi_1.dot(commonNormal)) > DH_ZERO_DOT_EPSILON)
     {
@@ -285,7 +287,7 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
     {
         ROS_INFO("DEBUG-INFO DHParam: Parallel case for getRAndAlpha");
         // Re-set nOriginOnZi_1:
-        // TODO: Should we consider this case?
+        // TODO: Should we consider this case:
         // a) if joint is revolute, set to pi_1 (so that parameter d in the end will be calculated to 0)
         // b) if joint is prismatic, locate it at a reference position?
         nOriginOnZi_1 = pi_1;
@@ -316,16 +318,74 @@ bool DHParam::getRAndAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& z
     if (fabs(alpha) < 1e-07) alpha=0;
     return true;
 }
+#endif
+
+bool DHParam::getAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
+                           const Eigen::Vector3d& pi_1, const Eigen::Vector3d& pi,
+                           const Eigen::Vector3d& xi, double& alpha)
+{
+    // ROS_INFO_STREAM("getAlpha for "<<zi_1<<", "<<zi);
+
+    int zAxEqPl = equalOrParallelAxis(zi_1, zi);
+    if (zAxEqPl > 0)
+    {
+        ROS_INFO("DEBUG-INFO DHParam: Parallel case for getAlpha");
+        alpha = 0;
+        if (zAxEqPl != 2)
+        {   // correct alpha to be 
+            ROS_INFO_STREAM("DEBUG-INFO DHParam: Correcting alpha for "<<zi<<" as it's not equal to  "<<zi_1);
+            alpha = M_PI;
+        }
+        return true;
+    }
+
+    // for alpha, rotation is to be counter-clockwise around x
+    alpha = acos(zi_1.dot(zi));
+    Eigen::AngleAxisd corr(alpha, xi);
+    Eigen::Vector3d corrV = corr * zi_1;
+    int corrEqPl = equalOrParallelAxis(zi, corrV);
+    if (corrEqPl != 2)
+    { 
+        // correct alpha so that it causes a counter-clockwise
+        // rotation around x
+        ROS_INFO_STREAM("DEBUG-INFO DHParams: Correcting alpha (is "
+                        <<alpha<<"): "<<zi<<", "<<corrV);
+        alpha = -alpha;
+    }
+    
+    if (fabs(alpha) < 1e-07) alpha=0;
+    return true;
+}
 
 
-
-
-bool DHParam::getDAndTheta(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& xi_1, const Eigen::Vector3d& pi_1,
-                           const Eigen::Vector3d& xi, const Eigen::Vector3d& normOriginOnZi_1,
+bool DHParam::getDAndTheta(const Eigen::Vector3d& zi_1,
+                           const Eigen::Vector3d& xi_1,
+                           const Eigen::Vector3d& pi_1,
+                           const Eigen::Vector3d& xi,
+                           const Eigen::Vector3d& normOriginOnZi_1,
                            double& d, double& theta)
 {
     Eigen::Vector3d originDiff = normOriginOnZi_1 - pi_1;
+    // ROS_INFO_STREAM("getDAndTheta, difference along z "<<originDiff);
     d = originDiff.norm();
+    if (d > DH_ZERO_EPSILON)
+    {
+      originDiff.normalize();  // normalize for call of equalOrParallelAxis
+      int zAxEqPl = equalOrParallelAxis(originDiff, zi_1);
+      if (zAxEqPl == 0)
+      {
+        // neither equal nor parallel
+        ROS_ERROR_STREAM("Consistency: translation along z axis should have "
+                         <<"been parallel or equal to the z axis!"
+                         <<originDiff<<", "<<zi_1<<" (normOriginOnZ="<<normOriginOnZi_1<<")");
+        return false;
+      }
+      else if (zAxEqPl == 1)
+      {
+        ROS_INFO_STREAM("DEBUG-INFO: Translation along z parallel to z, but not equal, so d is negative");
+        d = -d;
+      }
+    }
 
     if ((xi_1.norm() < DH_ZERO_EPSILON) || (xi.norm() < DH_ZERO_EPSILON))
     {
@@ -365,9 +425,58 @@ bool DHParam::toDenavitHartenberg(DHParam& param,
                                   const Eigen::Vector3d& pi,
                                   Eigen::Vector3d& xi)
 {
+    // get the common normal, which is going to be the new x axis
+    bool parallel = false;
     Eigen::Vector3d nOriginOnZi_1;
+    if (!getCommonNormal(zi_1, zi, pi_1, pi, xi, nOriginOnZi_1, param.r, parallel))
+    {
+        ROS_ERROR("Common normal can't be obtained");
+        return false;
+    }
 
-    if (!getRAndAlpha(zi_1, zi, pi_1, pi, param.r, param.alpha, xi, nOriginOnZi_1))
+    if (std::fabs(zi_1.dot(xi)) > DH_ZERO_DOT_EPSILON)
+    {
+        ROS_ERROR_STREAM("Consistency: Zi-1 and common normal not orthogonal: "<<zi_1.dot(xi)<<", zi_1 = "<<zi_1<<", xi = "<<xi);
+        ROS_INFO_STREAM("angle "<<acos(zi_1.dot(xi))*180/M_PI);
+        return false;
+    }
+    if (std::fabs(zi.dot(xi)) > DH_ZERO_DOT_EPSILON)
+    {
+        ROS_ERROR_STREAM("Consistency: Zi and common normal not orthogonal: "<<zi.dot(xi)<<", zi = "<<zi<<", xi = "<<xi);
+        ROS_INFO_STREAM("angle "<<acos(zi.dot(xi))*180/M_PI);
+        return false;
+    }
+
+    // ROS_INFO_STREAM("Common normal of "<<zi_1<<" and "<<zi<<": "<<xi<<"(parallel: "<<parallel<<", closest point="<<nOriginOnZi_1<<")");
+   
+    // just a consistency check to see that equalOrParallelAxis works the same
+    // as the return value of parallel from getCommonNormal(): 
+    int zAxEqPl = equalOrParallelAxis(zi_1, zi);
+    if ((zAxEqPl > 0) != parallel)
+    {
+        ROS_ERROR_STREAM("Consistency in DHParams functions: "
+            <<"both functions must have considered axes parallel. zi: " 
+            <<zi_1<<" zi: "<<zi<<", parallel = "
+            <<parallel<<" zAxEqPl = "<<zAxEqPl);
+    }
+
+    // the common normal is parallel  
+    if (parallel)
+    {
+        ROS_INFO("DEBUG-INFO DHParam: Parallel case for getCommonNormal");
+        // nOriginOnZi_1 should already by pi_1 (set by getCommonNormal).
+        // But get this case anyway for debugging.
+        // TODO: Should we consider this case:
+        // a) if joint is revolute, set to pi_1 (so that parameter d in the end will be calculated to 0)
+        // b) if joint is prismatic, locate it at a reference position?
+        nOriginOnZi_1 = pi_1;
+    }
+    
+    // cap small values close to 0
+    if (fabs(param.r) < 1e-07) param.r=0;
+
+    if (!getAlpha(zi_1, zi, pi_1, pi, xi, param.alpha))
+    //if (!getRAndAlpha(zi_1, zi, pi_1, pi, param.r, param.alpha, xi, nOriginOnZi_1))
     {
         ROS_ERROR("Could not get r and alpha");
         return false;
@@ -379,10 +488,27 @@ bool DHParam::toDenavitHartenberg(DHParam& param,
         return false;
     }
 
+/*
+    // Do the full transform of the joint pose pi_1
+    // to pi, this may have changed pi.
+    EigenTransform transform = EigenTransform::Identity();
+    Eigen::Vector3d z(0,0,1);
+    transform.rotate(Eigen::AngleAxisd(param.theta,z));
+    transform.translate(z*param.d);
+    ROS_INFO_STREAM("..Translated along z by "<<param.d<<": "<<transform * pi_1);
+    Eigen::Vector3d x(1,0,0); 
+    transform.rotate(Eigen::AngleAxisd(param.alpha,x));
+    transform.translate(x*param.r);
+
+    Eigen::Vector3d pi_new = transform * pi_1;
+    ROS_INFO_STREAM("PI_NEW: "<<pi_new<<" ( vs URDF space "<<pi<<" )");
+    pi = pi_new;
+
+*/
+
+
     return true;
 }
-
-
 
 
 
@@ -403,7 +529,7 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
     {   // lines intersect or are equal
         if ((zi_1 - zi).norm() < DH_ZERO_EPSILON)
         {   // z axises are equal
-            ROS_WARN_STREAM("z-axises equal and lines intersect. No common normal can be obtained ("
+            ROS_WARN_STREAM("z-axises equal. No common normal can be obtained ("
                             << zi_1 << " at " << pi_1 << ", " << zi << " at " << pi << ")");
             commonNormal = Eigen::Vector3d(0, 0, 0);
             return false;
@@ -412,6 +538,7 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
         {   // z-axes intersect
             ROS_INFO_STREAM("z-axises intersect! "<<zi_1<<" at "<<pi_1<<", "<<zi<<" at "<<pi);
             commonNormal = zi_1.cross(zi);
+            // commonNormal.normalize();
         }
         // ROS_INFO_STREAM("Lines are parallel. Shortest distance: "<<shortestDistance<<". Common normal: "<<commonNormal);
     }
@@ -422,6 +549,7 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
         // ROS_INFO_STREAM("Lines are skew. Shortest distance: "<<shortestDistance<<". Common normal: "<<commonNormal);
     }
 
+    // consistency check
     // ROS_INFO_STREAM("Normal length: "<<commonNormal.norm());
     if (std::fabs(commonNormal.norm()-1.0) > DH_ZERO_EPSILON)
     {
@@ -438,7 +566,6 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
     {
         nOriginOnZi_1 = pi_1;
     }
-
     return true;
 }
 

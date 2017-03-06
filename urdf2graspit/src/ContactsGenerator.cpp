@@ -404,7 +404,7 @@ SoNode * ContactsGenerator::getAxesAsInventor(
         return NULL;
     }
 
-
+    // recurse to children
     for (std::vector<JointPtr>::const_iterator pj = from_link->child_joints.begin();
             pj != from_link->child_joints.end(); pj++)
     {
