@@ -536,7 +536,7 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
         }
         else
         {   // z-axes intersect
-            ROS_INFO_STREAM("z-axises intersect! "<<zi_1<<" at "<<pi_1<<", "<<zi<<" at "<<pi);
+            ROS_INFO_STREAM("DEBUG-INFO: z-axises intersect! "<<zi_1<<" at "<<pi_1<<", "<<zi<<" at "<<pi);
             commonNormal = zi_1.cross(zi);
             // commonNormal.normalize();
         }
@@ -576,6 +576,8 @@ DHParam::EigenTransform DHParam::getTransform(const DHParam& p)
     EigenTransform ret;
     ret.setIdentity();
 
+#if 1
+
     double ct = cos(p.theta);
     double ca = cos(p.alpha);
     double st = sin(p.theta);
@@ -593,24 +595,23 @@ DHParam::EigenTransform DHParam::getTransform(const DHParam& p)
     m(2, 2) = ca;
     m(2, 3) = p.d;
 
-
     ret = EigenTransform(m);
 
-    /*
+#else
+
     //this is how graspit computes the transformation matrix,
     //which actually amounts to the same, as rotating around one axis and
     //then translating along the same is commutative.
     ret.setIdentity();
-    Eigen::AngleAxisd arot(p.alpha,Eigen::Vector3d(1,0,0));
     Eigen::AngleAxisd trot(p.theta,Eigen::Vector3d(0,0,1));
-
     ret.rotate(trot);
     ret.translate(Eigen::Vector3d(0,0,p.d));
+    Eigen::AngleAxisd arot(p.alpha,Eigen::Vector3d(1,0,0));
     ret.translate(Eigen::Vector3d(p.r,0,0));
     ret.rotate(arot);
 
     ROS_INFO_STREAM("Transform compares: "<<std::endl<<ret<<std::endl<<EigenTransform(m));
-    */
+#endif
     return ret;
 }
 

@@ -54,7 +54,7 @@ public:
 /**
  * \brief Overwrites MeshConvertRecursionParams to include a special transform per link
  */
-class GraspitMeshConvertRecursionParams: public urdf2inventor::MeshConvertRecursionParams<std::string>
+/*class GraspitMeshConvertRecursionParams: public urdf2inventor::MeshConvertRecursionParams<std::string>
 {
 public:
     typedef GraspitMeshConvertRecursionParams Self;
@@ -73,7 +73,7 @@ public:
       ROS_INFO("CALLING CUSTOM");
       return addVisualTransform;
     }
-};
+};*/
 
 
 

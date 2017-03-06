@@ -238,6 +238,10 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
         return false;
     }
 
+//    ROS_INFO_STREAM("Transform is for link "<<childLink->name);
+/*    LinkConstPtr parentLink = trav->readLink(joint->parent_link_name);
+    ROS_INFO_STREAM("Parent is "<<parentLink->name); */
+
     Eigen::Vector3d z, pos, x;
 
     EigenTransform jointWorldTransform;
@@ -290,8 +294,13 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
         parentWorldTransformDH.rotate(Eigen::AngleAxisd(param.alpha,x));
 
         Eigen::Vector3d pi_new = parentWorldTransformDH * parentPos;
-        // ROS_INFO_STREAM("PI_NEW: "<<pi_new<<" ( vs URDF space "<<pos<<" )");
+        // ROS_INFO_STREAM("Transformed DH pose: "<<pi_new<<" ( vs URDF space "<<pos<<" )");
         pos = pi_new;
+
+/*        EigenTransform diffTransform = jointTransform.inverse() * parentWorldTransformDH;
+        ROS_INFO_STREAM("URDF transform: "<<jointTransform);
+        ROS_INFO_STREAM("DH transform: "<<parentWorldTransformDH);
+        ROS_INFO_STREAM("Diff transform: "<<diffTransform);*/
 
         param.dof_index = dhparameters.size();
         param.joint = trav->readParentJoint(joint);
@@ -469,7 +478,6 @@ bool Urdf2GraspIt::coordsConvert(const JointPtr& joint, const JointPtr& root_joi
 }
 */
 
-
 bool Urdf2GraspIt::linksToDHReferenceFrames(const std::vector<DHParam>& dh)
 {
     UrdfTraverserPtr trav = getTraverser();
@@ -489,7 +497,6 @@ bool Urdf2GraspIt::linksToDHReferenceFrames(const std::vector<DHParam>& dh)
     std::map<std::string,EigenTransform>::iterator it;
     for (it=transforms.begin(); it!=transforms.end(); ++it)
     {
-            
         LinkPtr link=trav->getLink(it->first);
         if (!link)
         {
@@ -499,11 +506,8 @@ bool Urdf2GraspIt::linksToDHReferenceFrames(const std::vector<DHParam>& dh)
         bool preApply = true;
         urdf_traverser::applyTransform(link, it->second, preApply);
     }
-    
     return true;
 }
-
-
 
 
 void Urdf2GraspIt::scaleParams(std::vector<DHParam>& dh, double scale_factor) const
@@ -539,6 +543,8 @@ bool Urdf2GraspIt::toDenavitHartenberg(const std::string& fromLink)
     }
     dh_parameters = dhparams;
     dhTransformed = true;
+    
+    // Urdf2GraspItBase::testVisualizeURDF(fromLink);
 
     /*for (std::vector<DHParam>::iterator d=dhparams.begin(); d!=dhparams.end(); ++d) {
         ROS_INFO_STREAM("DH param: "<<*d);
@@ -551,6 +557,8 @@ bool Urdf2GraspIt::toDenavitHartenberg(const std::string& fromLink)
         ROS_ERROR("Could not adjust transforms");
         return false;
     }
+    
+    // Urdf2GraspItBase::testVisualizeURDF(fromLink);
 
     return true;
 }
@@ -634,6 +642,7 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParam
     printParams(dh_parameters);
     
     ROS_INFO("##### Scaling DH parameters");
+
     // scale up all dh parameters to match the scale factor,
     // and also all link/collision/intertial transforms given in the URDF
 
@@ -642,6 +651,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParam
         scaleParams(dh_parameters, getScaleFactor());
         isDHScaled = true;
     }
+    
+    // Urdf2GraspItBase::testVisualizeURDF(param->rootLinkName);
 
     return result;
 }
@@ -649,6 +660,8 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParam
 
 Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::postConvert(const ConversionParametersPtr& cparams, ConversionResultPtr& _result)
 {
+    // Urdf2GraspItBase::testVisualizeURDF();
+
     GraspItConversionResultPtr result = baselib_binding_ns::dynamic_pointer_cast<GraspItConversionResult>(_result);
     if (!result)
     {
@@ -807,10 +820,10 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
             material,
             fingerRootNames, addVisualTransform));
 
-    MeshConvertRecursionParamsPtr mParams(new GraspitMeshConvertRecursionParams(getScaleFactor(), material,
+/*    MeshConvertRecursionParamsPtr mParams(new GraspitMeshConvertRecursionParams(getScaleFactor(), material,
                                         OUTPUT_EXTENSION, addVisualTransform));
-
-    ConversionResultPtr convResult = convert(params, mParams);
+*/
+    ConversionResultPtr convResult = convert(params); //, mParams);
     if (!convResult || !convResult->success)
     {
         ROS_ERROR("Could not do the conversion");
