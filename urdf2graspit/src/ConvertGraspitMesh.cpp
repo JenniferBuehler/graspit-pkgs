@@ -21,6 +21,7 @@ using urdf_traverser::SpherePtr;
 using urdf_traverser::CylinderPtr;
 using urdf_traverser::BoxPtr;
 
+
 /**
  * Function to be called during recursion incurred in convertGraspItMeshes()
  */
@@ -29,6 +30,7 @@ int convertGraspItMesh(urdf_traverser::RecursionParamsPtr& p)
     // ROS_INFO("convert mesh for %s",link->name.c_str());
     typedef urdf2inventor::MeshConvertRecursionParams<std::string> MeshConvertRecursionParamsT;
     typename MeshConvertRecursionParamsT::Ptr param = baselib_binding_ns::dynamic_pointer_cast<MeshConvertRecursionParamsT>(p);
+    // GraspitMeshConvertRecursionParams::Ptr param = baselib_binding_ns::dynamic_pointer_cast<GraspitMeshConvertRecursionParams>(p);
     if (!param.get())
     {
         ROS_ERROR("Wrong recursion parameter type");
@@ -73,6 +75,7 @@ bool urdf2graspit::convertGraspItMeshes(
 
     typedef urdf2inventor::MeshConvertRecursionParams<std::string> MeshConvertRecursionParamsT;
     typename MeshConvertRecursionParamsT::Ptr meshParams(new MeshConvertRecursionParamsT(
+    // GraspitMeshConvertRecursionParams::Ptr meshParams(new GraspitMeshConvertRecursionParams(
             scale_factor,
             material,
             file_extension,

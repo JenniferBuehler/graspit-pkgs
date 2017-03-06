@@ -806,7 +806,11 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::processAll(const std::string& ur
             palmLinkName,
             material,
             fingerRootNames, addVisualTransform));
-    ConversionResultPtr convResult = convert(params);
+
+    MeshConvertRecursionParamsPtr mParams(new GraspitMeshConvertRecursionParams(getScaleFactor(), material,
+                                        OUTPUT_EXTENSION, addVisualTransform));
+
+    ConversionResultPtr convResult = convert(params, mParams);
     if (!convResult || !convResult->success)
     {
         ROS_ERROR("Could not do the conversion");

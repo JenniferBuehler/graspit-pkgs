@@ -23,11 +23,12 @@
 #include <string>
 #include <map>
 #include <urdf2inventor/ConversionResult.h>
+#include <urdf2inventor/MeshConvertRecursionParams.h>
 
 namespace urdf2graspit
 {
 
-class ConversionParameters: 
+class ConversionParameters:
     public urdf2inventor::ConversionParameters
 {
 public:
@@ -48,6 +49,32 @@ public:
     std::string robotName;
     std::vector<std::string> fingerRoots;
 };
+
+
+/**
+ * \brief Overwrites MeshConvertRecursionParams to include a special transform per link
+ */
+class GraspitMeshConvertRecursionParams: public urdf2inventor::MeshConvertRecursionParams<std::string>
+{
+public:
+    typedef GraspitMeshConvertRecursionParams Self;
+    typedef urdf2inventor::MeshConvertRecursionParams<std::string> Super;
+    typedef typename baselib_binding::shared_ptr<Self>::type Ptr;
+    explicit GraspitMeshConvertRecursionParams(double _scale_factor, const std::string _material,
+                                        const std::string& _extension,
+                                        const urdf_traverser::EigenTransform& _addVisualTransform):
+        Super(_scale_factor, _material, _extension, _addVisualTransform) {}
+    GraspitMeshConvertRecursionParams(const GraspitMeshConvertRecursionParams& o):
+        Super(o){}
+    virtual ~GraspitMeshConvertRecursionParams() {}
+
+    virtual urdf_traverser::EigenTransform getVisualTransform() const
+    {
+      ROS_INFO("CALLING CUSTOM");
+      return addVisualTransform;
+    }
+};
+
 
 
 /**
