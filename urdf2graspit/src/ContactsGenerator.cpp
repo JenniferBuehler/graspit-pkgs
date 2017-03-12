@@ -228,7 +228,8 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
     initOutStructure(trav->getModelName());
 
     // first, do the palm:
-    MarkerSelector::MarkerMap::const_iterator palmM = markers.find(palmLinkName);
+    std::string palmLinkNameClean = MarkerSelector::Marker::toSoBaseName(palmLinkName);
+    MarkerSelector::MarkerMap::const_iterator palmM = markers.find(palmLinkNameClean);
     if (palmM != markers.end())
     {
         int linkNum = 0;
@@ -242,7 +243,8 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
 
     // now, do all the fingers:
     int fingerNum = -1;
-    for (std::vector<std::string>::const_iterator it = rootFingerJoints.begin(); it != rootFingerJoints.end(); ++it)
+    for (std::vector<std::string>::const_iterator it = rootFingerJoints.begin();
+         it != rootFingerJoints.end(); ++it)
     {
         ++fingerNum;
         // ROS_INFO("Handling root finger %s",it->c_str());
@@ -256,7 +258,8 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
         }
         std::vector<JointPtr> chain;
         bool onlyActive = true;
-        if (!urdf_traverser::getDependencyOrderedJoints(*trav, chain, root_joint, false, onlyActive) || chain.empty())
+        if (!urdf_traverser::getDependencyOrderedJoints(*trav, chain, root_joint, false,
+                                                        onlyActive) || chain.empty())
         {
             ROS_ERROR("Could not get joint chain, joint %s", root_joint->name.c_str());
             return false;
@@ -269,14 +272,14 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
             JointPtr chainJoint = *cit;
             std::string linkName = chainJoint->child_link_name;
 
-            MarkerSelector::MarkerMap::const_iterator markerIt = markers.find(linkName);
+            std::string linkNameClean = MarkerSelector::Marker::toSoBaseName(linkName);
+            MarkerSelector::MarkerMap::const_iterator markerIt = markers.find(linkNameClean);
             if (markerIt == markers.end())
             {
                 // no markers defined for this link
-                // ROS_INFO("No markers defined for this link: %s",linkName.c_str());
+                ROS_INFO("No markers defined for this link: %s",linkName.c_str());
                 continue;
             }
-
 
             // ROS_INFO("Marker defined for link %s",linkName.c_str());
 
@@ -511,8 +514,8 @@ bool ContactsGenerator::generateContactsWithViewer(const std::vector<std::string
     markerSelector.runViewer();
 
     MarkerSelector::MarkerMap markers = markerSelector.getMarkers();
-    // ROS_INFO("Number of contacts: %lu",markers.size());
-    // ROS_INFO("Markers: %s",markerSelector.toString().c_str());
+    ROS_INFO("Number of contacts: %lu",markers.size());
+    ROS_INFO("Markers: %s",markerSelector.toString().c_str());
 
     // if there was a visual transform (addVisualTransform) we also need
     // to correct the normals which are now in visual coordinate space

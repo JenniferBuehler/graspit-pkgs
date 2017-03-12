@@ -40,7 +40,6 @@
 #define RAD_TO_DEG 180/M_PI
 
 using urdf2graspit::Urdf2GraspIt;
-using urdf2graspit::markerselector::MarkerSelector;
 using urdf2graspit::xmlfuncs::FingerChain;
 
 bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,

@@ -134,6 +134,7 @@ int main(int argc, char** argv)
         ROS_ERROR("Could not generate contacts");
         return 0;
     }
+
     std::string contacts = contGen.getContactsFileContent(traverser_cont->getModelName());
     ROS_INFO_STREAM("Contacts generated."); // <<": "<<contacts);
 

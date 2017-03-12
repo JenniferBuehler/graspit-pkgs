@@ -47,6 +47,39 @@
 
 using urdf2graspit::markerselector::MarkerSelector;
 
+std::string MarkerSelector::Marker::toSoBaseName(const std::string& name)
+{
+  // same behaviour as in SoBase::setName() copied in this function.
+  std::string goodstring;
+
+  // check for bad characters
+  const char * str = name.c_str();
+  bool isbad = !SbName::isBaseNameStartChar(name[0]);
+
+  int i;
+  const int namelen = name.size();
+  for (i = 1; i < namelen && !isbad; i++)
+  {
+    isbad = !SbName::isBaseNameChar(name[i]);
+  }
+
+  if (isbad)
+  {
+    // replace bad characters
+    if (!SbName::isBaseNameStartChar(name[0])) goodstring += '_';
+
+    for (i = 0; i < namelen; i++)
+    {
+      goodstring += SbName::isBaseNameChar(name[i]) ? name[i] : '_';
+    }
+  }
+  else
+  {
+    goodstring = name;
+  }
+  return goodstring;
+}
+
 
 bool MarkerSelector::writeResults(const std::string& outputFile)
 {

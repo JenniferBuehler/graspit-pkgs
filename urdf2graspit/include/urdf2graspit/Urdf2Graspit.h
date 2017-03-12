@@ -35,7 +35,6 @@
 #include <urdf2graspit/Urdf2GraspItBase.h>
 
 #include <urdf2graspit/DHParam.h>
-#include <urdf2graspit/MarkerSelector.h>
 #include <urdf2graspit/ConversionResult.h>
 #include <urdf2graspit/OutputStructure.h>
 

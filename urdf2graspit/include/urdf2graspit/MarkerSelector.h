@@ -76,13 +76,21 @@ public:
             normal = Eigen::Vector3d(x, y, z);
         }
 
+        static std::string toSoBaseName(const std::string& name);
+
         // coordinates in link reference frame
         Eigen::Vector3d coords;
 
         // normal
         Eigen::Vector3d normal;
 
-        // name of the link the marker is on
+        // name of the link the marker is on.
+        // Note that this will be the name of the link in the Coin naming
+        // convention, which may mean that some invalid characters of the
+        // original link name (from URDF) may have been replaced by '_'.
+        // See also SoBase::setName() for more details.
+        // You may use the helper function toSoBaseName() to transform
+        // a name just as SoBase::setName() would.
         std::string linkName;
         // name of the visual the marker is on
         int visualNum;
@@ -132,9 +140,9 @@ private:
     static bool sortMarker(const Marker& i, const Marker& j);
 
     static bool writeToFile(const std::string& content, const std::string& filename);
-    
+
     std::vector<Marker> markers;
-    
+
     // map for all the nodes associated to the marker cylinder nodes, sorted by ID
     typedef std::map<int, SoNode*> MarkerNodeMap;
 
