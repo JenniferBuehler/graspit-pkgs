@@ -2,9 +2,9 @@
     <arg name="urdf_file" default="$(find jaco_description)/urdf/jaco_robot.urdf"/>
     
     <!-- command line parameter -->
-    <arg name="iv_or_link" default=""/>
+    <arg name="iv_or_link" default="jaco_6_hand_limb"/>
     
-    <arg name="join_fixed_links" default="false"/>
+    <arg name="join_fixed_links" default="true"/>
     <arg name="rotate_axes_z" default="true"/>
     <arg name="display_axes" default="true"/>
     <arg name="axes_radius" default="0.001"/>

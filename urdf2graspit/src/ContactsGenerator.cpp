@@ -277,7 +277,7 @@ bool ContactsGenerator::generateContacts(const std::vector<std::string>& rootFin
             if (markerIt == markers.end())
             {
                 // no markers defined for this link
-                ROS_INFO("No markers defined for this link: %s",linkName.c_str());
+                // ROS_INFO("No markers defined for this link: %s",linkName.c_str());
                 continue;
             }
 
