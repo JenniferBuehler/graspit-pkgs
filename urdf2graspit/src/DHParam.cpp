@@ -366,8 +366,8 @@ bool DHParam::getDAndTheta(const Eigen::Vector3d& zi_1,
                            double& d, double& theta)
 {
     Eigen::Vector3d originDiff = normOriginOnZi_1 - pi_1;
-    // ROS_INFO_STREAM("getDAndTheta, difference along z "<<originDiff);
     d = originDiff.norm();
+    // ROS_INFO_STREAM("getDAndTheta, difference along z "<<originDiff<<" (d = "<<d<<")");
     if (d > DH_ZERO_EPSILON)
     {
       originDiff.normalize();  // normalize for call of equalOrParallelAxis
@@ -396,6 +396,7 @@ bool DHParam::getDAndTheta(const Eigen::Vector3d& zi_1,
 
     // theta is angle between common normal (xi) and xi_1 around zi_1
     theta = acos(xi_1.dot(xi));
+    // ROS_INFO_STREAM("Theta: Angle between "<<xi<<" and "<<xi_1<<" is "<<theta);
     if (std::fabs(theta) < DH_ZERO_EPSILON)
     {
         return true;
@@ -407,8 +408,9 @@ bool DHParam::getDAndTheta(const Eigen::Vector3d& zi_1,
     int corrEqPl = equalOrParallelAxis(xi, corrV);
     if (corrEqPl != 2)
     {   // correct alpha to be 
-        ROS_INFO_STREAM("DEBUG-INFO DHParams: Correcting theta: "<<xi<<", "<<corrV);
         theta = -theta;
+        ROS_INFO_STREAM("DEBUG-INFO DHParams: Correcting theta: "<<xi<<", "<<corrV
+                        <<", theta="<<theta);
     }
 
     if (fabs(theta) < 1e-07) theta=0;
@@ -478,10 +480,11 @@ bool DHParam::toDenavitHartenberg(DHParam& param,
     if (!getAlpha(zi_1, zi, pi_1, pi, xi, param.alpha))
     //if (!getRAndAlpha(zi_1, zi, pi_1, pi, param.r, param.alpha, xi, nOriginOnZi_1))
     {
-        ROS_ERROR("Could not get r and alpha");
+        ROS_ERROR("Could not get alpha");
         return false;
     }
 
+    // ROS_INFO_STREAM("Got alpha " << param.alpha << ". ");
     if (!getDAndTheta(zi_1, xi_1, pi_1, xi, nOriginOnZi_1, param.d, param.theta))
     {
         ROS_ERROR("Could not get d and theta");
@@ -545,8 +548,13 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
     else
     {
         commonNormal = cli - cli_1;
+        // ROS_INFO_STREAM("Lenght of diff: " << commonNormal.norm());
         commonNormal.normalize();
-        // ROS_INFO_STREAM("Lines are skew. Shortest distance: "<<shortestDistance<<". Common normal: "<<commonNormal);
+        /*if (!parallel) ROS_INFO_STREAM("Lines are skew. Shortest distance: "
+                                       <<shortestDistance<<". Common normal: "<<commonNormal);
+        else ROS_INFO_STREAM("Lines are parallel. Closest points: "
+                             <<cli<<", "<<cli_1<<". Shortest distance: "
+                             <<shortestDistance<<". Common normal: "<<commonNormal);*/
     }
 
     // consistency check

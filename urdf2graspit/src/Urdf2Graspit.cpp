@@ -244,7 +244,8 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
 
     Eigen::Vector3d z, pos, x;
 
-    EigenTransform jointWorldTransform;
+    EigenTransform jointWorldTransform = EigenTransform::Identity();
+    EigenTransform jointWorldTransformDH = EigenTransform::Identity();
 
     if (asRootJoint)
     {
@@ -286,21 +287,23 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
         // and apply it to \e pos, so that the recursion can take this into account.
         // ROS_INFO_STREAM("Translating  "<<parentPos<<" ( target: "<<pos<<" ) using transform = "<<parentWorldTransformDH);
 
+        EigenTransform jointTransformDH = EigenTransform::Identity();
         Eigen::Vector3d z(0,0,1);
-        parentWorldTransformDH.translate(z*param.d);
-        parentWorldTransformDH.rotate(Eigen::AngleAxisd(param.theta,z));
+        jointTransformDH.translate(z*param.d);
+        jointTransformDH.rotate(Eigen::AngleAxisd(param.theta,z));
         Eigen::Vector3d x(1,0,0); 
-        parentWorldTransformDH.translate(x*param.r);
-        parentWorldTransformDH.rotate(Eigen::AngleAxisd(param.alpha,x));
+        jointTransformDH.translate(x*param.r);
+        jointTransformDH.rotate(Eigen::AngleAxisd(param.alpha,x));
 
-        Eigen::Vector3d pi_new = parentWorldTransformDH * parentPos;
+        jointWorldTransformDH = parentWorldTransformDH * jointTransformDH;
+
+        /*ROS_INFO_STREAM("parentWorldTransformDH: "<<jointTransformDH);
+        ROS_INFO_STREAM("joint transform DH: "<<jointTransformDH);
+        ROS_INFO_STREAM("joint world transform DH: "<<jointWorldTransformDH);*/
+
+        Eigen::Vector3d pi_new = jointWorldTransformDH.translation();
         // ROS_INFO_STREAM("Transformed DH pose: "<<pi_new<<" ( vs URDF space "<<pos<<" )");
         pos = pi_new;
-
-/*        EigenTransform diffTransform = jointTransform.inverse() * parentWorldTransformDH;
-        ROS_INFO_STREAM("URDF transform: "<<jointTransform);
-        ROS_INFO_STREAM("DH transform: "<<parentWorldTransformDH);
-        ROS_INFO_STREAM("Diff transform: "<<diffTransform);*/
 
         param.dof_index = dhparameters.size();
         param.joint = trav->readParentJoint(joint);
@@ -350,7 +353,8 @@ bool Urdf2GraspIt::getDHParams(std::vector<DHParam>& dhparameters,
     for (std::vector<JointPtr>::const_iterator pj = childLink->child_joints.begin();
             pj != childLink->child_joints.end(); pj++)
     {
-        if (!getDHParams(dhparameters, *pj, jointWorldTransform, x, z, pos, false, parentWorldTransformDH)) return false;
+        if (!getDHParams(dhparameters, *pj, jointWorldTransform, x, z,
+                         pos, false, jointWorldTransformDH)) return false;
     }
 
     return true;
