@@ -74,5 +74,5 @@
 		<link dynamicJointType='Revolute'>8_finger_pinkie.xml</link>
 	</chain>
 	<eigenGrasps>eigen/eigen.xml</eigenGrasps>
-	<virtualContacts>virtual/contacts.vgr</virtualContacts>
+	<virtualContacts>virtual/contacts.xml</virtualContacts>
 </robot>
