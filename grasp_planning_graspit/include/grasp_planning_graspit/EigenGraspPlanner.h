@@ -84,11 +84,11 @@ public:
     // Later will be: enum  GraspItStateType{Complete, AxisAngle, Ellipsoid, Approach};
     enum GraspItStateType  {AxisAngle};
 
-    // Will laster be 1:1 mapping from original GraspIt! SearchEnergyType, now only
-    // supports ENERGY_CONTACT. All later types:
-    // ENERGY_CONTACT, ENERGY_POTENTIAL_QUALITY, ENERGY_CONTACT_QUALITY,
-    // ENERGY_AUTOGRASP_QUALITY, ENERGY_GUIDED_AUTOGRASP, ENERGY_STRICT_AUTOGRASP,
-    // ENERGY_COMPLIANT, ENERGY_DYNAMIC
+    // Mapping to GraspIt! search energy type. For now only
+    // supports CONTACT_ENERGY. All other types still to be added:
+    // CONTACT_ENERGY, POTENTIAL_QUALITY_ENERGY, CONTACT_QUALITY_ENERGY,
+    // AUTOGRASP_QUALITY_ENERGY, GUIDED_AUTOGRASP_ENERGY, STRICT_AUTOGRASP_ENERGY,
+    // COMPLIANT_ENERGY, DYNAMIC_ENERGY
     enum GraspItSearchEnergyType  {EnergyContact};
 
     // Type of planner ot use. So far, only simulated annealing supported, as

@@ -1,0 +1,106 @@
+<?xml version="1.0" ?> 
+<virtual_contacts>
+<robot_name>jaco_robot</robot_name>
+<virtual_contact>
+<finger_number>0</finger_number>
+<link_number>0</link_number>
+<num_friction_edges>20</num_friction_edges>
+<friction_edges>
+<friction_edge>6.12323e-17 0 0 0 0 1 </friction_edge>
+<friction_edge>0.707107 0 0 0 0 0.707107 </friction_edge>
+<friction_edge>0.218508 0.672499 0 0 0 0.707107 </friction_edge>
+<friction_edge>-0.572061 0.415627 0 0 0 0.707107 </friction_edge>
+<friction_edge>-0.572061 -0.415627 0 0 0 0.707107 </friction_edge>
+<friction_edge>0.218508 -0.672499 0 0 0 0.707107 </friction_edge>
+<friction_edge>1 0 0 0 0 0 </friction_edge>
+<friction_edge>0.707107 0.707107 0 0 0 0 </friction_edge>
+<friction_edge>6.12323e-17 1 0 0 0 0 </friction_edge>
+<friction_edge>-0.707107 0.707107 0 0 0 0 </friction_edge>
+<friction_edge>-1 1.22465e-16 0 0 0 0 </friction_edge>
+<friction_edge>-0.707107 -0.707107 0 0 0 0 </friction_edge>
+<friction_edge>-1.83697e-16 -1 0 0 0 0 </friction_edge>
+<friction_edge>0.707107 -0.707107 0 0 0 0 </friction_edge>
+<friction_edge>0.707107 0 0 0 0 -0.707107 </friction_edge>
+<friction_edge>0.218508 0.672499 0 0 0 -0.707107 </friction_edge>
+<friction_edge>-0.572061 0.415627 0 0 0 -0.707107 </friction_edge>
+<friction_edge>-0.572061 -0.415627 0 0 0 -0.707107 </friction_edge>
+<friction_edge>0.218508 -0.672499 0 0 0 -0.707107 </friction_edge>
+<friction_edge>6.12323e-17 0 0 0 0 -1 </friction_edge>
+</friction_edges>
+<location>
+-6.50469 -69.8331 -1.10068</location>
+<rotation>
+-0.363044 0.363044 -0.606794 0.606794</rotation>
+<translation>-6.50469 -69.8331 -1.10068</translation>
+<normal>0 0 1</normal>
+<sCof>0.2</sCof>
+</virtual_contact>
+<virtual_contact>
+<finger_number>1</finger_number>
+<link_number>0</link_number>
+<num_friction_edges>20</num_friction_edges>
+<friction_edges>
+<friction_edge>6.12323e-17 0 0 0 0 1 </friction_edge>
+<friction_edge>0.707107 0 0 0 0 0.707107 </friction_edge>
+<friction_edge>0.218508 0.672499 0 0 0 0.707107 </friction_edge>
+<friction_edge>-0.572061 0.415627 0 0 0 0.707107 </friction_edge>
+<friction_edge>-0.572061 -0.415627 0 0 0 0.707107 </friction_edge>
+<friction_edge>0.218508 -0.672499 0 0 0 0.707107 </friction_edge>
+<friction_edge>1 0 0 0 0 0 </friction_edge>
+<friction_edge>0.707107 0.707107 0 0 0 0 </friction_edge>
+<friction_edge>6.12323e-17 1 0 0 0 0 </friction_edge>
+<friction_edge>-0.707107 0.707107 0 0 0 0 </friction_edge>
+<friction_edge>-1 1.22465e-16 0 0 0 0 </friction_edge>
+<friction_edge>-0.707107 -0.707107 0 0 0 0 </friction_edge>
+<friction_edge>-1.83697e-16 -1 0 0 0 0 </friction_edge>
+<friction_edge>0.707107 -0.707107 0 0 0 0 </friction_edge>
+<friction_edge>0.707107 0 0 0 0 -0.707107 </friction_edge>
+<friction_edge>0.218508 0.672499 0 0 0 -0.707107 </friction_edge>
+<friction_edge>-0.572061 0.415627 0 0 0 -0.707107 </friction_edge>
+<friction_edge>-0.572061 -0.415627 0 0 0 -0.707107 </friction_edge>
+<friction_edge>0.218508 -0.672499 0 0 0 -0.707107 </friction_edge>
+<friction_edge>6.12323e-17 0 0 0 0 -1 </friction_edge>
+</friction_edges>
+<location>
+-7.89849 -72.3299 -0.327112</location>
+<rotation>
+-0.350414 0.350414 -0.614174 0.614174</rotation>
+<translation>-7.89849 -72.3299 -0.327112</translation>
+<normal>0 0 1</normal>
+<sCof>0.2</sCof>
+</virtual_contact>
+<virtual_contact>
+<finger_number>2</finger_number>
+<link_number>0</link_number>
+<num_friction_edges>20</num_friction_edges>
+<friction_edges>
+<friction_edge>6.12323e-17 0 0 0 0 1 </friction_edge>
+<friction_edge>0.707107 0 0 0 0 0.707107 </friction_edge>
+<friction_edge>0.218508 0.672499 0 0 0 0.707107 </friction_edge>
+<friction_edge>-0.572061 0.415627 0 0 0 0.707107 </friction_edge>
+<friction_edge>-0.572061 -0.415627 0 0 0 0.707107 </friction_edge>
+<friction_edge>0.218508 -0.672499 0 0 0 0.707107 </friction_edge>
+<friction_edge>1 0 0 0 0 0 </friction_edge>
+<friction_edge>0.707107 0.707107 0 0 0 0 </friction_edge>
+<friction_edge>6.12323e-17 1 0 0 0 0 </friction_edge>
+<friction_edge>-0.707107 0.707107 0 0 0 0 </friction_edge>
+<friction_edge>-1 1.22465e-16 0 0 0 0 </friction_edge>
+<friction_edge>-0.707107 -0.707107 0 0 0 0 </friction_edge>
+<friction_edge>-1.83697e-16 -1 0 0 0 0 </friction_edge>
+<friction_edge>0.707107 -0.707107 0 0 0 0 </friction_edge>
+<friction_edge>0.707107 0 0 0 0 -0.707107 </friction_edge>
+<friction_edge>0.218508 0.672499 0 0 0 -0.707107 </friction_edge>
+<friction_edge>-0.572061 0.415627 0 0 0 -0.707107 </friction_edge>
+<friction_edge>-0.572061 -0.415627 0 0 0 -0.707107 </friction_edge>
+<friction_edge>0.218508 -0.672499 0 0 0 -0.707107 </friction_edge>
+<friction_edge>6.12323e-17 0 0 0 0 -1 </friction_edge>
+</friction_edges>
+<location>
+-7.68497 -71.9686 -1.22152</location>
+<rotation>
+-0.350414 0.350414 -0.614174 0.614174</rotation>
+<translation>-7.68497 -71.9686 -1.22152</translation>
+<normal>0 0 1</normal>
+<sCof>0.2</sCof>
+</virtual_contact>
+</virtual_contacts>

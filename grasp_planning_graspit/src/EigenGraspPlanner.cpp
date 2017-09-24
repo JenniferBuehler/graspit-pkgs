@@ -441,7 +441,7 @@ GraspIt::EigenTransform EigenGraspPlanner::getObjectTransform(const GraspPlannin
     EigenTransform objectTransform;
     objectTransform.setIdentity();
     Eigen::Vector3d eObjectTranslation(t.x(), t.y(), t.z());
-    Eigen::Quaterniond eObjectQuaternion(q.w, q.x, q.y, q.z);
+    Eigen::Quaterniond eObjectQuaternion(q.w(), q.x(), q.y(), q.z());
 
     objectTransform = objectTransform.translate(eObjectTranslation);
     objectTransform = objectTransform.rotate(eObjectQuaternion);
@@ -765,19 +765,19 @@ void EigenGraspPlanner::getResults(std::vector<EigenGraspResult>& allGrasps) con
 }
 
 
-SearchEnergyType getSearchEnergyType(const EigenGraspPlanner::GraspItSearchEnergyType& st)
+std::string getSearchEnergyType(const EigenGraspPlanner::GraspItSearchEnergyType& st)
 {
-    SearchEnergyType ret;
+  std::string ret;
     switch (st)
     {
     case EigenGraspPlanner::EnergyContact:
     {
-        ret = ENERGY_CONTACT;
+        ret = "CONTACT_ENERGY";
         break;
     }
-    // ENERGY_CONTACT, ENERGY_POTENTIAL_QUALITY, ENERGY_CONTACT_QUALITY,
-    // ENERGY_AUTOGRASP_QUALITY, ENERGY_GUIDED_AUTOGRASP, ENERGY_STRICT_AUTOGRASP,
-    // ENERGY_COMPLIANT, ENERGY_DYNAMIC
+    // CONTACT_ENERGY, POTENTIAL_QUALITY_ENERGY, CONTACT_QUALITY_ENERGY,
+    // AUTOGRASP_QUALITY_ENERGY, GUIDED_AUTOGRASP_ENERGY, STRICT_AUTOGRASP_ENERGY,
+    // COMPLIANT_ENERGY, DYNAMIC_ENERGY
     default:
     {
         PRINTERROR("Unsupported search type");
@@ -1001,7 +1001,7 @@ void EigenGraspPlanner::setPlanningParameters()
         return;
     }
 
-    SearchEnergyType _searchEnergyType = getSearchEnergyType(graspitSearchEnergyType);
+    std::string _searchEnergyType = getSearchEnergyType(graspitSearchEnergyType);
     graspitEgPlanner->setEnergyType(_searchEnergyType);
 
     // contact type

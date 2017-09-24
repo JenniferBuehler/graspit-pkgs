@@ -61,7 +61,7 @@ EigenGraspPlannerNoQt::EigenGraspPlannerNoQt(const std::string& name, const SHAR
     GraspItAccessor(name, intr),
     graspitEgPlanner(NULL),
     graspitStateType(SPACE_AXIS_ANGLE),
-    graspitSearchEnergyType(ENERGY_CONTACT),
+    graspitSearchEnergyType("CONTACT_ENERGY"),
     useContacts(true)
 {
     statusThread = new THREAD_CONSTR(statusThreadLoop, this);

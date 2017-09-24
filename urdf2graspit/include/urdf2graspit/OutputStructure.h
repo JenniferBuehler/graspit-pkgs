@@ -39,7 +39,7 @@ public:
     // than the rest of the structure encoded in this class.
     OutputStructure(const std::string& _meshSubdirName = "iv",
                     const std::string& _texSubdirName = "iv/textures",
-                    const std::string& _contactsFile = "contacts.vgr",
+                    const std::string& _contactsFile = "contacts.xml",
                     const std::string& _eigengraspFile = "eigen.xml"):
         robotName("default_robot_name"),
         meshSubdirName(_meshSubdirName),
@@ -110,7 +110,7 @@ public:
     // directory path relative to the root output directory where meshes
     // are to be saved
     std::string getMeshDirPath() const;
-    
+
     // directory path relative to the root output directory where textures
     // are to be saved
     std::string getTexDirPath() const;
@@ -132,10 +132,10 @@ public:
     std::string getEigenGraspFileRel() const;
 
     // relative path to mesh directory from the robot's root directory.
-    std::string getMeshDirRel() const; 
+    std::string getMeshDirRel() const;
 
     // relative path to mesh directory from the robot's root directory.
-    std::string getTexDirRel() const; 
+    std::string getTexDirRel() const;
 
 private:
     // helper function to convert a path given in a vector to a string

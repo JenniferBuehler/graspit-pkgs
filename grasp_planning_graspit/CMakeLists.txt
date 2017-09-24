@@ -103,7 +103,7 @@ if (BUILD_GRASPIT)
     # set the environment variables for the graspit_external/CMakeLists-external-graspit.txt
     set (GRASPIT_REPO_NAME graspit)
     set (GRASPIT_GIT "https://github.com/JenniferBuehler/graspit")
-    set (GRASPIT_BRANCH_NAME "master")
+    set (GRASPIT_BRANCH_NAME "merge-upstream-0916")
     set (GRASPIT_DL_DIR ${CMAKE_CURRENT_BINARY_DIR}/graspit_external)
     set (GRASPIT_INSTALL_DIR ${GRASPIT_DL_DIR}/install)
     set (GRASPIT_BUILD_DIR ${GRASPIT_DL_DIR}/graspit-build)
@@ -243,6 +243,8 @@ set(ALL_INCLUDE_DIRECTORIES
   ${Boost_INCLUDE_DIRS}
   ${graspit_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
+  ${QT_INCLUDES}                                                             
+  ${QT_INCLUDE_DIR}
 )
 
 add_definitions(

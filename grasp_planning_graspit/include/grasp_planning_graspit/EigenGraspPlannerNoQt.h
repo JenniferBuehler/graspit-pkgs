@@ -56,7 +56,7 @@ namespace GraspIt
  *      "Loop" and "multi-threaded" can probably be integrated fairly easy. So far, no
  *       support for "on-line" has been considered.
  * -  Moreover, only the state description type STATE_AXIS_ANGLE (GraspIt datatype StateType) has been tested, and only
- *      the search energy type ENERGY_CONTACT (GraspIt datatype SearchEnergyType).
+ *      the search energy type "CONTACT_ENERGY" (as defined in GraspIt).
  *      Problems were encountered with ENERGY_CONTACT_QUALITY (also with the original GraspIt simulator) when testing with
  *      the Jaco hand (see comment for field graspitSearchEnergyType).
  *      Because of this, at the moment there is no public method to change the state or energy type. By default,
@@ -260,13 +260,13 @@ private:
     // The state type to use for GraspIt. Default is STATE_AXIS_ANGLE.
     StateType graspitStateType;
 
-    // The search energy type to use. Is ENERGY_CONTACT by default.
+    // The search energy type to use. Is CONTACT_ENERGY by default.
     // Important: ENERGY_CONTACT_QUALITY doesn't work properly at the moment,
     // at least not with the Jaco hand, also not in the original simulator.... the energy
     // drops to -0. Reason to be found in SearchEnergy::potentialQualityEnergy, variable gq
-    // gets 0. So far, only successfully tested method was ENERGY_CONTACT, though I didn't
+    // gets 0. So far, only successfully tested method was CONTACT_ENERGY, though I didn't
     // test all others except ENERGY_CONTACT_QUALITY
-    SearchEnergyType graspitSearchEnergyType;
+    std::string graspitSearchEnergyType;
 
     // whether to use contacts information in the planner or not
     bool useContacts;

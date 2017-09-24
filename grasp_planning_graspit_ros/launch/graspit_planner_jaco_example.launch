@@ -5,7 +5,7 @@
     <arg name="use_world_file" value="false"/>
     
     # the graspit world file. Use EITHER this OR specify a robot and object.
-    <arg if="$(arg use_world_file)" name="graspit_world_file" default="$(find jaco_graspit_sample)worlds/jaco_robot_world.xml"/>
+    <arg if="$(arg use_world_file)" name="graspit_world_file" default="$(find jaco_graspit_sample)/worlds/jaco_robot_world.xml"/>
 
     # the graspit robot file. Use EITHER this OR specify a world.
     # if you specify a robot, you also have to specify an object.
