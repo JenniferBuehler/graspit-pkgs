@@ -2,6 +2,12 @@
 Changelog for package grasp_planning_graspit_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adaptation for graspit upstream merge
+* Changed link/finger names for new jaco
+* Contributors: Jennifer Buehler
+
 1.1.1 (2016-08-07)
 ------------------
 

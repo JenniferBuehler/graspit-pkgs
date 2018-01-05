@@ -2,6 +2,23 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adaptation for graspit upstream merge
+* Fixed bug for issue `#19 <https://github.com/JenniferBuehler/graspit-pkgs/issues/19>`_
+* Fixed problem with contact points in which names not accepted by SoName would then not be found in the MarkerSelector
+* Fixed bug: transform to DH world frame in Urdf2Graspit.cpp
+* Added urdf viewer launch file for jaco
+* Rotation axis correction was the wrong way, now negate_joint_movement may not be necessary for some hands (or become necessary for others
+* More testing changes
+* Backup
+* Fixed issue with thumb in allegro but still not displaying properly in GraspIt simulator
+* Improved debugging abilities with viewer
+* Fixed missing white spaces in XMLFuncs.cpp generation of inertia
+* Catching case in urdf2graspit for hands with no inertial. Fixes `#19 <https://github.com/JenniferBuehler/graspit-pkgs/issues/19>`_
+* Changed link/finger names for new jaco
+* Contributors: Jennifer Buehler
+
 1.1.1 (2016-08-07)
 ------------------
 * Fix cylinder and box orientations
