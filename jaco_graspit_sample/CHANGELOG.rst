@@ -2,8 +2,8 @@
 Changelog for package jaco_graspit_sample
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.3 (2018-01-05)
+------------------
 * Tested with current version of graspit
 * Changed contact reference in jaco
 * Adaptation for graspit upstream merge

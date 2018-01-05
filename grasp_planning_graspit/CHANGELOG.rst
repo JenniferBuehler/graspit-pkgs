@@ -2,8 +2,8 @@
 Changelog for package grasp_planning_graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.3 (2018-01-05)
+------------------
 * Tested with current version of graspit
 * Adaptation for graspit upstream merge
 * Contributors: Jennifer Buehler

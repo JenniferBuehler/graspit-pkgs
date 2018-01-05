@@ -2,8 +2,8 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.3 (2018-01-05)
+------------------
 * Adaptation for graspit upstream merge
 * Fixed bug for issue `#19 <https://github.com/JenniferBuehler/graspit-pkgs/issues/19>`_
 * Fixed problem with contact points in which names not accepted by SoName would then not be found in the MarkerSelector
