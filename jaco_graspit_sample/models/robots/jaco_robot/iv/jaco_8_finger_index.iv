@@ -1,16 +1,18 @@
 #Inventor V2.1 ascii
 
 
-DEF _8_finger_index Separator {
+DEF _jaco_8_finger_index Separator {
 
   Separator {
 
     Transform {
       translation 0 0 0
-      rotation 0.72683066 -0.48565274 -0.48565274  1.8845785
+      rotation -0.72683072 -0.48565274 0.48565274  1.8845783
+      scaleFactor 1 1 1
+      scaleOrientation 0 0 1  0
 
     }
-    DEF _visual_0_8_finger_index Separator {
+    DEF _visual_0_jaco_8_finger_index Separator {
 
       DEF _<STL_BINARY> Separator {
 
@@ -3474,11 +3476,13 @@ DEF _8_finger_index Separator {
   Separator {
 
     Transform {
-      translation 0 44.099998 9.7921667e-015
-      rotation -0.57735026 0.57735026 0.57735026  4.1887903
+      translation 0 -44.099998 9.7921667e-015
+      rotation 0.57735026 0.57735026 -0.57735026  4.1887903
+      scaleFactor 1 1 1
+      scaleOrientation 0 0 1  0
 
     }
-    DEF _visual_1_8_finger_index Separator {
+    DEF _visual_1_jaco_8_finger_index Separator {
 
       DEF _<STL_BINARY> Separator {
 

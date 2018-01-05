@@ -19,7 +19,7 @@
 */
 
 #include <grasp_planning_graspit/GraspItHelpers.h>
-#include <matvec3D.h>
+#include <graspit/matvec3D.h>
 
 transf GraspIt::getGraspitTransform(const GraspIt::EigenTransform& transform)
 {

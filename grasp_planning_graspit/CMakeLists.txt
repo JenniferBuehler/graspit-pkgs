@@ -42,11 +42,7 @@ if (NOT ENFORCE_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
 endif (NOT ENFORCE_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
 
 if (COMPILE_WITH_CATKIN)
-    if (NOT BUILD_GRASPIT)
-        find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint graspit) 
-    else (NOT BUILD_GRASPIT)
-        find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint) 
-    endif (NOT BUILD_GRASPIT)
+  find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint) 
 endif (COMPILE_WITH_CATKIN)
    
 # Configuration file for graspit
@@ -57,13 +53,13 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
 
 # if catkin is not used, or graspit built locally,
 # we have to get the Eigen/graspit dependencies separately
-if (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
+if (NOT COMPILE_WITH_CATKIN OR NOT BUILD_GRASPIT)
     if (NOT BUILD_GRASPIT)
         message(STATUS "Finding graspit...")
         find_package(graspit REQUIRED)
     endif (NOT BUILD_GRASPIT)
     find_package(Eigen3 REQUIRED)
-endif (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
+endif (NOT COMPILE_WITH_CATKIN OR NOT BUILD_GRASPIT)
 
 find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
 
@@ -103,7 +99,7 @@ if (BUILD_GRASPIT)
     # set the environment variables for the graspit_external/CMakeLists-external-graspit.txt
     set (GRASPIT_REPO_NAME graspit)
     set (GRASPIT_GIT "https://github.com/JenniferBuehler/graspit")
-    set (GRASPIT_BRANCH_NAME "merge-upstream-0916")
+    set (GRASPIT_BRANCH_NAME "master")
     set (GRASPIT_DL_DIR ${CMAKE_CURRENT_BINARY_DIR}/graspit_external)
     set (GRASPIT_INSTALL_DIR ${GRASPIT_DL_DIR}/install)
     set (GRASPIT_BUILD_DIR ${GRASPIT_DL_DIR}/graspit-build)
@@ -196,16 +192,24 @@ QT4_WRAP_CPP(MOC_OUTFILES ${MOC_HEADERS})
 ###############################
 if (COMPILE_WITH_CATKIN)
     # INCLUDE_DIRS for catkin_package() command
-    set(CATKIN_DEPEND_INCLUDE_DIRS
-        include
-        ${graspit_SYS_INCLUDES}
-    )    
+
+    if (BUILD_GRASPIT)
+      set(CATKIN_DEPEND_INCLUDE_DIRS
+          include
+          ${graspit_SYS_INCLUDES})
+    else (BUILD_GRASPIT)
+      set(CATKIN_DEPEND_INCLUDE_DIRS
+          include
+          ${graspit_INCLUDE_DIRS}
+          ${GRASPIT_INCLUDE_DIRS}
+          ${EIGEN3_INCLUDE_DIR}
+          ${QT_INCLUDES}                                                             
+          ${QT_INCLUDE_DIR}
+      )    
+    endif (BUILD_GRASPIT)
     
     # CATKIN_DEPENDS for catkin_package() command
     set (CATKIN_DEPEND_PKGS eigen_conversions)
-    if (NOT BUILD_GRASPIT)
-        set (CATKIN_DEPEND_PKGS ${CATKIN_DEPEND_PKGS} graspit)
-    endif (NOT BUILD_GRASPIT)
 
     # DEPENDS for catkin_package()
     set(CATKIN_DEPENDS_LIBS Boost SoQt4 Coin Qt4 LAPACK Qhull)
@@ -220,7 +224,7 @@ if (COMPILE_WITH_CATKIN)
     ## CATKIN_DEPENDS: catkin_packages dependent projects also need
     ## DEPENDS: system dependencies of this project that dependent projects also need
     catkin_package(
-      INCLUDE_DIRS ${CATKIN_DEPEND_INCLUDE_DIRS}
+      INCLUDE_DIRS ${CATKIN_DEPEND_INCLUDE_DIRS} ${QT_INCLUDES}
       LIBRARIES grasp_planning_graspit ${graspit_SYS_LIBRARIES}  # need to add graspit_SYS_LIBRARIES here for bloom binary builds
       CATKIN_DEPENDS ${CATKIN_DEPEND_PKGS} 
       DEPENDS ${CATKIN_DEPENDS_LIBS}
@@ -242,6 +246,7 @@ set(ALL_INCLUDE_DIRECTORIES
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${graspit_INCLUDE_DIRS}
+  ${GRASPIT_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${QT_INCLUDES}                                                             
   ${QT_INCLUDE_DIR}
@@ -319,7 +324,11 @@ endif (COMPILE_WITH_CATKIN)
 
 # Add depending libraries if they don't come with catkin dependencies already.
 # At least one of the variables must be non-empty at this point.
-set (DEPEND_LIBRARIES ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${graspit_LIBRARIES} ${DEPEND_LIBRARIES})
+set (DEPEND_LIBRARIES
+      ${Boost_LIBRARIES} ${catkin_LIBRARIES}
+      ${graspit_LIBRARIES}
+      ${GRASPIT_LIBRARIES}
+      ${DEPEND_LIBRARIES})
 
 ## Specify libraries to link a library or executable target against
 

@@ -21,7 +21,8 @@
 
 #include <grasp_planning_graspit/GraspItSimpleDBManager.h>
 #include <grasp_planning_graspit/LogBinding.h>
-#include <robot.h>
+
+#include <graspit/robot.h>
 
 #include <map>
 #include <string>

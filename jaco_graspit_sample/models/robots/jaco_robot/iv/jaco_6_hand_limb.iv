@@ -1,16 +1,18 @@
 #Inventor V2.1 ascii
 
 
-DEF _6_hand_limb Separator {
+DEF _jaco_6_hand_limb Separator {
 
   Separator {
 
     Transform {
-      translation 0 0 0
+      translation -0 -0 -0
       rotation 0 0 1  0
+      scaleFactor 1 1 1
+      scaleOrientation 0 0 1  0
 
     }
-    DEF _visual_0_6_hand_limb Separator {
+    DEF _visual_0_jaco_6_hand_limb Separator {
 
       DEF _<STL_BINARY> Separator {
 
@@ -32244,10 +32246,12 @@ DEF _6_hand_limb Separator {
 
     Transform {
       translation -95 34 22
-      rotation 0.57003409 -0.68960738 0.44665727  2.0729876
+      rotation 0.57003415 -0.68960738 0.4466573  2.0729876
+      scaleFactor 1 1 0.99999994
+      scaleOrientation -0.59292895 -0.80525482 -4.0500936e-007  0.1473017
 
     }
-    DEF _visual_1_6_hand_limb Separator {
+    DEF _visual_1_jaco_6_hand_limb Separator {
 
       DEF _<STL_BINARY> Separator {
 
@@ -42498,10 +42502,12 @@ DEF _6_hand_limb Separator {
 
     Transform {
       translation -95 34 -22
-      rotation 0.47761577 -0.63272369 0.60954404  1.8708096
+      rotation 0.47761577 -0.63272369 0.60954398  1.8708096
+      scaleFactor 1 1 0.99999994
+      scaleOrientation -0.59292907 0.80525482 -4.0500936e-007  0.1473017
 
     }
-    DEF _visual_2_6_hand_limb Separator {
+    DEF _visual_2_jaco_6_hand_limb Separator {
 
       DEF _<STL_BINARY> Separator {
 
@@ -52752,10 +52758,12 @@ DEF _6_hand_limb Separator {
 
     Transform {
       translation -95 -37 1
-      rotation -0.58469367 0.41643524 0.6962148  2.1170025
+      rotation -0.58469373 0.41643527 0.69621468  2.1170025
+      scaleFactor 1 0.99999994 0.99999994
+      scaleOrientation 0 0 1  0
 
     }
-    DEF _visual_3_6_hand_limb Separator {
+    DEF _visual_3_jaco_6_hand_limb Separator {
 
       DEF _<STL_BINARY> Separator {
 
