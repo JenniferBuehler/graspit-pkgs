@@ -32,11 +32,6 @@ std::ostream& operator<<(std::ostream& o, const Eigen::Vector3d& v)
     o << "[" << v[0] << ", " << v[1] << ", " << v[2] << "]";
     return o;
 }
-std::ostream& operator<<(std::ostream& o, const Eigen::Quaterniond& v)
-{
-    o << "[" << v.x() << ", " << v.y() << ", " << v.z() << ", " << v.w() << "]";
-    return o;
-}
 
 std::ostream& operator<<(std::ostream& o, const Eigen::Transform<double, 3, Eigen::Affine>& t)
 {

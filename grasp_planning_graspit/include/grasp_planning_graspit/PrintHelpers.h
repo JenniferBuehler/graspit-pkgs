@@ -28,9 +28,6 @@
 extern std::ostream& operator<<(std::ostream& o, const Eigen::Vector3d& v);
 extern std::ostream& operator<<(std::ostream& o, const Eigen::Vector3f& v);
 
-extern std::ostream& operator<<(std::ostream& o, const Eigen::Quaterniond& v);
-
-
 extern std::ostream& operator<<(std::ostream& o, const Eigen::Transform<double, 3, Eigen::Affine>& t);
 
 extern std::ostream& operator<<(std::ostream& o, const Eigen::Matrix4d& m);
