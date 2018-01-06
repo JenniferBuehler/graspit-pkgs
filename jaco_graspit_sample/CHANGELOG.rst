@@ -2,6 +2,12 @@
 Changelog for package jaco_graspit_sample
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added grasp messages as readable string
+* Updated grasp messages for new jaco joint names
+* Contributors: Jennifer Buehler
+
 1.1.3 (2018-01-05)
 ------------------
 * Tested with current version of graspit

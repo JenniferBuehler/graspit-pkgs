@@ -2,6 +2,9 @@
 Changelog for package urdf2graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.3 (2018-01-05)
 ------------------
 * Adaptation for graspit upstream merge

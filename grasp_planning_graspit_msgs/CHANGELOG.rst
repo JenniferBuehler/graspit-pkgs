@@ -2,6 +2,9 @@
 Changelog for package grasp_planning_graspit_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.3 (2018-01-05)
 ------------------
 

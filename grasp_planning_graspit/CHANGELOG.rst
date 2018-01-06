@@ -2,6 +2,11 @@
 Changelog for package grasp_planning_graspit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update
+* Contributors: Jennifer Buehler
+
 1.1.3 (2018-01-05)
 ------------------
 * Tested with current version of graspit
