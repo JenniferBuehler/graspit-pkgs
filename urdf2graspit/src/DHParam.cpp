@@ -529,11 +529,30 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
     nOriginOnZi_1 = cli_1;
 
     if (shortestDistance < DH_ZERO_EPSILON)
-    {   // lines intersect or are equal
+    { 
+        // lines intersect or are equal
         if ((zi_1 - zi).norm() < DH_ZERO_EPSILON)
-        {   
+        {  
+            // if the z axis were found equal, also the lines at their poses must
+            // be equal. Do some consistency checks to assert that. 
+            if (!parallel)
+            {
+                ROS_ERROR("DHParam: inconsistency, lines should have been found parallel");
+            }
+            Eigen::Vector3d testP = pi - pi_1;
+            if (testP.norm() > 1e-05)  // if poses are the same, that's fine
+            {
+              // poses are different, then their difference must be collinear
+              // with the z axes
+              testP.normalize();
+              if ((fabs(testP.dot(zi)) - 1) > 1e-03)
+              {
+                ROS_ERROR("DHParam: inconsistency, lines should be collinear");
+              }
+            }
+
             // z axises are equal. Take any perpendicular axis to z.
-            ROS_WARN_STREAM("z-axises equal. Common normal cannot be obtained ("
+            ROS_WARN_STREAM("z-axes equal. Common normal cannot be obtained ("
                << zi_1 << " at " << pi_1 << ", " << zi << " at " << pi << ")"
                << ", taking any perpendicular axis.");
             
@@ -557,7 +576,7 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
         }
         else
         {   // z-axes intersect
-            ROS_INFO_STREAM("DEBUG-INFO: z-axises intersect! "<<zi_1<<" at "<<pi_1<<", "<<zi<<" at "<<pi);
+            ROS_INFO_STREAM("DEBUG-INFO: z-axes intersect! "<<zi_1<<" at "<<pi_1<<", "<<zi<<" at "<<pi);
             commonNormal = zi_1.cross(zi);
             // commonNormal.normalize();
         }
