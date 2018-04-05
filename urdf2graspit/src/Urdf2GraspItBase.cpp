@@ -64,6 +64,9 @@ bool Urdf2GraspItBase::prepareModelForDenavitHartenberg(const std::string& fromL
         ROS_ERROR("Could not join fixed links");
         return false;
     }
+
+    ROS_INFO_STREAM("URDF after joining fixed links: ");
+    printModel();
     
     ROS_INFO("### Transforming rotation axes to z...");
     Eigen::Vector3d z(0, 0, 1);

@@ -618,7 +618,7 @@ Urdf2GraspIt::ConversionResultPtr Urdf2GraspIt::preConvert(const ConversionParam
         return GraspItConversionResultPtr();
     }
     
-    ROS_INFO_STREAM("### Urdf2GraspIt::pretConvert for robot "<<param->robotName);
+    ROS_INFO_STREAM("### Urdf2GraspIt::preConvert for robot "<<param->robotName);
     initOutStructure(param->robotName); 
     
     GraspItConversionResultPtr failResult;

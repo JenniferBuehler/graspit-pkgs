@@ -340,7 +340,7 @@ void MarkerSelector::onClickModel(const SoPickedPoint * pPickedPt)
     urdf2inventor::EigenTransform link2VertexTransform;
     if (!getTransform(pPickPath, linkIdx, shapeIdx, link2VertexTransform))
     {
-        ROS_WARN("Cannot get tranform between link and geometry node, normals may be off.");
+        ROS_WARN("Cannot get transform between link and geometry node, normals may be off.");
     }
         
     SoSeparator * _nodeSep = dynamic_cast<SoSeparator*>(linkNode);

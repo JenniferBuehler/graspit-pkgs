@@ -531,11 +531,29 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
     if (shortestDistance < DH_ZERO_EPSILON)
     {   // lines intersect or are equal
         if ((zi_1 - zi).norm() < DH_ZERO_EPSILON)
-        {   // z axises are equal
-            ROS_WARN_STREAM("z-axises equal. No common normal can be obtained ("
-                            << zi_1 << " at " << pi_1 << ", " << zi << " at " << pi << ")");
-            commonNormal = Eigen::Vector3d(0, 0, 0);
-            return false;
+        {   
+            // z axises are equal. Take any perpendicular axis to z.
+            ROS_WARN_STREAM("z-axises equal. Common normal cannot be obtained ("
+               << zi_1 << " at " << pi_1 << ", " << zi << " at " << pi << ")"
+               << ", taking any perpendicular axis.");
+            
+            // take cross product with any axis (will be perpendicular)
+            Eigen::Vector3d cross = Eigen::Vector3d::UnitX().cross(zi);
+            if (cross.norm() < 1e-03) 
+            {
+              cross = Eigen::Vector3d::UnitY().cross(zi);
+              if (cross.norm() < 1e-03) 
+              {
+                cross = Eigen::Vector3d::UnitZ().cross(zi);
+                if (cross.norm() < 1e-03) 
+                {
+                  ROS_ERROR_STREAM("Could not determine perpendicular normal");
+                  commonNormal = Eigen::Vector3d(0, 0, 0);
+                  return false;
+                }
+              }
+            }
+            commonNormal = cross;
         }
         else
         {   // z-axes intersect

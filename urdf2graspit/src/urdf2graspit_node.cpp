@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     ros::NodeHandle priv("~");
     ros::NodeHandle pub("");
 
-    if (argc < 6)
+    if (argc < 5)
     {
         ROS_ERROR("Not enough arguments!");
         ROS_INFO_STREAM("Usage: " << argv[0] <<
