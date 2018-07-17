@@ -41,9 +41,6 @@
 #include <graspit/EGPlanner/egPlanner.h>
 #include <graspit/EGPlanner/simAnn.h>
 #include <graspit/EGPlanner/simAnnPlanner.h>
-// #include <timeTest.h>
-// #include <guidedPlanner.h>
-// #include <loopPlanner.h>
 
 #include <QWidget>
 #include <Inventor/Qt/SoQt.h>

@@ -10,7 +10,7 @@ project(graspit_external NONE)
 # - GRASPIT_BRANCH_NAME*: branch to be chosen for download step
 # - GRASPIT_DL_DIR*: Directory to download the sources into. In this directory, the
 #           subdirectoies "repo", "tmp" and "stamp" will be created.
-#           The subdirectory "repo" will contain the cloned repository after the download step. 
+#           The subdirectory "repo" will contain the cloned repository after the download step.
 # - GRASPIT_BUILD_DIR: Directory for the build files
 
 include(ExternalProject)
@@ -20,25 +20,23 @@ message(STATUS "Pulling source '${GRASPIT_REPO_NAME}' from git ${GRASPIT_GIT}, b
 ExternalProject_Add(
     graspit_ext
 
-    GIT_REPOSITORY ${GRASPIT_GIT} 
+    GIT_REPOSITORY ${GRASPIT_GIT}
     GIT_TAG ${GRASPIT_BRANCH_NAME}
- 
+
     TMP_DIR ${GRASPIT_DL_DIR}/tmp
     STAMP_DIR ${GRASPIT_DL_DIR}/stamp
     DOWNLOAD_DIR ${GRASPIT_DL_DIR}/repo
     SOURCE_DIR ${GRASPIT_DL_DIR}/repo/${GRASPIT_REPO_NAME}
     BINARY_DIR ${GRASPIT_BUILD_DIR}
-    INSTALL_DIR ${GRASPIT_INSTALL_DIR} 
+    INSTALL_DIR ${GRASPIT_INSTALL_DIR}
 
-    # unset CATKIN_DEVEL_PREFIX to enforce
-    # undefining the variable and prevent building with catkin 
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GRASPIT_INSTALL_DIR} -UCATKIN_DEVEL_PREFIX -DBUILD_SHARED_LIBS:BOOL=false -DBUILD_TESTS:BOOL=false
-   
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GRASPIT_INSTALL_DIR} -DBUILD_TESTS:BOOL=false
+
     CONFIGURE_COMMAND ""  #${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${GRASPIT_DL_DIR}/repo/${GRASPIT_REPO_NAME} WORKING_DIRECTORY ${GRASPIT_BUILD_DIR}
     UPDATE_COMMAND ""
 
-    BUILD_COMMAND "" # make
-    INSTALL_COMMAND "" # make install 
+    BUILD_COMMAND "" #"make"
+    INSTALL_COMMAND "" "#make install"
     TEST_COMMAND ""
 )
 
