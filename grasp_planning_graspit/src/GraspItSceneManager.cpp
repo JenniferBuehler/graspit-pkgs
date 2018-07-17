@@ -30,11 +30,11 @@
 #include <map>
 #include <exception>
 
-#include <world.h>
-#include <robot.h>
-#include <body.h>
-#include <grasp.h>
-#include <graspitCore.h>
+#include <graspit/world.h>
+#include <graspit/robot.h>
+#include <graspit/body.h>
+#include <graspit/grasp.h>
+#include <graspit/graspitCore.h>
 
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/actions/SoWriteAction.h>

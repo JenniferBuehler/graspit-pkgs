@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(grasp_planning_graspit)
 
+# LEGACY flag! Will have to be resurrected to be supported:
 # Set BUILD_GRASPIT to true if you would like to
 # downloads (git clone) and build the fork of GraspIt! which
 # is required for this package (https://github.com/JenniferBuehler/graspit).
@@ -17,6 +18,12 @@ endif (NOT DEFINED BUILD_GRASPIT)
 ###################################################
 ## Define cmake variables to build with/without catkin
 ###################################################
+
+if (BUILD_GRASPIT)
+  message(FATAL_ERROR "Building graspit locally is not supported any more. You will have to install it from the original repository")
+  # Legacy code within BUILD_GRASPIT conditions
+  # are left in (modified and not tested) for later reference.
+endif (BUILD_GRASPIT)
 
 
 # By default, compiling with catkin is
@@ -42,11 +49,7 @@ if (NOT ENFORCE_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
 endif (NOT ENFORCE_CATKIN AND NOT CATKIN_DEVEL_PREFIX)
 
 if (COMPILE_WITH_CATKIN)
-    if (NOT BUILD_GRASPIT)
-        find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint graspit)
-    else (NOT BUILD_GRASPIT)
-        find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint)
-    endif (NOT BUILD_GRASPIT)
+  find_package(catkin REQUIRED COMPONENTS eigen_conversions roslint)
 endif (COMPILE_WITH_CATKIN)
 
 # Configuration file for graspit
@@ -55,15 +58,6 @@ set (GRASP_PLANNNIG_GRASPIT_CONFIG_CMAKE grasp_planning_graspitConfig.cmake)
 # CMake module path
 set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
 
-# if catkin is not used, or graspit built locally,
-# we have to get the Eigen/graspit dependencies separately
-if (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
-    if (NOT BUILD_GRASPIT)
-        message(STATUS "Finding graspit...")
-        find_package(graspit REQUIRED)
-    endif (NOT BUILD_GRASPIT)
-    find_package(Eigen3 REQUIRED)
-endif (NOT COMPILE_WITH_CATKIN OR BUILD_GRASPIT)
 
 find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
 
@@ -83,10 +77,11 @@ endif(DOXYGEN_FOUND)
 # graspit package and can be overwritten if graspit is build locally.
 set(GRASPIT_TARGET_DEPS graspit)
 
-# if the graspit fork should be build with this package, pull graspit
+# if graspit should be build with this package, pull graspit
 # from external and build locally without installing
 if (BUILD_GRASPIT)
-    if (NOT DEFINED GRASPIT_BRANCH_NAME)
+
+  if (NOT DEFINED GRASPIT_BRANCH_NAME)
         set (GRASPIT_BRANCH_NAME master)
     endif (NOT DEFINED GRASPIT_BRANCH_NAME)
     message(STATUS "Building graspit library, will clone git repository. Branch name: ${GRASPIT_BRANCH_NAME}")
@@ -102,13 +97,30 @@ if (BUILD_GRASPIT)
 
     # set the environment variables for the graspit_external/CMakeLists-external-graspit.txt
     set (GRASPIT_REPO_NAME graspit)
-    set (GRASPIT_GIT "https://github.com/JenniferBuehler/graspit")
-    set (GRASPIT_BRANCH_NAME "merge-upstream-0916")
+    set (GRASPIT_GIT "https://github.com/graspit-simulator/graspit")
+    set (GRASPIT_BRANCH_NAME "master")
     set (GRASPIT_DL_DIR ${CMAKE_CURRENT_BINARY_DIR}/graspit_external)
     set (GRASPIT_INSTALL_DIR ${GRASPIT_DL_DIR}/install)
     set (GRASPIT_BUILD_DIR ${GRASPIT_DL_DIR}/graspit-build)
 
     # message("Using binary dir ${CMAKE_CURRENT_BINARY_DIR}")
+
+    # convenience variable: this is where all the graspit source is after download step.
+    set (GRASPIT_SRC_DIR ${GRASPIT_DL_DIR}/repo/${GRASPIT_REPO_NAME})
+
+    # Back up variables and change them for add_subdirectory().
+    set (_CATKIN_DEVEL_PREFIX ${CATKIN_DEVEL_PREFIX})
+    set (_CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+    set (_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+    set (_LIBRARY_OUTPUT_PATH ${LIBRARY_OUTPUT_PATH})
+    set (_EXECUTABLE_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
+
+    # change the values for the subdirectory
+    set (CMAKE_INSTALL_PREFIX ${GRASPIT_INSTALL_DIR})
+    # output paths need to be set as well to prevent installation into catkin devel space
+    set (LIBRARY_OUTPUT_PATH ${GRASPIT_BUILD_DIR})
+    set (EXECUTABLE_OUTPUT_PATH ${GRASPIT_BUILD_DIR})
+    set (CATKIN_DEVEL_PREFIX false)
 
     # Copy the external cmake file to the build directory for graspit.
     # first generate the cmakelists: this copies from the source directory to the build directory
@@ -119,64 +131,32 @@ if (BUILD_GRASPIT)
     execute_process(COMMAND ${CMAKE_COMMAND} --build .
         WORKING_DIRECTORY ${GRASPIT_DL_DIR})
 
-    # convenience variable: this is where all the graspit source is after download step.
-    set (GRASPIT_SRC_DIR ${GRASPIT_DL_DIR}/repo/${GRASPIT_REPO_NAME})
-
-    # Back up variables and change them for add_subdirectory().
-    # It would be nice to completely build graspit entirely by
-    # an external project, but in order to avoid building
-    # at configure time, and still have access to cmake
-    # variables as graspit_LIBRARIES, this solution was found best.
-    set (_CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-    set (_CATKIN_DEVEL_PREFIX ${CATKIN_DEVEL_PREFIX})
-    set (_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
-    set (_ENFORCE_CATKIN ${ENFORCE_CATKIN})
-    set (_LIBRARY_OUTPUT_PATH ${LIBRARY_OUTPUT_PATH})
-    set (_EXECUTABLE_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
-    # change the values for the subdirectory
-    set (CMAKE_INSTALL_PREFIX ${GRASPIT_INSTALL_DIR})
-    set (CATKIN_DEVEL_PREFIX false)
-    # output paths need to be set as well to prevent installation into catkin devel space
-    set (LIBRARY_OUTPUT_PATH ${GRASPIT_BUILD_DIR})
-    set (EXECUTABLE_OUTPUT_PATH ${GRASPIT_BUILD_DIR})
-    set (BUILD_SHARED_LIBS false) # we will compile the code into the grasp_planning_graspit library
-    set (BUILD_TESTS false)
-    set (ENFORCE_CATKIN false)
-
     # Add the external graspit build directory to our build, and set the build directory.
     add_subdirectory(${GRASPIT_SRC_DIR}
         ${GRASPIT_BUILD_DIR} EXCLUDE_FROM_ALL)
 
     # restore old variables
     set (CMAKE_INSTALL_PREFIX ${_CMAKE_INSTALL_PREFIX})
-    set (CATKIN_DEVEL_PREFIX ${_CATKIN_DEVEL_PREFIX})
     set (BUILD_SHARED_LIBS ${_BUILD_SHARED_LIBS})
     set (LIBRARY_OUTPUT_PATH ${_LIBRARY_OUTPUT_PATH})
     set (EXECUTABLE_OUTPUT_PATH ${_EXECUTABLE_OUTPUT_PATH})
-    set (ENFORCE_CATKIN ${_ENFORCE_CATKIN})
+    set (CATKIN_DEVEL_PREFIX ${_CATKIN_DEVEL_PREFIX})
 
-    # get the relevant cmake variables from the subdirectory
-    get_directory_property(graspit_INCLUDE_DIRS
-            DIRECTORY ${GRASPIT_SRC_DIR}
-            DEFINITION graspit_INCLUDE_DIRS)
-    get_directory_property(graspit_CXXFLAGS
-            DIRECTORY ${GRASPIT_SRC_DIR}
-            DEFINITION graspit_CXXFLAGS)
-    get_directory_property(graspit_LINK_DIRS
-            DIRECTORY ${GRASPIT_SRC_DIR}
-            DEFINITION graspit_LINK_DIRS)
-    get_directory_property(graspit_LIBRARIES
-            DIRECTORY ${GRASPIT_SRC_DIR}
-            DEFINITION graspit_LIBRARIES)
-    get_directory_property(graspit_SYS_INCLUDES
-            DIRECTORY ${GRASPIT_SRC_DIR}
-            DEFINITION graspit_SYS_INCLUDES)
-    get_directory_property(graspit_SYS_LIBRARIES
-            DIRECTORY ${GRASPIT_SRC_DIR}
-            DEFINITION graspit_SYS_LIBRARIES)
+    set(GRASPIT_INCLUDE_DIRS ${GRASPIT_DL_DIR}/repo/${GRASPIT_REPO_NAME}/include)
+
+    #    get_directory_property(GRASPIT_LIBRARIES
+    #       DIRECTORY ${GRASPIT_SRC_DIR}
+    #       DEFINITION GRASPIT_LIBRARIES)
 
    # overwrite the target dependencies to include the external target
    set(GRASPIT_TARGET_DEPS graspit_ext graspit graspit_simulator)
+
+else (BUILD_GRASPIT)
+
+  message(STATUS "Finding graspit...")
+  find_package(graspit REQUIRED)
+  find_package(Eigen3 REQUIRED)
+
 endif (BUILD_GRASPIT)
 
 # Find Qt package separately because we'll need it for the wrapper,
@@ -184,6 +164,9 @@ endif (BUILD_GRASPIT)
 SET( QT_USE_QT3SUPPORT TRUE )
 find_package(Qt4 COMPONENTS QtCore REQUIRED)
 include (${QT_USE_FILE})
+
+# we will need the QT includes as exported dependencies
+set(graspit_SYS_INCLUDES ${QT_INCLUDES})
 
 # Qt MOC files are needed ONLY because QT slots are used at the moment in EigenGraspPlanner.h
 # Qt include files should be covered by the implicit dependency of graspit libraries
@@ -201,15 +184,6 @@ if (COMPILE_WITH_CATKIN)
         ${graspit_SYS_INCLUDES}
     )
 
-    # CATKIN_DEPENDS for catkin_package() command
-    set (CATKIN_DEPEND_PKGS eigen_conversions)
-    if (NOT BUILD_GRASPIT)
-        set (CATKIN_DEPEND_PKGS ${CATKIN_DEPEND_PKGS} graspit)
-    endif (NOT BUILD_GRASPIT)
-
-    # DEPENDS for catkin_package()
-    set(CATKIN_DEPENDS_LIBS Boost SoQt4 Coin Qt4 LAPACK Qhull)
-
     ###################################
     ## catkin specific configuration ##
     ###################################
@@ -222,8 +196,8 @@ if (COMPILE_WITH_CATKIN)
     catkin_package(
       INCLUDE_DIRS ${CATKIN_DEPEND_INCLUDE_DIRS}
       LIBRARIES grasp_planning_graspit ${graspit_SYS_LIBRARIES}  # need to add graspit_SYS_LIBRARIES here for bloom binary builds
-      CATKIN_DEPENDS ${CATKIN_DEPEND_PKGS}
-      DEPENDS ${CATKIN_DEPENDS_LIBS}
+      CATKIN_DEPENDS eigen_conversions
+      DEPENDS Boost SoQt4 Coin Qt4 LAPACK Qhull
     )
 endif (COMPILE_WITH_CATKIN)
 
@@ -241,10 +215,9 @@ set(ALL_INCLUDE_DIRECTORIES
   include
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
-  ${graspit_INCLUDE_DIRS}
+  ${GRASPIT_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${QT_INCLUDES}
-  ${QT_INCLUDE_DIR}
 )
 
 add_definitions(
@@ -319,7 +292,7 @@ endif (COMPILE_WITH_CATKIN)
 
 # Add depending libraries if they don't come with catkin dependencies already.
 # At least one of the variables must be non-empty at this point.
-set (DEPEND_LIBRARIES ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${graspit_LIBRARIES} ${DEPEND_LIBRARIES})
+set (DEPEND_LIBRARIES ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${GRASPIT_LIBRARIES} ${DEPEND_LIBRARIES})
 
 ## Specify libraries to link a library or executable target against
 
@@ -350,6 +323,24 @@ endif (COMPILE_WITH_CATKIN)
 #############
 ## Install ##
 #############
+
+#if (BUILD_GRASPIT)
+#    set (graspit_EXECUTABLE ${GRASPIT_BUILD_DIR}/graspit_simulator)
+#    if (COMPILE_WITH_CATKIN)
+#        # make the GraspIt! simulator available also in the catkin devel space
+#        add_custom_target(copy_simulator_exe ALL
+#            COMMAND ${CMAKE_COMMAND} -E copy
+#            ${graspit_EXECUTABLE}
+#            ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${PROJECT_NAME}
+#            DEPENDS graspit_simulator
+#        )
+#    endif (COMPILE_WITH_CATKIN)
+#    message (STATUS "Will install graspit executable '${graspit_EXECUTABLE}' as ${BIN_DESTINATION}/graspit_simulator_standalone")
+#    install(PROGRAMS ${graspit_EXECUTABLE}
+#       DESTINATION ${BIN_DESTINATION}
+#       RENAME graspit_simulator_standalone
+#    )
+#endif (BUILD_GRASPIT)
 
 if (COMPILE_WITH_CATKIN)
     # all install targets should use catkin DESTINATION variables
@@ -390,24 +381,6 @@ install(FILES
     cmake/${GRASP_PLANNNIG_GRASPIT_CONFIG_CMAKE}
     DESTINATION ${LIB_DESTINATION}/${PROJECT_NAME}
 )
-
-if (BUILD_GRASPIT)
-    set (graspit_EXECUTABLE ${GRASPIT_BUILD_DIR}/graspit_simulator)
-    if (COMPILE_WITH_CATKIN)
-        # make the GraspIt! simulator available also in the catkin devel space
-        add_custom_target(copy_simulator_exe ALL
-            COMMAND ${CMAKE_COMMAND} -E copy
-            ${graspit_EXECUTABLE}
-            ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${PROJECT_NAME}
-            DEPENDS graspit_simulator
-        )
-    endif (COMPILE_WITH_CATKIN)
-    message (STATUS "Will install graspit executable '${graspit_EXECUTABLE}' as ${BIN_DESTINATION}/graspit_simulator_standalone")
-    install(PROGRAMS ${graspit_EXECUTABLE}
-       DESTINATION ${BIN_DESTINATION}
-       RENAME graspit_simulator_standalone
-    )
-endif (BUILD_GRASPIT)
 
 install(FILES
     ${MAIN_HEADER_FILES}

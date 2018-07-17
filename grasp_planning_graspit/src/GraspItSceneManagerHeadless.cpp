@@ -26,7 +26,7 @@
 #include <string>
 #include <exception>
 
-#include <graspitCore.h>
+#include <graspit/graspitCore.h>
 
 #include <Inventor/sensors/SoIdleSensor.h>
 

@@ -28,21 +28,18 @@
 #include <vector>
 #include <algorithm>
 
-#include <matvec3D.h>
-#include <world.h>
-#include <robot.h>
-#include <body.h>
-#include <grasp.h>
-#include <eigenGrasp.h>
-#include <EGPlanner/search.h>
-#include <EGPlanner/searchState.h>
-#include <EGPlanner/energy/searchEnergy.h>
-#include <EGPlanner/egPlanner.h>
-#include <EGPlanner/simAnn.h>
-#include <EGPlanner/simAnnPlanner.h>
-// #include <timeTest.h>
-// #include <guidedPlanner.h>
-// #include <loopPlanner.h>
+#include <graspit/matvec3D.h>
+#include <graspit/world.h>
+#include <graspit/robot.h>
+#include <graspit/body.h>
+#include <graspit/grasp.h>
+#include <graspit/eigenGrasp.h>
+#include <graspit/EGPlanner/search.h>
+#include <graspit/EGPlanner/searchState.h>
+#include <graspit/EGPlanner/energy/searchEnergy.h>
+#include <graspit/EGPlanner/egPlanner.h>
+#include <graspit/EGPlanner/simAnn.h>
+#include <graspit/EGPlanner/simAnnPlanner.h>
 
 #include <QWidget>
 #include <Inventor/Qt/SoQt.h>
