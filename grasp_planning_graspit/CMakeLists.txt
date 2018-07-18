@@ -58,7 +58,6 @@ set (GRASP_PLANNNIG_GRASPIT_CONFIG_CMAKE grasp_planning_graspitConfig.cmake)
 # CMake module path
 set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMacros/")
 
-
 find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
 
 # add a target to generate API documentation with Doxygen
