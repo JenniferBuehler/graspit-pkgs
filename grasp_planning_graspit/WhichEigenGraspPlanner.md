@@ -45,6 +45,35 @@ This is needed because all QObjects have to be created by
 the same thread which also runs the planning. So the planning cannot be run as the
 simulator is doing with EGPlanner (out of EGPlanner::sensorCB()).
 
+UPDATE: This is currently not supported any more. The method ``EGPlanner::runPlannerLoop``
+would need to be merged into the original graspit repository (my fork is outdated).
+
+The code required:
+```cpp
+void 
+EGPlanner::runPlannerLoop() 
+{ 
+    mMultiThread = false;
+
+    PROF_RESET_ALL;
+    PROF_START_TIMER(EG_PLANNER);
+
+    mProfileInstance->startTimer();
+
+    mRenderType = RENDER_NEVER;
+    
+    //signal that initialization is ready
+    setState(RUNNING);
+    threadLoop();
+}
+
+```
+
+Additional comment about this method:    
+This method essentially does the same as *startThread()* (without starting a thread) and then calling *run()*.
+This is needed because all QObjects have to be created by the same thread which also runs the planning. So we cannot run the planning
+as originally with *EGPlanner* (out of the method *EGPlanner::sensorCB*). 
+
 ## Advantages
 
 - Does not require the EigenGraspPlanner class to use slots and derive from QObject. 

@@ -143,7 +143,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".git" EXCLUDE
 )
 
-install(DIRECTORY launch 
+install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   FILES_MATCHING PATTERN "*.launch"
 )
@@ -166,8 +166,8 @@ install(DIRECTORY test
 # )
 
 if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/docs/html)
-    install(DIRECTORY 
-        ${CMAKE_CURRENT_BINARY_DIR}/docs/html 
+    install(DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}/docs/html
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/doc
 )
 endif (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/docs/html)
