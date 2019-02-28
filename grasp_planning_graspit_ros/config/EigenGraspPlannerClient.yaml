@@ -7,6 +7,6 @@ load_model_service: graspit_load_model
 # the name of the service service to be published for grasp_planning_graspit_msgs::SaveWorld.srv
 save_world_service: graspit_save_world
 
-# the name of the service service to be published for manipulation_msgs::GraspPlanning.srv
+# the name of the service service to be published for moveit_msgs::GraspPlanning.srv
 eg_planning_service: graspit_eg_planning
 

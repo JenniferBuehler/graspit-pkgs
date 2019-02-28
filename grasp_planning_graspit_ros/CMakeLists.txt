@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   grasp_planning_graspit
   grasp_planning_graspit_msgs
-  manipulation_msgs
+  moveit_msgs
   roslint
 )
 
@@ -61,7 +61,7 @@ endif(DOXYGEN_FOUND)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES eigengrasp_planner_client
-  CATKIN_DEPENDS roscpp grasp_planning_graspit grasp_planning_graspit_msgs manipulation_msgs
+  CATKIN_DEPENDS roscpp grasp_planning_graspit grasp_planning_graspit_msgs moveit_msgs
 #  DEPENDS system_lib
 )
 

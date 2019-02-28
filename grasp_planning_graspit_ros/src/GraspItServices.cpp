@@ -242,25 +242,32 @@ bool GraspItServices::acceptSaveWorld(grasp_planning_graspit_msgs::SaveWorld::Re
 }
 
 
-manipulation_msgs::Grasp GraspItServices::getGraspMsg(const EigenGraspResult& egResult, const std::string& id,
+moveit_msgs::Grasp GraspItServices::getGraspMsg(const EigenGraspResult& egResult, const std::string& id,
         const std::vector<std::string>& robotJointNames, const std::string& objectFrame) const
 {
-    manipulation_msgs::Grasp g;
+    moveit_msgs::Grasp g;
     g.id = id;
 
-    sensor_msgs::JointState preJS;
-    sensor_msgs::JointState graspJS;
-    graspJS.name = robotJointNames;
-    preJS.name = robotJointNames;
+    trajectory_msgs::JointTrajectory preJS;
+    trajectory_msgs::JointTrajectory graspJS;
+    preJS.points.push_back(trajectory_msgs::JointTrajectoryPoint());
+    graspJS.points.push_back(trajectory_msgs::JointTrajectoryPoint());
+    trajectory_msgs::JointTrajectoryPoint &preJSPoint = preJS.points.front();
+    trajectory_msgs::JointTrajectoryPoint &graspJSPoint = graspJS.points.front();
+    graspJS.joint_names = robotJointNames;
+    preJS.joint_names = robotJointNames;
     std::vector<double> graspDOFs = egResult.getGraspJointDOFs();
     std::vector<double> pregraspDOFs = egResult.getPregraspJointDOFs();
 
     int nJoints = std::min(graspDOFs.size(), robotJointNames.size());
 
+    // TODO: we can improve on this by picking the right values by joint names
+    // and still return a valid grasp.
     if (graspDOFs.size() != robotJointNames.size())
     {
         PRINTERROR("Number of DOFs for the robot is not equal to number of joint names.");
-        PRINTERROR("Therefore will only write the first " << nJoints << " joint values.");
+        PRINTERROR("Therefore will only write the first " << nJoints
+                   << " joint values. There is likely to be undefined behaviour.");
     }
     if (graspDOFs.size() != pregraspDOFs.size())
     {
@@ -268,14 +275,14 @@ manipulation_msgs::Grasp GraspItServices::getGraspMsg(const EigenGraspResult& eg
         pregraspDOFs=graspDOFs; // use the same state, so the rest of the code doesn't crash
     }
 
-    graspJS.position.resize(nJoints, 0);
-    preJS.position.resize(nJoints, 0);
+    graspJSPoint.positions.resize(nJoints, 0);
+    preJSPoint.positions.resize(nJoints, 0);
     for (int i = 0; i < nJoints; ++i)
     {
         int mult = 1;
         if (negateJointDOFs) mult = -1;
-        graspJS.position[i] = mult * graspDOFs[i];
-        preJS.position[i] = mult * pregraspDOFs[i];
+        graspJSPoint.positions[i] = mult * graspDOFs[i];
+        preJSPoint.positions[i] = mult * pregraspDOFs[i];
     }
     // not setting graspJS.header for the moment. Joint positions don't really need a reference
     // frame and we don't care about the timing...
@@ -309,43 +316,56 @@ manipulation_msgs::Grasp GraspItServices::getGraspMsg(const EigenGraspResult& eg
     return g;
 }
 
-bool GraspItServices::acceptEGPlanning(manipulation_msgs::GraspPlanning::Request &req,
-                                       manipulation_msgs::GraspPlanning::Response &res)
+bool GraspItServices::acceptEGPlanning(moveit_msgs::GraspPlanning::Request &req,
+                                       moveit_msgs::GraspPlanning::Response &res)
 {
 //    PRINTMSG("Accepting to plan grasp: "<<req);
-
-    // So far, this implementation only supports one potential model.
-    if (req.target.potential_models.size() != 1)
+    const moveit_msgs::CollisionObject &objToGrasp = req.target;
+    geometry_msgs::PoseStamped objToGraspPose;
+    if (objToGrasp.primitive_poses.empty())
     {
-        PRINTERROR("In this implementation, only requests with only one object are supported.");
-        res.error_code.value = manipulation_msgs::GraspPlanningErrorCode::OTHER_ERROR;
-        return true;
+      PRINTERROR("Cannot get a pose of the object to grasp, this is expected "
+        << "as the first primitive pose in moveit_msgs::CollisionObj. "
+        << "See also issue #40.");
+    }
+    else
+    {
+      objToGraspPose.pose = objToGrasp.primitive_poses.front();
+      objToGraspPose.header = objToGrasp.header;
     }
 
-    household_objects_database_msgs::DatabaseModelPose& dbObjModel = req.target.potential_models[0];
+    if (objToGrasp.primitive_poses.size() != 1)
+    {
+      PRINTERROR("The primitive poses in moveit_msgs::CollisionObj are expected"
+        << " to be of size 1. This is only a temporary hack, but you may get "
+        << "unexpected results because of this. See also issue #40.");
+    }
+
 
     // get the model ID for the robot and the name for the object
-    std::string& robotName = req.arm_name;
+    std::string& robotName = req.group_name;
     int robModelID = -1;
     if (!mgr->getRobotModelID(robotName, robModelID))
     {
         PRINTERROR("Could not get database ID for robot " << robotName);
-        res.error_code.value = manipulation_msgs::GraspPlanningErrorCode::OTHER_ERROR;
+        res.error_code.val = moveit_msgs::MoveItErrorCodes::FAILURE;
         return true;
     }
     std::string objectName;
     bool isRobot;
-    if (!mgr->getModelNameAndType(dbObjModel.model_id, objectName, isRobot) || isRobot)
+    // TODO Should support string IDs for the database too at some point.
+    int objIntID = atoi(objToGrasp.id.c_str());
+    if (!mgr->getModelNameAndType(objIntID, objectName, isRobot) || isRobot)
     {
         if (isRobot)
         {
-            PRINTERROR("Model " << dbObjModel.model_id << " is a robot not an object");
+            PRINTERROR("Model " << objToGrasp.id << " is a robot not an object");
         }
         else
         {
-            PRINTERROR("Could not get name for object model " << dbObjModel.model_id);
+            PRINTERROR("Could not get name for object model " << objToGrasp.id);
         }
-        res.error_code.value = manipulation_msgs::GraspPlanningErrorCode::OTHER_ERROR;
+        res.error_code.val = moveit_msgs::MoveItErrorCodes::FAILURE;
         return true;
     }
 
@@ -354,24 +374,19 @@ bool GraspItServices::acceptEGPlanning(manipulation_msgs::GraspPlanning::Request
     if (!mgr->getRobotJointNames(robotName, jointNames) || jointNames.empty())
     {
         PRINTERROR("Could not get robot joint names, this is required for planning.");
-        res.error_code.value = manipulation_msgs::GraspPlanningErrorCode::OTHER_ERROR;
+        res.error_code.val = moveit_msgs::MoveItErrorCodes::FAILURE;
         return true;
     }
-
-    // For now, object type information is not used.
-    // This service looks up the object type itself.
-    // ... = dbObjModel.type;
-
 
     SHARED_PTR<GraspIt::EigenTransform> objTransform;
     // If the reference frame is "0", use the object's current pose in the world.
     // Otherwise, change the model pose before planning.
-    if (dbObjModel.pose.header.frame_id == "1")
+    if (objToGraspPose.header.frame_id == "1")
     {
         PRINTMSG("Changing transform of the object:");
-        PRINTMSG(dbObjModel.pose.pose);
+        PRINTMSG(objToGraspPose.pose);
         objTransform = SHARED_PTR<GraspIt::EigenTransform>(new GraspIt::EigenTransform());
-        tf::poseMsgToEigen(dbObjModel.pose.pose, *objTransform);
+        tf::poseMsgToEigen(objToGraspPose.pose, *objTransform);
     }
 
     // TODO in future we should provide options to change the planner type,
@@ -387,7 +402,7 @@ bool GraspItServices::acceptEGPlanning(manipulation_msgs::GraspPlanning::Request
             defaultNumRepeatPlanning, defaultNumKeepResults, defaultFinishWithAutograsp))
     {
         PRINTERROR("Could not plan.");
-        res.error_code.value = manipulation_msgs::GraspPlanningErrorCode::OTHER_ERROR;
+        res.error_code.val = moveit_msgs::MoveItErrorCodes::FAILURE;
         return true;
     }
 
@@ -411,12 +426,13 @@ bool GraspItServices::acceptEGPlanning(manipulation_msgs::GraspPlanning::Request
         // PRINTMSG(*it);
         std::stringstream id;
         id << robotName << "_" << objectName << "_" << i;
-        manipulation_msgs::Grasp g = getGraspMsg(*it, id.str(), jointNames, dbObjModel.pose.header.frame_id);
+        moveit_msgs::Grasp g = getGraspMsg(*it, id.str(), jointNames,
+                                           objToGraspPose.header.frame_id);
         res.grasps.push_back(g);
         ++i;
     }
 
     PRINTMSG("Planning done.");
-    res.error_code.value = manipulation_msgs::GraspPlanningErrorCode::SUCCESS;
+    res.error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
     return true;
 }

@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <grasp_planning_graspit_msgs/LoadDatabaseModel.h>
 #include <grasp_planning_graspit_msgs/AddToDatabase.h>
-#include <manipulation_msgs/GraspPlanning.h>
+#include <moveit_msgs/GraspPlanning.h>
 #include <geometry_msgs/Pose.h>
 
 namespace grasp_planning_graspit_ros
@@ -84,11 +84,11 @@ public:
      */
     int plan(const std::string robotModelName, const int objectID,
         const geometry_msgs::Pose * newObjectPose, const std::string& resultsOutputDirectory,
-        std::vector<manipulation_msgs::Grasp>& results); 
+        std::vector<moveit_msgs::Grasp>& results); 
 
 private:
 
-    bool saveToFile(const manipulation_msgs::Grasp& msg, const std::string& filename, bool asBinary); 
+    bool saveToFile(const moveit_msgs::Grasp& msg, const std::string& filename, bool asBinary); 
     bool makeDirectoryIfNeeded(const std::string& dPath); 
     void init(); 
 

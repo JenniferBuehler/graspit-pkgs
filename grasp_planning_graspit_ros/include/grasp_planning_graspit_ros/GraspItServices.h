@@ -32,7 +32,7 @@
 #include <grasp_planning_graspit_msgs/AddToDatabase.h>
 #include <grasp_planning_graspit_msgs/SaveWorld.h>
 
-#include <manipulation_msgs/GraspPlanning.h>
+#include <moveit_msgs/GraspPlanning.h>
 
 namespace GraspIt
 {
@@ -50,7 +50,7 @@ class EigenGraspResult;
  * - to load them to the current %GraspIt world with *grasp_planning_graspit_msgs/LoadDatabaseModel.srv*.
  * - to save the currently loaded %GraspIt world, with the
  *   service type *grasp_planning_graspit_msgs/SaveWorld.srv*.
- * - accepts grasp planning requests with the service type *manipulation_msgs/GraspPlanning.srv*.
+ * - accepts grasp planning requests with the service type *moveit_msgs/GraspPlanning.srv*.
  *
  * The class GraspIt::EigenGraspPlanner is used for the planning.
  * At this stage, the GraspIt::EigenGraspPlanner implementation supports only simulated annealing.
@@ -62,9 +62,9 @@ class EigenGraspResult;
  *   or "1" (pose object used in global frame). No tf transforms are supported yet.
  *
  * About the results of a grasp planning request:
- * - The resulting manipulation_msgs::Grasp messages return the grasp pose **relative to the object**.
+ * - The resulting moveit_msgs::Grasp messages return the grasp pose **relative to the object**.
  * - Grasp quality values returned are the energy of the simulated annealing process.
- * - Pre-grasp joint states (see manipulation_msgs::Grasp::pre_grasp_posture)
+ * - Pre-grasp joint states (see moveit_msgs::Grasp::pre_grasp_posture)
  *   are not supported yet. It is assumed that the hand is plain open in pre-grasp
  *   stage for now.
  * - No joint velocities and efforts in the resulting sensor_msgs::JointState objects are provided.
@@ -117,16 +117,16 @@ private:
     /**
      * callback method for service
      */
-    bool acceptEGPlanning(manipulation_msgs::GraspPlanning::Request &req,
-                          manipulation_msgs::GraspPlanning::Response &res);
+    bool acceptEGPlanning(moveit_msgs::GraspPlanning::Request &req,
+                          moveit_msgs::GraspPlanning::Response &res);
 
     /**
      * Helper method to extract results from an GraspIt::EigenGraspResult object
-     * and create a manipulation_msgs::Grasp object from it.
+     * and create a moveit_msgs::Grasp object from it.
      * \param objectFrame the object's reference frame to use for putting into the
-     * resulting manipulation_msgs::Grasp (typically the center of the object)
+     * resulting moveit_msgs::Grasp (typically the center of the object)
      */
-    manipulation_msgs::Grasp getGraspMsg(const EigenGraspResult& r, const std::string& id,
+    moveit_msgs::Grasp getGraspMsg(const EigenGraspResult& r, const std::string& id,
                                          const std::vector<std::string>& robotJointNames,
                                          const std::string& objectFrame) const;
 
