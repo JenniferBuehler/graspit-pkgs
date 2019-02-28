@@ -355,11 +355,12 @@ bool GraspItServices::acceptEGPlanning(moveit_msgs::GraspPlanning::Request &req,
     bool isRobot;
     // TODO Should support string IDs for the database too at some point.
     int objIntID = atoi(objToGrasp.id.c_str());
+    ROS_INFO_STREAM("Integer ID of object " << objToGrasp.id << " is " << objIntID);
     if (!mgr->getModelNameAndType(objIntID, objectName, isRobot) || isRobot)
     {
         if (isRobot)
         {
-            PRINTERROR("Model " << objToGrasp.id << " is a robot not an object");
+            PRINTERROR("Model " << objToGrasp.id << " is a robot, not an object");
         }
         else
         {

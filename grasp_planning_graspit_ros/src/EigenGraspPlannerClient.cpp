@@ -192,7 +192,7 @@ int EigenGraspPlannerClient::plan(const std::string robotModelName, const int ob
 
     moveit_msgs::CollisionObject obj;
     obj.header = modelPose.header;
-    obj.id = objectID;
+    obj.id = std::to_string(objectID);
     obj.type = dbModelType;
     obj.primitive_poses.push_back(modelPose.pose);
     PRINTWARN("Temporary hack: model pose for GraspPlanning service is "
