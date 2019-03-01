@@ -27,11 +27,9 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fstream>
-#include <boost/filesystem.hpp>
-
 #include <ros/ros.h>
 
+#include <grasp_planning_graspit_ros/WriteToFile.h>
 #include <grasp_planning_graspit_ros/LogBindingROS.h>
 #include <moveit_msgs/GraspPlanning.h>
 
@@ -66,69 +64,6 @@ void handler(int sig)
     exit(1);
 }
 
-
-template<typename ROSMessage>
-bool saveToFile(const ROSMessage& msg, const std::string& filename, bool asBinary)
-{
-
-    std::ios_base::openmode mode;
-    if (asBinary) mode = std::ios::out | std::ios::binary;
-    else mode = std::ios::out;
-
-    std::ofstream ofs(filename.c_str(), mode);
-
-    if (!ofs.is_open())
-    {
-        ROS_ERROR("File %s cannot be opened.", filename.c_str());
-        return false;
-    }
-
-    if (asBinary)
-    {
-        uint32_t serial_size = ros::serialization::serializationLength(msg);
-        boost::shared_array<uint8_t> obuffer(new uint8_t[serial_size]);
-        ros::serialization::OStream ostream(obuffer.get(), serial_size);
-        ros::serialization::serialize(ostream, msg);
-        ofs.write((char*) obuffer.get(), serial_size);
-    }
-    else
-    {
-        ofs<<msg; 
-    }
-    ofs.close();
-    return true;
-}
-
-
-bool makeDirectoryIfNeeded(const std::string& dPath)
-{
-    try
-    {
-        boost::filesystem::path dir(dPath);
-        boost::filesystem::path buildPath;
-
-        for (boost::filesystem::path::iterator it(dir.begin()), it_end(dir.end()); it != it_end; ++it)
-        {
-            buildPath /= *it;
-            // std::cout << buildPath << std::endl;
-
-            if (!boost::filesystem::exists(buildPath) &&
-                    !boost::filesystem::create_directory(buildPath))
-            {
-                PRINTERROR("Could not create directory " << buildPath);
-                return false;
-            }
-        }
-    }
-    catch (const boost::filesystem::filesystem_error& ex)
-    {
-        PRINTERROR(ex.what());
-        return false;
-    }
-    return true;
-}
-
-
 void printHelp(const char * progName)
 {
     PRINTMSG("Usage: " << progName << " <robot name> <object id> [<output-path>]");
@@ -148,7 +83,7 @@ int run(int argc, char **argv)
     if (argc >= 4)
     {
         output_path=std::string(argv[3]);    
-        if (!makeDirectoryIfNeeded(output_path))
+        if (!grasp_planning_graspit_ros::makeDirectoryIfNeeded(output_path))
         {
             PRINTERROR("Could not create directory "<<output_path);
             return 0;
@@ -223,17 +158,14 @@ int run(int argc, char **argv)
     {
         if (!output_path.empty())
         {
-            std::stringstream filename;
-            filename<<output_path<<"/Grasp_"<<i<<".msg";
-            std::stringstream filename_txt;
-            filename_txt<<output_path<<"/Grasp_"<<i<<"_string.msg";
+            std::stringstream filenamePrefix;
+            filenamePrefix << "Grasp_"<<i;
             ++i;
-            if (!saveToFile(*it, filename.str(), true))
+            if (!grasp_planning_graspit_ros::writeGraspMessage(*it, output_path, filenamePrefix.str()))
             {
-                PRINTERROR("Could not save to file "<<filename.str());
+                PRINTERROR("Could not save to file "<<filenamePrefix.str());
                 continue;
             }
-            saveToFile(*it, filename_txt.str(), false);
         }
         else
         {

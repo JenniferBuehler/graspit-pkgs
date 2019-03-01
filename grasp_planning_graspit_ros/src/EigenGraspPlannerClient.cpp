@@ -1,7 +1,6 @@
 #include <grasp_planning_graspit_ros/EigenGraspPlannerClient.h>
 #include <grasp_planning_graspit_ros/LogBindingROS.h>
-#include <fstream>
-#include <boost/filesystem.hpp>
+#include <grasp_planning_graspit_ros/WriteToFile.h>
 #include <geometry_msgs/Pose.h>
 
 #define DEFAULT_ADD_DB_TOPIC "graspit_add_to_db"
@@ -222,81 +221,19 @@ int EigenGraspPlannerClient::plan(const std::string robotModelName, const int ob
     {
         if (!resultsOutputDirectory.empty())
         {
-            std::stringstream filename;
-            filename<<resultsOutputDirectory<<"/Grasp_"<<i<<".msg";
-            std::stringstream filename_txt;
-            filename_txt<<resultsOutputDirectory<<"/Grasp_"<<i<<"_string.msg";
+            std::stringstream filenamePrefix;
+            filenamePrefix << "Grasp_" << i << ".msg";
             ++i;
-            ROS_INFO_STREAM("Saving grasp "<<i<<" to file "<<filename.str());
-            if (!saveToFile(*it, filename.str(), true))
+            PRINTMSG("Saving grasp " << i << " to file (dir "
+              << resultsOutputDirectory << ", prefix " << filenamePrefix.str() << ")");
+            if (!writeGraspMessage(*it, resultsOutputDirectory, filenamePrefix.str()))
             {
-                PRINTERROR("Could not save grasp to file "<<filename.str());
+                PRINTERROR("Could not save grasp to file "<<filenamePrefix.str());
                 continue;
             }
-            ROS_INFO_STREAM("Saving text form of grasp "<<i<<" to file "<<filename_txt.str());
-            saveToFile(*it, filename_txt.str(), false);
         }
         results.push_back(*it);
     }
     return 0;
 }
 
-bool EigenGraspPlannerClient::saveToFile(const moveit_msgs::Grasp& msg, const std::string& filename, bool asBinary)
-{
-
-    std::ios_base::openmode mode;
-    if (asBinary) mode = std::ios::out | std::ios::binary;
-    else mode = std::ios::out;
-
-    std::ofstream ofs(filename.c_str(), mode);
-
-    if (!ofs.is_open())
-    {
-        ROS_ERROR("File %s cannot be opened.", filename.c_str());
-        return false;
-    }
-
-    if (asBinary)
-    {
-        uint32_t serial_size = ros::serialization::serializationLength(msg);
-        boost::shared_array<uint8_t> obuffer(new uint8_t[serial_size]);
-        ros::serialization::OStream ostream(obuffer.get(), serial_size);
-        ros::serialization::serialize(ostream, msg);
-        ofs.write((char*) obuffer.get(), serial_size);
-    }
-    else
-    {
-        ofs<<msg; 
-    }
-    ofs.close();
-    return true;
-}
-
-
-bool EigenGraspPlannerClient::makeDirectoryIfNeeded(const std::string& dPath)
-{
-    try
-    {
-        boost::filesystem::path dir(dPath);
-        boost::filesystem::path buildPath;
-
-        for (boost::filesystem::path::iterator it(dir.begin()), it_end(dir.end()); it != it_end; ++it)
-        {
-            buildPath /= *it;
-            // std::cout << buildPath << std::endl;
-
-            if (!boost::filesystem::exists(buildPath) &&
-                    !boost::filesystem::create_directory(buildPath))
-            {
-                PRINTERROR("Could not create directory " << buildPath);
-                return false;
-            }
-        }
-    }
-    catch (const boost::filesystem::filesystem_error& ex)
-    {
-        PRINTERROR(ex.what());
-        return false;
-    }
-    return true;
-}
