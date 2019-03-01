@@ -1,7 +1,6 @@
 #include <grasp_planning_graspit_ros/EigenGraspPlannerClient.h>
 #include <grasp_planning_graspit_ros/LogBindingROS.h>
-#include <fstream>
-#include <boost/filesystem.hpp>
+#include <grasp_planning_graspit_ros/WriteToFile.h>
 #include <geometry_msgs/Pose.h>
 
 #define DEFAULT_ADD_DB_TOPIC "graspit_add_to_db"
@@ -49,7 +48,7 @@ void EigenGraspPlannerClient::init()
    
     add_to_db_client = node.serviceClient<grasp_planning_graspit_msgs::AddToDatabase>(addToDBService);
     load_model_client = node.serviceClient<grasp_planning_graspit_msgs::LoadDatabaseModel>(loadModelService);
-    eg_planner_client = node.serviceClient<manipulation_msgs::GraspPlanning>(egPlanningService);
+    eg_planner_client = node.serviceClient<moveit_msgs::GraspPlanning>(egPlanningService);
     initialized = true;
 }
 
@@ -149,7 +148,7 @@ int EigenGraspPlannerClient::loadModel(const int modelID, bool clearWorld, const
 int EigenGraspPlannerClient::plan(const std::string robotModelName, const int objectID,
     const geometry_msgs::Pose * newObjectPose,
     const std::string& resultsOutputDirectory,
-    std::vector<manipulation_msgs::Grasp>& results)
+    std::vector<moveit_msgs::Grasp>& results)
 {
     if (!isOK())
     {
@@ -190,31 +189,18 @@ int EigenGraspPlannerClient::plan(const std::string robotModelName, const int ob
         modelPose.header.frame_id = "0";
     }
 
-    household_objects_database_msgs::DatabaseModelPose dbModel;
-    dbModel.model_id = objectID;
-    dbModel.type = dbModelType;
-    dbModel.pose = modelPose;
-    dbModel.confidence = 1;
-    dbModel.detector_name = "graspit_eigengrasp_planner_client";
+    moveit_msgs::CollisionObject obj;
+    obj.header = modelPose.header;
+    obj.id = std::to_string(objectID);
+    obj.type = dbModelType;
+    obj.primitive_poses.push_back(modelPose.pose);
+    PRINTWARN("Temporary hack: model pose for GraspPlanning service is "
+      << "passed in first primitive pose. This should be handled by /tf "
+      << "in future. See also issue #40.");
 
-    manipulation_msgs::GraspableObject obj;
-    // the reference frame could be one that is relative to all fields (e.g. cluster and
-    // all potential models). However at the moment, the graspit planner only supports
-    // the global frame (the graspit origin). No tf transforms are considered in the
-    // GraspIt planner service yet.
-    obj.reference_frame_id = dbModel.pose.header.frame_id;
-    obj.potential_models.push_back(dbModel);
-    // obj.cluster = we will not provide a point cloud
-    // obj.region = and not the SceneRegion along with it either.
-    // obj.collision_name = could think about whether providing this as parameter too
-
-    manipulation_msgs::GraspPlanning srv;
-    srv.request.arm_name = robotModelName;
+    moveit_msgs::GraspPlanning srv;
+    srv.request.group_name = robotModelName;
     srv.request.target = obj;
-    srv.request.collision_object_name = obj.collision_name;
-    // srv.request.collision_support_surface_name = will not provide this here
-    // srv.request.grasps_to_evaluate = no grasps to evaluate with this client
-    // srv.request.movable_obstacles = this is not supported by this client
 
     if (!eg_planner_client.call(srv))
     {
@@ -222,94 +208,32 @@ int EigenGraspPlannerClient::plan(const std::string robotModelName, const int ob
         return -2;
     }
 
-    if (srv.response.error_code.value != manipulation_msgs::GraspPlanningErrorCode::SUCCESS)
+    if (srv.response.error_code.val != moveit_msgs::MoveItErrorCodes::SUCCESS)
     {
-        PRINTERROR("Could do the grasp planning. Error code " << srv.response.error_code.value);
+        PRINTERROR("Could do the grasp planning. Error code " << srv.response.error_code.val);
         return -3;
     }
 
     PRINTMSG("Successfully finished grasp planning. Have " << srv.response.grasps.size() << " resulting grasps.");
-    std::vector<manipulation_msgs::Grasp>::iterator it;
+    std::vector<moveit_msgs::Grasp>::iterator it;
     int i=1;
     for (it = srv.response.grasps.begin(); it != srv.response.grasps.end(); ++it)
     {
         if (!resultsOutputDirectory.empty())
         {
-            std::stringstream filename;
-            filename<<resultsOutputDirectory<<"/Grasp_"<<i<<".msg";
-            std::stringstream filename_txt;
-            filename_txt<<resultsOutputDirectory<<"/Grasp_"<<i<<"_string.msg";
+            std::stringstream filenamePrefix;
+            filenamePrefix << "Grasp_" << i << ".msg";
             ++i;
-            ROS_INFO_STREAM("Saving grasp "<<i<<" to file "<<filename.str());
-            if (!saveToFile(*it, filename.str(), true))
+            PRINTMSG("Saving grasp " << i << " to file (dir "
+              << resultsOutputDirectory << ", prefix " << filenamePrefix.str() << ")");
+            if (!writeGraspMessage(*it, resultsOutputDirectory, filenamePrefix.str()))
             {
-                PRINTERROR("Could not save grasp to file "<<filename.str());
+                PRINTERROR("Could not save grasp to file "<<filenamePrefix.str());
                 continue;
             }
-            ROS_INFO_STREAM("Saving text form of grasp "<<i<<" to file "<<filename_txt.str());
-            saveToFile(*it, filename_txt.str(), false);
         }
         results.push_back(*it);
     }
     return 0;
 }
 
-bool EigenGraspPlannerClient::saveToFile(const manipulation_msgs::Grasp& msg, const std::string& filename, bool asBinary)
-{
-
-    std::ios_base::openmode mode;
-    if (asBinary) mode = std::ios::out | std::ios::binary;
-    else mode = std::ios::out;
-
-    std::ofstream ofs(filename.c_str(), mode);
-
-    if (!ofs.is_open())
-    {
-        ROS_ERROR("File %s cannot be opened.", filename.c_str());
-        return false;
-    }
-
-    if (asBinary)
-    {
-        uint32_t serial_size = ros::serialization::serializationLength(msg);
-        boost::shared_array<uint8_t> obuffer(new uint8_t[serial_size]);
-        ros::serialization::OStream ostream(obuffer.get(), serial_size);
-        ros::serialization::serialize(ostream, msg);
-        ofs.write((char*) obuffer.get(), serial_size);
-    }
-    else
-    {
-        ofs<<msg; 
-    }
-    ofs.close();
-    return true;
-}
-
-
-bool EigenGraspPlannerClient::makeDirectoryIfNeeded(const std::string& dPath)
-{
-    try
-    {
-        boost::filesystem::path dir(dPath);
-        boost::filesystem::path buildPath;
-
-        for (boost::filesystem::path::iterator it(dir.begin()), it_end(dir.end()); it != it_end; ++it)
-        {
-            buildPath /= *it;
-            // std::cout << buildPath << std::endl;
-
-            if (!boost::filesystem::exists(buildPath) &&
-                    !boost::filesystem::create_directory(buildPath))
-            {
-                PRINTERROR("Could not create directory " << buildPath);
-                return false;
-            }
-        }
-    }
-    catch (const boost::filesystem::filesystem_error& ex)
-    {
-        PRINTERROR(ex.what());
-        return false;
-    }
-    return true;
-}

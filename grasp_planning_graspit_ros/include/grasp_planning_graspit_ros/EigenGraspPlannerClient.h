@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <grasp_planning_graspit_msgs/LoadDatabaseModel.h>
 #include <grasp_planning_graspit_msgs/AddToDatabase.h>
-#include <manipulation_msgs/GraspPlanning.h>
+#include <moveit_msgs/GraspPlanning.h>
 #include <geometry_msgs/Pose.h>
 
 namespace grasp_planning_graspit_ros
@@ -23,7 +23,7 @@ namespace grasp_planning_graspit_ros
 class EigenGraspPlannerClient
 {
 public:
-    EigenGraspPlannerClient(); 
+    EigenGraspPlannerClient();
     ~EigenGraspPlannerClient();
 
     /**
@@ -37,10 +37,10 @@ public:
      * \param jointNames the names of the URDF joint names in the order they are specified in the graspit file.
      * \return >=0 ID of robot loaded
      * \retval -1 could not call service
-     * \retval -2 could not add robot to database 
+     * \retval -2 could not add robot to database
      * \retval -3 client not initialized. Have the ROS parameters been set for the service names?
      */
-    int addRobot(const std::string& modelName, const std::string filename, const std::vector<std::string>& jointNames); 
+    int addRobot(const std::string& modelName, const std::string filename, const std::vector<std::string>& jointNames);
 
     /**
      * Adds an object to the database
@@ -51,19 +51,19 @@ public:
      * \retval -2 could not add object to database
      * \retval -3 client not initialized. Have the ROS parameters been set for the service names?
      */
-    int addObject(const std::string& modelName, const std::string filename, bool objectGraspable); 
+    int addObject(const std::string& modelName, const std::string filename, bool objectGraspable);
 
     /**
      * Loads a model from the database to the GraspIt! world
-     * \param modelID ID as returned from addRobot() or addObject() 
+     * \param modelID ID as returned from addRobot() or addObject()
      * \param clearWorld clear other models before loading this one
      * \param modelPose the pose where to load the model.
      * \retval 0 success
      * \retval -1 failed to call service
-     * \retval -2 could not load model, is it not in the database? 
+     * \retval -2 could not load model, is it not in the database?
      * \retval -3 client not initialized. Have the ROS parameters been set for the service names?
      */
-    int loadModel(const int modelID, bool clearWorld, const geometry_msgs::Pose& modelPose); 
+    int loadModel(const int modelID, bool clearWorld, const geometry_msgs::Pose& modelPose);
 
     /**
      * Does the planning for the given \e robotModelName and \e objectID. Both models have to be
@@ -84,13 +84,11 @@ public:
      */
     int plan(const std::string robotModelName, const int objectID,
         const geometry_msgs::Pose * newObjectPose, const std::string& resultsOutputDirectory,
-        std::vector<manipulation_msgs::Grasp>& results); 
+        std::vector<moveit_msgs::Grasp>& results);
 
 private:
 
-    bool saveToFile(const manipulation_msgs::Grasp& msg, const std::string& filename, bool asBinary); 
-    bool makeDirectoryIfNeeded(const std::string& dPath); 
-    void init(); 
+    void init();
 
     bool initialized;
     std::string addToDBService;

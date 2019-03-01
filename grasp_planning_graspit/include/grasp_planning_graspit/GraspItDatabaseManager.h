@@ -43,8 +43,8 @@ class GraspItSceneManager;
  * used to access the model, independent of the fact whether it is a robot or an object.
  * The int id's are unique among *both* robots and objects.
  *
- * In ROS manipulation_msgs/GraspPlanning.srv, a body (object/obstacle) has an int ID
- * (see also household_objects_database_msgs/DatabaseModelPose.msg)
+ * In ROS moveit_msgs/GraspPlanning.srv, a body (object/obstacle) has an int ID
+ * (see also moveit_msgs/CollisionObject.msg)
  * and a robot/hand has a string name. This interface allows to handle
  * both of these conventions. While robots will then also have an int id, and objects
  * also a string name, it is optional to the user of this interface which of the

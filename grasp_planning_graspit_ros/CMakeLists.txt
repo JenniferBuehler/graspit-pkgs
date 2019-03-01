@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   grasp_planning_graspit
   grasp_planning_graspit_msgs
-  manipulation_msgs
+  moveit_msgs
   roslint
 )
 
@@ -61,13 +61,15 @@ endif(DOXYGEN_FOUND)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES eigengrasp_planner_client
-  CATKIN_DEPENDS roscpp grasp_planning_graspit grasp_planning_graspit_msgs manipulation_msgs
+  CATKIN_DEPENDS roscpp grasp_planning_graspit grasp_planning_graspit_msgs moveit_msgs
 #  DEPENDS system_lib
 )
 
 ###########
 ## Build ##
 ###########
+
+add_compile_options(-std=c++11)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -79,6 +81,7 @@ include_directories(
 
 ## Declare a C++ library
 add_library(eigengrasp_planner_client
+  src/WriteToFile.cpp
   src/EigenGraspPlannerClient.cpp
 )
 add_dependencies(eigengrasp_planner_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -90,7 +93,13 @@ add_executable(grasp_planning_service src/grasp_planning_service.cpp src/GraspIt
 add_executable(add_model_client test/grasp_planning_add_model_client.cpp)
 add_executable(load_model_client test/grasp_planning_load_model_client.cpp)
 add_executable(save_world_client test/grasp_planning_save_world_client.cpp)
-add_executable(eigengrasp_planner_client_node test/grasp_planning_eg_planner_client.cpp)
+add_executable(eigengrasp_planner_client_node
+  src/WriteToFile.cpp
+  test/grasp_planning_eg_planner_client.cpp)
+
+add_executable(write_jaco_sample_grasp_node
+  src/WriteToFile.cpp
+  test/write_jaco_sample_grasp.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -109,6 +118,7 @@ target_link_libraries(load_model_client ${catkin_LIBRARIES})
 target_link_libraries(save_world_client ${catkin_LIBRARIES})
 target_link_libraries(eigengrasp_planner_client ${catkin_LIBRARIES})
 target_link_libraries(eigengrasp_planner_client_node ${catkin_LIBRARIES})
+target_link_libraries(write_jaco_sample_grasp_node ${catkin_LIBRARIES})
 
 # style checking
 roslint_cpp()

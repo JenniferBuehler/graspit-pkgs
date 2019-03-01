@@ -10,7 +10,7 @@ load_model_topic: graspit_load_model
 # the name of the service topic to be published for grasp_planning_graspit_msgs::SaveWorld.srv
 save_world_topic: graspit_save_world
 
-# the name of the service topic to be published for manipulation_msgs::GraspPlanning.srv
+# the name of the service topic to be published for moveit_msgs::GraspPlanning.srv
 eg_planning_topic: graspit_eg_planning
 
 # the default maximum planning steps to use for the Eigengrasp planner.
@@ -32,7 +32,7 @@ default_num_keep_results: 3
 default_finish_with_autograsp: true
 
 # factor by which all position values are multiplied
-# before a grasp result is being saved in a manipulation_msgs/Grasp.msg message.
+# before a grasp result is being saved in a moveit_msgs/Grasp.msg message.
 # The GraspIt! scale is based on mm, while the results may be required in m, in
 # which case this factor should be 0.001.
 grasp_msg_position_factor: 0.001

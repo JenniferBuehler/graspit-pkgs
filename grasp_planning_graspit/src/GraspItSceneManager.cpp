@@ -95,7 +95,6 @@ GraspItSceneManager::~GraspItSceneManager()
     if (core)
     {
         PRINTERROR("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
-        throw std::string("The IVmgr should have been deleted, either by calling shutdown(), or by subclasses destructor!");
     }
 
     if (fakeQObjectParent)
