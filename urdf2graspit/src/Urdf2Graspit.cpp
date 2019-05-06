@@ -189,17 +189,8 @@ void Urdf2GraspIt::getGlobalCoordinates(const JointConstPtr& joint,
     // ROS_INFO_STREAM("Joint transform: "<<jointTransform);
     // ROS_INFO_STREAM("Joint world transform: "<<jointWorldTransform);
 
-#if 0
-    // OLD code which was actually wrong (I think?) 
-    EigenTransform wtInv = jointWorldTransform.inverse();
-    // ROS_INFO_STREAM("Inverse joint world transform: "<<wtInv);
-    // ROS_INFO_STREAM("Rot axis: "<<rotAxis);
-    rotationAxis = wtInv.rotation() * rotAxis;
-    
-#else
     // transform the rotation axis in world coordinate frame
     rotationAxis = jointWorldTransform.rotation() * rotAxis;
-#endif
 
     // ROS_INFO_STREAM("Transformed rotation axis of joint "<<joint->name<<": "<<rotationAxis);
     // rotationAxis.normalize();
