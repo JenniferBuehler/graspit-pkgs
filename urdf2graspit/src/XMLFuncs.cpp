@@ -138,7 +138,6 @@ std::string urdf2graspit::xmlfuncs::getEigenGraspXML(const std::vector<DHParam>&
     return str.str();
 }
 
-
 bool isRevolutingJoint(const JointConstPtr& joint)
 {
     return (joint->type == urdf::Joint::REVOLUTE) || (joint->type == urdf::Joint::CONTINUOUS);
@@ -148,8 +147,6 @@ bool isPrismaticJoint(const JointConstPtr& joint)
     return (joint->type == urdf::Joint::PRISMATIC);
 }
 
-
-
 std::string getChainJointSpec(const DHParam& dh, bool negateJointValues)
 {
     if (!isRevolutingJoint(dh.joint) && !isPrismaticJoint(dh.joint))
@@ -158,7 +155,7 @@ std::string getChainJointSpec(const DHParam& dh, bool negateJointValues)
         return std::string();
     }
 
-    bool revolute = dh.joint->type == urdf::Joint::REVOLUTE;
+    bool revolute = isRevolutingJoint(dh.joint);
     float minValue, maxValue;
     getJointLimits(*(dh.joint), minValue, maxValue, negateJointValues, true, true);
     std::stringstream ret;
@@ -186,8 +183,6 @@ std::string getChainJointSpec(const DHParam& dh, bool negateJointValues)
     return ret.str();
 }
 
-
-
 std::string urdf2graspit::xmlfuncs::getFingerChain(const FingerChain& c, const Eigen::Vector3d& palmTranslation,
         const Eigen::Quaterniond& palmRotation, bool negateJointValues)
 {
@@ -207,6 +202,7 @@ std::string urdf2graspit::xmlfuncs::getFingerChain(const FingerChain& c, const E
     str << "\t\t</transform>" << std::endl;
     for (std::vector<DHParam>::const_iterator it = c.prms.begin(); it != c.prms.end(); ++it)
     {
+        // ROS_INFO_STREAM("Getting Joint for " << *it);
         std::string j = getChainJointSpec(*it, negateJointValues);
         str << j;
     }

@@ -57,6 +57,9 @@ void Urdf2GraspItBase::testVisualizeURDF(const std::string& fromLink)
 bool Urdf2GraspItBase::prepareModelForDenavitHartenberg(const std::string& fromLink)
 {
     ROS_INFO("### Preparing for DH conversion...");
+    
+    ROS_INFO_STREAM("URDF before joining fixed links: ");
+    printModel();
 
     ROS_INFO("### Joining fixed links..");
     if (!joinFixedLinks(fromLink))

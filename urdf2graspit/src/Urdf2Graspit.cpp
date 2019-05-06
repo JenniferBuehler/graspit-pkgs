@@ -109,7 +109,7 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
         // keep only those DHParams
         std::vector<DHParam> chain_dhparams;
         std::vector<std::string> linkFileNames;
-        std::vector<std::string> linkTypes;
+        std::vector<std::string> jointTypes;
         for (std::vector<JointPtr>::iterator cit = chain.begin(); cit != chain.end(); ++cit)
         {
             // ROS_INFO("Chain joint %s",(*cit)->name.c_str());
@@ -124,10 +124,10 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
                     std::stringstream linkfilename;
                     linkfilename << mesh_pathprepend << prit->joint->child_link_name << ".xml";
                     linkFileNames.push_back(linkfilename.str());
-                    if (prit->joint->type == urdf::Joint::REVOLUTE) linkTypes.push_back("Revolute");
-                    else if (prit->joint->type == urdf::Joint::CONTINUOUS) linkTypes.push_back("Prismatic");
-                    else if (prit->joint->type == urdf::Joint::PRISMATIC) linkTypes.push_back("Prismatic");
-                    else if (prit->joint->type == urdf::Joint::FIXED) linkTypes.push_back("Fixed");
+                    if (prit->joint->type == urdf::Joint::REVOLUTE) jointTypes.push_back("Revolute");
+                    else if (prit->joint->type == urdf::Joint::CONTINUOUS) jointTypes.push_back("Revolute");
+                    else if (prit->joint->type == urdf::Joint::PRISMATIC) jointTypes.push_back("Prismatic");
+                    else if (prit->joint->type == urdf::Joint::FIXED) jointTypes.push_back("Fixed");
                     else
                     {
                         ROS_ERROR_STREAM("Link type " << prit->joint->type << " not supported");
@@ -152,7 +152,7 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
         Eigen::Quaterniond palmRotation(m.rotation());
 
         // ROS_INFO_STREAM("Palm rotation: "<<palmRotation);
-        std::string chainStr = getFingerChain(FingerChain(chain_dhparams, linkFileNames, linkTypes),
+        std::string chainStr = getFingerChain(FingerChain(chain_dhparams, linkFileNames, jointTypes),
                                               palmTranslation, palmRotation, negateJointMoves);
         str << chainStr;
     }
@@ -600,7 +600,7 @@ bool Urdf2GraspIt::checkConversionPrerequisites(const GraspItConversionParameter
         }
         if (!urdf_traverser::isChildJointOf(rootLink, fingerRootJoint))
         {
-            ROS_ERROR_STREAM("Link named '"<<*rIt<<"' is not direct child of root '"<<param->rootLinkName
+            ROS_ERROR_STREAM(*rIt<<"' is not direct child of root '"<<param->rootLinkName
                 <<". This is either the wrong link, or there are other active joints between the root (palm) link and the finger root links."
                 <<" This is a requirement for conversion to GraspIt in the current version.");
             return false;

@@ -88,6 +88,14 @@ public:
     {
         o << p.joint->name << ": d=" << p.d << ", r=" << p.r << ", theta=" << p.theta
           << ", alpha=" << p.alpha << ", dof_idx=" << p.dof_index;
+        if (p.joint->type == urdf::Joint::REVOLUTE)
+         o << " (revolute)";
+        else if (p.joint->type == urdf::Joint::CONTINUOUS)
+         o << " (continuous)";
+        else if (p.joint->type == urdf::Joint::PRISMATIC)
+         o << " (prismatic)";
+        else
+         o << " (other type = " << p.joint->type << ")";
         return o;
     }
 
