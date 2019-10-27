@@ -49,7 +49,7 @@ include_directories(
 ## Declare a cpp library
 add_library(urdf2graspit
     src/Urdf2GraspItBase.cpp
-    src/Urdf2Graspit.cpp
+    src/Urdf2GraspIt.cpp
     src/ContactFunctions.cpp
     src/ContactsGenerator.cpp
     src/DHParam.cpp

@@ -24,7 +24,7 @@
 
 #include <urdf2inventor/Helpers.h>
 #include <urdf2graspit/Types.h>
-#include <urdf2graspit/Urdf2Graspit.h>
+#include <urdf2graspit/Urdf2GraspIt.h>
 #include <urdf2graspit/XMLFuncs.h>
 
 #include <urdf2graspit/ConvertGraspitMesh.h>
@@ -119,7 +119,6 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
                 if ((*cit)->name == prit->joint->name)
                 {
                     // ROS_INFO("Keep param for joint %s",prit->joint->name.c_str());
-
                     chain_dhparams.push_back(*prit);
                     std::stringstream linkfilename;
                     linkfilename << mesh_pathprepend << prit->joint->child_link_name << ".xml";
@@ -139,7 +138,6 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
         }
         // ROS_INFO("Getting transform for joint %s (starting from %s)",joint->name.c_str(),from_link->name.c_str());
         EigenTransform m = getTransform(from_link, joint);
-
         // the joint's rotation axis must be z!
         Eigen::Vector3d rotAxis(joint->axis.x, joint->axis.y, joint->axis.z);
         Eigen::Vector3d z(0, 0, 1);
@@ -148,12 +146,14 @@ bool Urdf2GraspIt::getXML(const std::vector<DHParam>& dhparams,
             ROS_ERROR("Only z-axis rotation is supported, transform the URDF model before!");
             return false;
         }
-        Eigen::Vector3d palmTranslation = m.translation();
+        Eigen::Vector3d palmTranslation(m.translation());
         Eigen::Quaterniond palmRotation(m.rotation());
 
+        // ROS_INFO_STREAM("Palm translation: "<<palmTranslation);
         // ROS_INFO_STREAM("Palm rotation: "<<palmRotation);
         std::string chainStr = getFingerChain(FingerChain(chain_dhparams, linkFileNames, jointTypes),
                                               palmTranslation, palmRotation, negateJointMoves);
+        // ROS_INFO_STREAM("Finger chain: " << chainStr);
         str << chainStr;
     }
 
@@ -535,6 +535,16 @@ bool Urdf2GraspIt::toDenavitHartenberg(const std::string& fromLink)
         ROS_ERROR("Could not get DH parameters");
         return false;
     }
+
+    for (std::vector<DHParam>::const_iterator it = dhparams.begin(); it != dhparams.end(); ++it)
+    {
+        if (it->hasInfOrNan())
+        {
+          ROS_ERROR_STREAM("Could not convert to DH params, has inf/nan values: " << *it);
+          return false;
+        }
+    } 
+
     dh_parameters = dhparams;
     dhTransformed = true;
     

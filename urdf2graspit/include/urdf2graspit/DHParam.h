@@ -70,6 +70,13 @@ public:
     double theta;  // < rotation of previous x around previous z to current x
     double alpha;  // < rotation of previous z to current z
 
+    // checks if the parameters have inf or nan values
+    bool hasInfOrNan() const
+    {
+      return std::isnan(d) || std::isnan(r) || std::isnan(theta) || std::isnan(alpha) ||
+      std::isinf(d) || std::isinf(r) || std::isinf(theta) || std::isinf(alpha);
+    }
+
     DHParam& operator=(const DHParam& p)
     {
         if (&p == this) return *this;
@@ -114,6 +121,7 @@ public:
      * \param pi position of the joint in frame i.
      *    This will be the global pose of the joint in URDF space.
      * \param xi the new x-axis of frame i will be returned in this paramter.
+     * \param[out] param the computed DH parameters
      */
     static bool toDenavitHartenberg(DHParam& param,
                                     const Eigen::Vector3d& zi_1,

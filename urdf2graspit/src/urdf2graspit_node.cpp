@@ -19,7 +19,7 @@
 #include <ros/ros.h>
 
 #include <urdf2inventor/Helpers.h>
-#include <urdf2graspit/Urdf2Graspit.h>
+#include <urdf2graspit/Urdf2GraspIt.h>
 #include <urdf2graspit/FileIO.h>
 #include <string>
 #include <vector>

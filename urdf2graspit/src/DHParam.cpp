@@ -340,7 +340,34 @@ bool DHParam::getAlpha(const Eigen::Vector3d& zi_1, const Eigen::Vector3d& zi,
     }
 
     // for alpha, rotation is to be counter-clockwise around x
-    alpha = acos(zi_1.dot(zi));
+    double adot = zi_1.dot(zi);
+    if (adot < -1 || adot > 1)
+    {
+      // account for floating point inaccuracies and clamp the dot product
+      // to [-1..1], if valid
+      if (fabs(adot + 1) < 1e-06)
+      {
+        adot = -1;
+      }
+      else if (fabs(adot - 1) < 1e-06)
+      {
+        adot = 1;
+      }
+      else
+      {
+        ROS_ERROR_STREAM("Dot product xi.dot(xi_1) in invalid range: " << adot);
+        return false;
+      }
+    }
+
+    alpha = acos(adot);
+   
+    if (std::isnan(alpha) || std::isinf(alpha))
+    {
+      ROS_ERROR_STREAM("Problem in computation, alpha=" << alpha);
+      return false;
+    }
+
     Eigen::AngleAxisd corr(alpha, xi);
     Eigen::Vector3d corrV = corr * zi_1;
     int corrEqPl = equalOrParallelAxis(zi, corrV);
@@ -367,6 +394,13 @@ bool DHParam::getDAndTheta(const Eigen::Vector3d& zi_1,
 {
     Eigen::Vector3d originDiff = normOriginOnZi_1 - pi_1;
     d = originDiff.norm();
+
+    if (std::isnan(d) || std::isinf(d))
+    {
+      ROS_ERROR_STREAM("Problem in computation, d=" << d);
+      return false;
+    }
+
     // ROS_INFO_STREAM("getDAndTheta, difference along z "<<originDiff<<" (d = "<<d<<")");
     if (d > DH_ZERO_EPSILON)
     {
@@ -395,8 +429,34 @@ bool DHParam::getDAndTheta(const Eigen::Vector3d& zi_1,
     }
 
     // theta is angle between common normal (xi) and xi_1 around zi_1
-    theta = acos(xi_1.dot(xi));
-    // ROS_INFO_STREAM("Theta: Angle between "<<xi<<" and "<<xi_1<<" is "<<theta);
+    double xdot = xi_1.dot(xi);
+    if (xdot < -1 || xdot > 1)
+    {
+      // account for floating point inaccuracies and clamp the dot product
+      // to [-1..1], if valid
+      if (fabs(xdot + 1) < 1e-06)
+      {
+        xdot = -1;
+      }
+      else if (fabs(xdot - 1) < 1e-06)
+      {
+        xdot = 1;
+      }
+      else
+      {
+        ROS_ERROR_STREAM("Dot product xi.dot(xi_1) in invalid range: " << xdot);
+        return false;
+      }
+    }
+
+    theta = acos(xdot);
+    // ROS_INFO_STREAM("Theta: Angle between "<<xi<<" and "<<xi_1<<" is "<<theta << ". dot product " <<xdot);
+    if (std::isnan(theta) || std::isinf(theta))
+    {
+      ROS_ERROR_STREAM("Problem in computation, theta=" << theta);
+      return false;
+    }
+
     if (std::fabs(theta) < DH_ZERO_EPSILON)
     {
         return true;
@@ -525,6 +585,12 @@ bool DHParam::getCommonNormal(const Eigen::Vector3d& zi_1, const Eigen::Vector3d
     Eigen::Vector3d cli;
 
     shortestDistance = linesDistance(zi_1, zi, pi_1, pi, parallel, cli_1, cli);
+
+    if (std::isnan(shortestDistance) || std::isinf(shortestDistance))
+    {
+      ROS_ERROR_STREAM("Problem in computation, shortestDistance=" << shortestDistance);
+      return false;
+    }
 
     nOriginOnZi_1 = cli_1;
 
